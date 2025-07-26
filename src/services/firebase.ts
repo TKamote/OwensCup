@@ -16,12 +16,12 @@ import {
 
 // Your Firebase configuration
 const firebaseConfig = {
-  apiKey: "AIzaSyA9XM-m4tk8qohMCTwhAcayZI-8sGnRPyI",
+  apiKey: "AIzaSyAA_wfbF0ytUY3Qnd0YC9qHhkXO8QPC_iE",
   authDomain: "owenscup.firebaseapp.com",
   projectId: "owenscup",
   storageBucket: "owenscup.firebasestorage.app",
   messagingSenderId: "719761938656",
-  appId: "1:719761938656:web:653f3f20d58092ee0a9885",
+  appId: "1:719761938656:android:af1796bfe8a9848d0a9885",
   measurementId: "G-E11GSM385Z",
 };
 
@@ -88,7 +88,7 @@ export const saveTournamentData = async (
 ) => {
   try {
     // For now, just log the data since we're not implementing full storage yet
-    console.log('Saving tournament data:', tournamentData);
+    console.log("Saving tournament data:", tournamentData);
     // This will be updated when we implement the proper tournament storage
   } catch (error) {
     throw error;
