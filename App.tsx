@@ -1,11 +1,14 @@
 import React from "react";
-import { SafeAreaView } from "react-native";
-import TournamentScreen from "./src/screens/TournamentScreen";
+import { AuthProvider } from "./src/context/AuthContext";
+import { TournamentProvider } from "./src/context/TournamentContext";
+import AppNavigator from "./src/navigation/AppNavigator";
 
 export default function App() {
   return (
-    <SafeAreaView style={{ flex: 1 }}>
-      <TournamentScreen />
-    </SafeAreaView>
+    <AuthProvider>
+      <TournamentProvider>
+        <AppNavigator />
+      </TournamentProvider>
+    </AuthProvider>
   );
 }

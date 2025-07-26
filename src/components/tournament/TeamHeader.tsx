@@ -1,14 +1,18 @@
 import React from "react";
 import { View, Text, StyleSheet } from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { COLORS, FONTS, SPACING, BORDER_RADIUS } from "../../constants/theme";
 
 interface TeamHeaderProps {
   teams: { name: string; score: number }[];
 }
 
-const iconMap: Record<string, { name: string; color: string }> = {
-  "Pinoy Sargo": { name: "fish", color: "#FF7043" }, // orange for salmon
-  "WBB (Jerome)": { name: "shark", color: "#1976D2" }, // blue for tuna/shark
+const iconMap: Record<
+  string,
+  { name: "billiards" | "triangle-outline" | "account"; color: string }
+> = {
+  "Pinoy Sargo": { name: "billiards", color: COLORS.team1 },
+  "WBB (Jerome)": { name: "triangle-outline", color: "#8B4513" }, // Wood/brown color
 };
 
 const TeamHeader: React.FC<TeamHeaderProps> = ({ teams }) => {
@@ -18,7 +22,7 @@ const TeamHeader: React.FC<TeamHeaderProps> = ({ teams }) => {
         <MaterialCommunityIcons
           name={iconMap[teams[0].name]?.name || "account"}
           size={32}
-          color={iconMap[teams[0].name]?.color || "#888"}
+          color={iconMap[teams[0].name]?.color || COLORS.gray[500]}
           style={styles.logo}
         />
         <Text style={styles.name}>{teams[0].name}</Text>
@@ -31,8 +35,8 @@ const TeamHeader: React.FC<TeamHeaderProps> = ({ teams }) => {
       <View style={styles.teamBlock}>
         <MaterialCommunityIcons
           name={iconMap[teams[1].name]?.name || "account"}
-          size={32}
-          color={iconMap[teams[1].name]?.color || "#888"}
+          size={40}
+          color={iconMap[teams[1].name]?.color || COLORS.gray[500]}
           style={styles.logo}
         />
         <Text style={styles.name}>{teams[1].name}</Text>
@@ -46,19 +50,19 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    marginVertical: 16,
-    paddingHorizontal: 16,
+    marginVertical: SPACING.md,
+    paddingHorizontal: SPACING.md,
   },
   teamBlock: {
     alignItems: "center",
     flex: 2,
   },
   logo: {
-    marginBottom: 2,
+    marginBottom: SPACING.xs,
   },
   name: {
-    fontWeight: "bold",
-    fontSize: 16,
+    fontWeight: FONTS.weight.bold,
+    fontSize: FONTS.size.base,
     textAlign: "center",
   },
   scoreBlock: {
@@ -68,18 +72,18 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   score: {
-    fontSize: 28,
-    fontWeight: "bold",
-    color: "#007AFF",
-    marginHorizontal: 8,
+    fontSize: FONTS.size["2xl"],
+    fontWeight: FONTS.weight.bold,
+    color: COLORS.primary,
+    marginHorizontal: SPACING.md,
     minWidth: 32,
     textAlign: "center",
   },
   vs: {
-    fontSize: 24,
-    fontWeight: "bold",
-    color: "#222",
-    marginHorizontal: 2,
+    fontSize: FONTS.size.xl,
+    fontWeight: FONTS.weight.bold,
+    color: COLORS.text.primary,
+    marginHorizontal: SPACING.xs,
   },
 });
 
