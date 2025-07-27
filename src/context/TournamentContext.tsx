@@ -190,6 +190,13 @@ export const TournamentProvider: React.FC<TournamentProviderProps> = ({
         }
       });
 
+      // Debug: Log the recalculation
+      console.log("Score recalculation:", {
+        matchScores: newMatchScores,
+        newTeamScores,
+        oldTeamScores: prevState.teamScores,
+      });
+
       // Check for champion
       if (newTeamScores[0] === 5) {
         const champion = teamData[0].name;

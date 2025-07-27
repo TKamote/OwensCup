@@ -78,16 +78,9 @@ const MosconiScoreScreen: React.FC = () => {
   };
 
   const handleScoreAdjustment = (matchIndex: number) => {
-    console.log("handleScoreAdjustment called for match:", matchIndex);
     setSelectedMatch(matchIndex);
     setScoreAdjustModalVisible(true);
-    console.log("Setting scoreAdjustModalVisible to true");
   };
-
-  // Debug modal visibility
-  useEffect(() => {
-    console.log("scoreAdjustModalVisible changed to:", scoreAdjustModalVisible);
-  }, [scoreAdjustModalVisible]);
 
   const handleDirectScoreChange = (
     matchIndex: number,
@@ -106,13 +99,11 @@ const MosconiScoreScreen: React.FC = () => {
       return;
     }
 
-    // Update the score directly
-    currentScores[teamIndex] = newScore;
-    updateMatchScore(
-      matchIndex,
-      teamIndex,
-      newScore - tournamentState.matchScores[matchIndex][teamIndex]
-    );
+    // Calculate the delta
+    const delta = newScore - tournamentState.matchScores[matchIndex][teamIndex];
+
+    // Update the score using the delta
+    updateMatchScore(matchIndex, teamIndex, delta);
     setScoreAdjustModalVisible(false);
   };
 
@@ -232,7 +223,6 @@ const MosconiScoreScreen: React.FC = () => {
                 <TouchableOpacity
                   style={[styles.resetButton, styles.yesButton]}
                   onPress={() => {
-                    console.log("Reset All confirmed");
                     resetAllScores();
                     setResetModalVisible(false);
                   }}
