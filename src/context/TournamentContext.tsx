@@ -36,6 +36,7 @@ interface TournamentContextType {
   saveTournament: () => Promise<void>;
   loadTournament: () => Promise<void>;
   resetMatch: (matchIndex: number) => void;
+  resetAllScores: () => void;
   undoLastAction: () => void;
   error: string | null; // Add error to context type
 }
@@ -176,31 +177,47 @@ export const TournamentProvider: React.FC<TournamentProviderProps> = ({
         newValue: currentMatchScore[teamIdx],
       });
 
-      // Check if match is completed
-      const match = matchData[matchIndex];
-      const isCompleted =
-        currentMatchScore[0] === match.raceTo ||
-        currentMatchScore[1] === match.raceTo;
+      // Recalculate ALL team scores based on completed matches
+      const newTeamScores = [0, 0];
+      newMatchScores.forEach((matchScore, index) => {
+        const match = matchData[index];
+        const isCompleted =
+          matchScore[0] === match.raceTo || matchScore[1] === match.raceTo;
 
-      // Update team scores if match is completed
-      let newTeamScores = [...prevState.teamScores];
-      if (isCompleted) {
-        const winner = currentMatchScore[0] === match.raceTo ? 0 : 1;
-        newTeamScores[winner]++;
-
-        // Check for champion
-        if (newTeamScores[winner] === 5) {
-          const champion = teamData[winner].name;
-          return {
-            ...prevState,
-            teamScores: newTeamScores,
-            matchScores: newMatchScores,
-            champion,
-            modalVisible: true,
-          };
+        if (isCompleted) {
+          const winner = matchScore[0] === match.raceTo ? 0 : 1;
+          newTeamScores[winner]++;
         }
+      });
 
-        // Move to next match if not the last one
+      // Check for champion
+      if (newTeamScores[0] === 5) {
+        const champion = teamData[0].name;
+        return {
+          ...prevState,
+          teamScores: newTeamScores,
+          matchScores: newMatchScores,
+          champion,
+          modalVisible: true,
+        };
+      } else if (newTeamScores[1] === 5) {
+        const champion = teamData[1].name;
+        return {
+          ...prevState,
+          teamScores: newTeamScores,
+          matchScores: newMatchScores,
+          champion,
+          modalVisible: true,
+        };
+      }
+
+      // Move to next match if current match is completed
+      const currentMatch = matchData[matchIndex];
+      const isCurrentMatchCompleted =
+        currentMatchScore[0] === currentMatch.raceTo ||
+        currentMatchScore[1] === currentMatch.raceTo;
+
+      if (isCurrentMatchCompleted) {
         const nextMatch = Math.min(matchIndex + 1, matchData.length - 1);
         return {
           ...prevState,
@@ -212,6 +229,7 @@ export const TournamentProvider: React.FC<TournamentProviderProps> = ({
 
       return {
         ...prevState,
+        teamScores: newTeamScores,
         matchScores: newMatchScores,
       };
     });
@@ -252,6 +270,39 @@ export const TournamentProvider: React.FC<TournamentProviderProps> = ({
         teamScores: newTeamScores,
       };
     });
+  };
+
+  const resetAllScores = () => {
+    setTournamentState((prevState) => {
+      // Reset all match scores to [0, 0]
+      const newMatchScores = matchData.map(() => [0, 0] as [number, number]);
+
+      // Reset team scores to [0, 0] (will be recalculated by existing logic)
+      const newTeamScores = [0, 0];
+
+      // Recalculate team scores based on completed matches (should be all 0s now)
+      newMatchScores.forEach((matchScore, index) => {
+        const match = matchData[index];
+        const isCompleted =
+          matchScore[0] === match.raceTo || matchScore[1] === match.raceTo;
+
+        if (isCompleted) {
+          const winner = matchScore[0] === match.raceTo ? 0 : 1;
+          newTeamScores[winner]++;
+        }
+      });
+
+      return {
+        ...prevState,
+        matchScores: newMatchScores,
+        teamScores: newTeamScores,
+        currentMatch: 0, // Reset current match to 0
+        // Keep champion state unchanged as requested
+      };
+    });
+
+    // Clear action history
+    setActionHistory([]);
   };
 
   const undoLastAction = () => {
@@ -323,6 +374,7 @@ export const TournamentProvider: React.FC<TournamentProviderProps> = ({
     saveTournament,
     loadTournament,
     resetMatch,
+    resetAllScores,
     undoLastAction,
     error, // Expose error
   };

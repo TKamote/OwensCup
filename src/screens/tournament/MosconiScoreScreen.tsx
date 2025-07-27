@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   FlatList,
@@ -34,6 +34,7 @@ const MosconiScoreScreen: React.FC = () => {
     setModalVisible,
     loading,
     resetMatch,
+    resetAllScores,
     undoLastAction,
   } = useTournament();
   const [resetModalVisible, setResetModalVisible] = useState(false);
@@ -77,9 +78,16 @@ const MosconiScoreScreen: React.FC = () => {
   };
 
   const handleScoreAdjustment = (matchIndex: number) => {
+    console.log("handleScoreAdjustment called for match:", matchIndex);
     setSelectedMatch(matchIndex);
     setScoreAdjustModalVisible(true);
+    console.log("Setting scoreAdjustModalVisible to true");
   };
+
+  // Debug modal visibility
+  useEffect(() => {
+    console.log("scoreAdjustModalVisible changed to:", scoreAdjustModalVisible);
+  }, [scoreAdjustModalVisible]);
 
   const handleDirectScoreChange = (
     matchIndex: number,
@@ -177,7 +185,7 @@ const MosconiScoreScreen: React.FC = () => {
               </TouchableOpacity>
             </View>
 
-            <TouchableOpacity style={styles.resetOption} onPress={handleUndo}>
+            {/* <TouchableOpacity style={styles.resetOption} onPress={handleUndo}>
               <MaterialCommunityIcons
                 name="undo"
                 size={24}
@@ -208,7 +216,31 @@ const MosconiScoreScreen: React.FC = () => {
                 color={COLORS.info}
               />
               <Text style={styles.resetOptionText}>Adjust Scores Directly</Text>
-            </TouchableOpacity>
+            </TouchableOpacity> */}
+
+            <View style={styles.resetConfirmationContainer}>
+              <Text style={styles.resetConfirmationText}>
+                Reset all scoring to 0?
+              </Text>
+              <View style={styles.resetButtonRow}>
+                <TouchableOpacity
+                  style={[styles.resetButton, styles.noButton]}
+                  onPress={() => setResetModalVisible(false)}
+                >
+                  <Text style={styles.noButtonText}>No</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={[styles.resetButton, styles.yesButton]}
+                  onPress={() => {
+                    console.log("Reset All confirmed");
+                    resetAllScores();
+                    setResetModalVisible(false);
+                  }}
+                >
+                  <Text style={styles.yesButtonText}>Yes</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
           </View>
         </View>
       </Modal>
@@ -540,6 +572,45 @@ const styles = StyleSheet.create({
   },
   currentScore: {
     fontSize: FONTS.size.lg,
+    fontWeight: FONTS.weight.bold,
+    color: COLORS.text.primary,
+  },
+  resetConfirmationContainer: {
+    alignItems: "center",
+    paddingVertical: SPACING.md,
+  },
+  resetConfirmationText: {
+    fontSize: FONTS.size.lg,
+    fontWeight: FONTS.weight.bold,
+    color: COLORS.text.primary,
+    marginBottom: SPACING.md,
+    textAlign: "center",
+  },
+  resetButtonRow: {
+    flexDirection: "row",
+    justifyContent: "space-around",
+    width: "100%",
+  },
+  resetButton: {
+    paddingVertical: SPACING.sm,
+    paddingHorizontal: SPACING.xl,
+    borderRadius: BORDER_RADIUS.md,
+    minWidth: 80,
+    alignItems: "center",
+  },
+  noButton: {
+    backgroundColor: COLORS.gray[400],
+  },
+  yesButton: {
+    backgroundColor: COLORS.warning,
+  },
+  noButtonText: {
+    fontSize: FONTS.size.base,
+    fontWeight: FONTS.weight.bold,
+    color: COLORS.text.primary,
+  },
+  yesButtonText: {
+    fontSize: FONTS.size.base,
     fontWeight: FONTS.weight.bold,
     color: COLORS.text.primary,
   },
