@@ -19,7 +19,7 @@
       "package": "com.davidonquit.owenscup",
       "versionCode": 1,
       "adaptiveIcon": {
-        "foregroundImage": "./assets/adaptive-icon.png",
+        "foregroundImage": "./assets/playstore-icon.png",
         "backgroundColor": "#ffffff"
       },
       "edgeToEdgeEnabled": true
