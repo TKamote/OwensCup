@@ -1,5 +1,12 @@
 import React from "react";
-import { View, FlatList, StyleSheet, Text } from "react-native";
+import {
+  View,
+  FlatList,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+} from "react-native";
+import { useNavigation } from "@react-navigation/native";
 import {
   pastTeams as teamData,
   pastMatches as matchData,
@@ -16,6 +23,8 @@ import {
 } from "../../constants/theme";
 
 const PastTournamentsScreen: React.FC = () => {
+  const navigation = useNavigation();
+
   // Create static match scores for past tournament (completed state)
   const pastMatchScores: [number, number][] = [
     [5, 2], // Match 1: Pinoy Sargo won (1-0)
@@ -110,6 +119,7 @@ const styles = StyleSheet.create({
     fontWeight: FONTS.weight.medium,
     marginBottom: SPACING.sm,
   },
+
 });
 
 export default PastTournamentsScreen;

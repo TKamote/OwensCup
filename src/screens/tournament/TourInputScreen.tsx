@@ -8,6 +8,7 @@ import {
   Modal,
   TextInput,
 } from "react-native";
+import { useNavigation } from "@react-navigation/native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import {
   COLORS,
@@ -18,6 +19,7 @@ import {
 } from "../../constants/theme";
 
 const TourInputScreen: React.FC = () => {
+  const navigation = useNavigation();
   const [rulesModalVisible, setRulesModalVisible] = useState(false);
   const [teamName, setTeamName] = useState("");
   const [playersPerTeam, setPlayersPerTeam] = useState("5");
@@ -30,15 +32,7 @@ const TourInputScreen: React.FC = () => {
 
   return (
     <ScrollView style={styles.container}>
-      <View style={styles.header}>
-        <View style={styles.headerSpacer} />
-        <MaterialCommunityIcons
-          name="cog"
-          size={24}
-          color={COLORS.primary}
-          style={styles.gearIcon}
-        />
-      </View>
+      
 
       <View style={styles.contentTitle}>
         <Text style={styles.title}>Tour Settings</Text>
@@ -250,19 +244,21 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.background.primary,
     paddingTop: SPACING.xl, // Add padding to prevent overflow
   },
-  header: {
+
+  homeButton: {
     flexDirection: "row",
-    justifyContent: "flex-end", // Move back to right side
     alignItems: "center",
-    marginBottom: SPACING.lg,
-    paddingHorizontal: SPACING.lg, // Increase horizontal padding
-    paddingTop: SPACING.lg, // Increase top padding to move it further down
+    backgroundColor: COLORS.background.primary,
+    borderRadius: BORDER_RADIUS.md,
+    paddingVertical: SPACING.xs,
+    paddingHorizontal: SPACING.sm,
+    ...SHADOWS.sm,
   },
-  headerSpacer: {
-    // Keep empty since we're using flex-end
-  },
-  gearIcon: {
-    marginRight: SPACING.md, // Add right margin to move away from edge
+  homeButtonText: {
+    fontSize: FONTS.size.base,
+    fontWeight: FONTS.weight.medium,
+    color: COLORS.primary,
+    marginLeft: SPACING.xs,
   },
   title: {
     fontSize: FONTS.size["2xl"],

@@ -1,5 +1,12 @@
 import React from "react";
-import { View, Text, StyleSheet, TouchableOpacity, Alert } from "react-native";
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  Alert,
+  Image,
+} from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import {
   COLORS,
@@ -19,11 +26,12 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
 
   const handlePBSCupPress = () => {
     if (user) {
-      navigation.navigate("Past Tournaments");
+      // Navigate to Tour Dashboard tab for live tournament
+      navigation.navigate("Tour Dashboard");
     } else {
       Alert.alert(
         "Authentication Required",
-        "Please sign in to view past tournaments.",
+        "Please sign in to view tournaments.",
         [
           { text: "Cancel", style: "cancel" },
           { text: "Sign In", onPress: () => navigation.navigate("Auth") },
@@ -34,6 +42,7 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
 
   const handlePastTournamentsPress = () => {
     if (user) {
+      // Navigate to Past Tournaments tab
       navigation.navigate("Past Tournaments");
     } else {
       Alert.alert(
@@ -49,7 +58,8 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
 
   const handleFavouriteTournamentsPress = () => {
     if (user) {
-      navigation.navigate("Live Tournament");
+      // Navigate to Tour Dashboard tab for live tournament
+      navigation.navigate("Tour Dashboard");
     } else {
       Alert.alert(
         "Authentication Required",
@@ -64,18 +74,13 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
 
   return (
     <View style={styles.container}>
-      {/* Title Section */}
-      <View style={styles.titleSection}>
-        <Text style={styles.homeTitle}>Home</Text>
-      </View>
+      {/* Image Section - Replaces Welcome Message */}
 
-      {/* Welcome Message - Top Left */}
-      <View style={styles.welcomeSection}>
-        <Text style={styles.welcomeText}>
-          <Text>Welcome{"\n"}</Text>
-          <Text>Tournament Managers</Text>
-        </Text>
-      </View>
+      <Image
+        source={require("../../../assets/icon.png")}
+        style={styles.welcomeImage}
+        // resizeMode="contain"
+      />
 
       {/* Navigation Buttons - Centered */}
       <View style={styles.buttonSection}>
@@ -114,34 +119,24 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
 
 const styles = StyleSheet.create({
   container: {
+    display: "flex",
+    flexDirection: "column",
     flex: 1,
-    backgroundColor: COLORS.background.primary,
-    paddingTop: SPACING["2xl"],
-  },
-  titleSection: {
+
+    justifyContent: "flex-start",
     alignItems: "center",
-    paddingVertical: SPACING.lg,
   },
-  homeTitle: {
-    fontSize: FONTS.size["xl"],
-    fontWeight: FONTS.weight.normal,
-    color: COLORS.text.primary,
-  },
-  welcomeSection: {
-    paddingHorizontal: SPACING.lg,
-    paddingBottom: SPACING.md,
-  },
-  welcomeText: {
-    fontSize: FONTS.size["2xl"] + 4, // Increased by another 4px
-    fontWeight: FONTS.weight.bold,
-    color: COLORS.text.primary,
+
+  welcomeImage: {
+    width: "100%",
+    height: "60%",
   },
   buttonSection: {
-    flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    padding: SPACING.lg,
-    gap: SPACING.md,
+    paddingTop: SPACING["2xl"],
+    gap: SPACING.sm,
+    width: "100%",
   },
   button: {
     flexDirection: "row",
@@ -151,13 +146,15 @@ const styles = StyleSheet.create({
     padding: SPACING.md,
     borderRadius: BORDER_RADIUS.lg,
     ...SHADOWS.md,
-    width: 300,
+    width: "80%",
+    minWidth: 250,
   },
   buttonText: {
     color: COLORS.white,
     fontSize: FONTS.size.lg,
     fontWeight: FONTS.weight.bold,
     marginLeft: SPACING.sm,
+    textAlign: "center",
   },
 });
 

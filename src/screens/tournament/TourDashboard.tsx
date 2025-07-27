@@ -9,6 +9,7 @@ import {
   Dimensions,
   Alert,
 } from "react-native";
+import { useNavigation } from "@react-navigation/native";
 import {
   teams as teamData,
   matches as matchData,
@@ -27,7 +28,8 @@ import {
 
 const windowWidth = Dimensions.get("window").width;
 
-const MosconiScoreScreen: React.FC = () => {
+const TourDashboard: React.FC = () => {
+  const navigation = useNavigation();
   const {
     tournamentState,
     updateMatchScore,
@@ -176,39 +178,6 @@ const MosconiScoreScreen: React.FC = () => {
               </TouchableOpacity>
             </View>
 
-            {/* <TouchableOpacity style={styles.resetOption} onPress={handleUndo}>
-              <MaterialCommunityIcons
-                name="undo"
-                size={24}
-                color={COLORS.primary}
-              />
-              <Text style={styles.resetOptionText}>Undo Last Action</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={styles.resetOption}
-              onPress={() => handleResetMatch(tournamentState.currentMatch)}
-            >
-              <MaterialCommunityIcons
-                name="refresh"
-                size={24}
-                color={COLORS.warning}
-              />
-              <Text style={styles.resetOptionText}>Reset Current Match</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={styles.resetOption}
-              onPress={() => setScoreAdjustModalVisible(true)}
-            >
-              <MaterialCommunityIcons
-                name="pencil"
-                size={24}
-                color={COLORS.info}
-              />
-              <Text style={styles.resetOptionText}>Adjust Scores Directly</Text>
-            </TouchableOpacity> */}
-
             <View style={styles.resetConfirmationContainer}>
               <Text style={styles.resetConfirmationText}>
                 Reset all scoring to 0?
@@ -342,30 +311,32 @@ const MosconiScoreScreen: React.FC = () => {
         </View>
       </Modal>
 
-      <View style={styles.header}>
-        <View style={styles.titleRow}>
+      {/* Tournament Header */}
+      <View style={styles.tournamentHeader}>
+        <View style={styles.tournamentTitleRow}>
           <MaterialCommunityIcons
             name="trophy"
             size={32}
             color={COLORS.secondary}
             style={{ marginRight: SPACING.sm }}
           />
-          <Text style={styles.title}>PBS Cup August 2025</Text>
+          <Text style={styles.tournamentTitle}>PBS Cup Aug 2025</Text>
         </View>
-        <Text style={styles.subtitle}>22 Aug 2025: Organized by Owen</Text>
-
-        {/* Reset Button in Header */}
-        <TouchableOpacity
-          style={styles.headerResetButton}
-          onPress={() => setResetModalVisible(true)}
-        >
-          <MaterialCommunityIcons
-            name="backup-restore"
-            size={20}
-            color={COLORS.text.secondary}
-          />
-        </TouchableOpacity>
+        <Text style={styles.tournamentSubtitle}>Live Tournament</Text>
+        <Text style={styles.tournamentOrganizer}>Organized by: Owen</Text>
       </View>
+
+      {/* Reset Button */}
+      <TouchableOpacity
+        style={styles.headerResetButton}
+        onPress={() => setResetModalVisible(true)}
+      >
+        <MaterialCommunityIcons
+          name="backup-restore"
+          size={20}
+          color={COLORS.text.secondary}
+        />
+      </TouchableOpacity>
 
       <TeamHeader
         teams={teamData.map((t, i) => ({
@@ -401,11 +372,13 @@ const MosconiScoreScreen: React.FC = () => {
 };
 
 const styles = StyleSheet.create({
+  // 1. Main Container
   container: {
     flex: 1,
     backgroundColor: COLORS.background.primary,
-    paddingTop: SPACING["2xl"],
   },
+
+  // 2. Loading State
   loadingContainer: {
     flex: 1,
     justifyContent: "center",
@@ -416,41 +389,8 @@ const styles = StyleSheet.create({
     fontSize: FONTS.size.lg,
     color: COLORS.text.secondary,
   },
-  header: {
-    paddingTop: SPACING.xl, // Increased padding to push content further below notch
-    paddingHorizontal: SPACING.md,
-    backgroundColor: COLORS.background.primary,
-    borderBottomWidth: 1,
-    borderBottomColor: COLORS.gray[200],
-  },
-  titleRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    marginBottom: SPACING.xs,
-  },
-  title: {
-    fontSize: FONTS.size["3xl"],
-    fontWeight: FONTS.weight.bold,
-    color: COLORS.text.primary,
-    letterSpacing: 1,
-  },
-  subtitle: {
-    textAlign: "center",
-    fontSize: FONTS.size.sm,
-    color: COLORS.text.secondary,
-    marginBottom: SPACING.sm,
-    marginTop: SPACING.xs,
-  },
-  headerResetButton: {
-    position: "absolute",
-    top: SPACING.md,
-    right: SPACING.md,
-    backgroundColor: COLORS.warning,
-    borderRadius: BORDER_RADIUS.md,
-    padding: SPACING.xs,
-    ...SHADOWS.sm,
-  },
+
+  // 3. Champion Modal Styles
   modalOverlay: {
     flex: 1,
     backgroundColor: COLORS.background.modal,
@@ -499,20 +439,8 @@ const styles = StyleSheet.create({
     fontWeight: FONTS.weight.bold,
     color: COLORS.text.primary,
   },
-  resetOption: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "flex-start",
-    paddingVertical: SPACING.sm,
-    paddingHorizontal: SPACING.md,
-    borderRadius: BORDER_RADIUS.md,
-    marginBottom: SPACING.xs,
-  },
-  resetOptionText: {
-    fontSize: FONTS.size.base,
-    color: COLORS.text.primary,
-    marginLeft: SPACING.md,
-  },
+
+  // 4. Reset Options Modal Styles
   modalHeader: {
     flexDirection: "row",
     justifyContent: "space-between",
@@ -522,46 +450,6 @@ const styles = StyleSheet.create({
   },
   modalTitle: {
     fontSize: FONTS.size["3xl"],
-    fontWeight: FONTS.weight.bold,
-    color: COLORS.text.primary,
-  },
-  scoreAdjustmentContent: {
-    width: "100%",
-    alignItems: "center",
-    marginTop: SPACING.sm,
-  },
-  matchTitle: {
-    fontSize: FONTS.size.lg,
-    fontWeight: FONTS.weight.bold,
-    color: COLORS.text.primary,
-    marginBottom: SPACING.sm,
-  },
-  scoreAdjustmentRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-around",
-    width: "100%",
-    marginBottom: SPACING.sm,
-  },
-  teamName: {
-    fontSize: FONTS.size.lg,
-    fontWeight: FONTS.weight.bold,
-    color: COLORS.text.primary,
-  },
-  scoreButton: {
-    backgroundColor: COLORS.secondary,
-    borderRadius: BORDER_RADIUS.md,
-    paddingVertical: SPACING.xs,
-    paddingHorizontal: SPACING.sm,
-    marginHorizontal: SPACING.sm,
-  },
-  scoreButtonText: {
-    fontSize: FONTS.size.lg,
-    fontWeight: FONTS.weight.bold,
-    color: COLORS.text.primary,
-  },
-  currentScore: {
-    fontSize: FONTS.size.lg,
     fontWeight: FONTS.weight.bold,
     color: COLORS.text.primary,
   },
@@ -604,6 +492,91 @@ const styles = StyleSheet.create({
     fontWeight: FONTS.weight.bold,
     color: COLORS.text.primary,
   },
+
+  // 5. Score Adjustment Modal Styles
+  scoreAdjustmentContent: {
+    width: "100%",
+    alignItems: "center",
+    marginTop: SPACING.sm,
+  },
+  matchTitle: {
+    fontSize: FONTS.size.lg,
+    fontWeight: FONTS.weight.bold,
+    color: COLORS.text.primary,
+    marginBottom: SPACING.sm,
+  },
+  scoreAdjustmentRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-around",
+    width: "100%",
+    marginBottom: SPACING.sm,
+  },
+  teamName: {
+    fontSize: FONTS.size.lg,
+    fontWeight: FONTS.weight.bold,
+    color: COLORS.text.primary,
+  },
+  scoreButton: {
+    backgroundColor: COLORS.secondary,
+    borderRadius: BORDER_RADIUS.md,
+    paddingVertical: SPACING.xs,
+    paddingHorizontal: SPACING.sm,
+    marginHorizontal: SPACING.sm,
+  },
+  scoreButtonText: {
+    fontSize: FONTS.size.lg,
+    fontWeight: FONTS.weight.bold,
+    color: COLORS.text.primary,
+  },
+  currentScore: {
+    fontSize: FONTS.size.lg,
+    fontWeight: FONTS.weight.bold,
+    color: COLORS.text.primary,
+  },
+
+  // 6. Tournament Header Styles
+  tournamentHeader: {
+    paddingHorizontal: SPACING.md,
+    paddingTop: SPACING.md,
+    paddingBottom: SPACING.sm,
+    backgroundColor: COLORS.background.primary,
+  },
+  tournamentTitleRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: SPACING.xs,
+  },
+  tournamentTitle: {
+    fontSize: FONTS.size["3xl"],
+    fontWeight: FONTS.weight.bold,
+    color: COLORS.text.primary,
+    letterSpacing: 1,
+  },
+  tournamentSubtitle: {
+    textAlign: "center",
+    fontSize: FONTS.size.sm,
+    color: COLORS.text.secondary,
+    marginBottom: SPACING.xs,
+  },
+  tournamentOrganizer: {
+    textAlign: "center",
+    fontSize: FONTS.size.sm,
+    color: COLORS.success,
+    marginBottom: SPACING.sm,
+  },
+  // 7. Reset Button Styles
+  headerResetButton: {
+    position: "absolute",
+    top: SPACING.md,
+    right: SPACING.md,
+    backgroundColor: COLORS.warning,
+    borderRadius: BORDER_RADIUS.md,
+    padding: SPACING.xs,
+    ...SHADOWS.sm,
+    zIndex: 1000,
+  },
 });
 
-export default MosconiScoreScreen;
+export default TourDashboard;
