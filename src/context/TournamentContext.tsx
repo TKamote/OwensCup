@@ -10,6 +10,16 @@ import {
   updateTournamentScore,
 } from "../services/firebase";
 
+interface Team {
+  id: number;
+  name: string;
+  manager: string;
+  captain: string;
+  players: string;
+  color: string;
+  icon: string;
+}
+
 interface TournamentState {
   teamScores: number[];
   matchScores: [number, number][];
@@ -17,6 +27,10 @@ interface TournamentState {
   champion: string | null;
   modalVisible: boolean;
   tournamentId: string | null;
+  confirmedTeams: Team[];
+  tournamentName: string;
+  organizer: string;
+  raceToScore: string;
 }
 
 interface ActionHistory {
@@ -38,7 +52,13 @@ interface TournamentContextType {
   resetMatch: (matchIndex: number) => void;
   resetAllScores: () => void;
   undoLastAction: () => void;
-  error: string | null; // Add error to context type
+  setConfirmedTeams: (teams: Team[]) => void;
+  setTournamentInfo: (
+    name: string,
+    organizer: string,
+    raceToScore: string
+  ) => void;
+  error: string | null;
 }
 
 const TournamentContext = createContext<TournamentContextType | undefined>(
@@ -65,12 +85,16 @@ export const TournamentProvider: React.FC<TournamentProviderProps> = ({
   const [error, setError] = useState<string | null>(null); // Add error state
   const [actionHistory, setActionHistory] = useState<ActionHistory[]>([]);
   const [tournamentState, setTournamentState] = useState<TournamentState>({
-    teamScores: [0, 0],
+    teamScores: [0, 0, 0, 0], // Initialize with 4 teams
     matchScores: matchData.map(() => [0, 0] as [number, number]),
     currentMatch: 0,
     champion: null,
     modalVisible: false,
     tournamentId: null,
+    confirmedTeams: [],
+    tournamentName: "",
+    organizer: "",
+    raceToScore: "5",
   });
 
   // Initialize tournament data
@@ -97,7 +121,7 @@ export const TournamentProvider: React.FC<TournamentProviderProps> = ({
       if (savedData && savedData.length > 0) {
         const latestTournament = savedData[savedData.length - 1];
         setTournamentState({
-          teamScores: latestTournament.teamScores || [0, 0],
+          teamScores: latestTournament.teamScores || [0, 0, 0, 0],
           matchScores:
             latestTournament.matchScores ||
             matchData.map(() => [0, 0] as [number, number]),
@@ -105,22 +129,30 @@ export const TournamentProvider: React.FC<TournamentProviderProps> = ({
           champion: latestTournament.champion || null,
           modalVisible: false,
           tournamentId: latestTournament.id || null,
+          confirmedTeams: latestTournament.confirmedTeams || [],
+          tournamentName: latestTournament.tournamentName || "",
+          organizer: latestTournament.organizer || "",
+          raceToScore: latestTournament.raceToScore || "5",
         });
       } else {
         // No saved data found, use default state (this is normal for new users)
         setTournamentState({
-          teamScores: [0, 0],
+          teamScores: [0, 0, 0, 0], // Initialize with 4 teams
           matchScores: matchData.map(() => [0, 0] as [number, number]),
           currentMatch: 0,
           champion: null,
           modalVisible: false,
           tournamentId: null,
+          confirmedTeams: [],
+          tournamentName: "",
+          organizer: "",
+          raceToScore: "5",
         });
       }
       setError(null); // Clear error on success
     } catch (error) {
       setError("Failed to load tournament data.");
-      console.error("Error loading tournament data:", error);
+      // Error loading tournament data
     } finally {
       setLoading(false);
     }
@@ -138,13 +170,17 @@ export const TournamentProvider: React.FC<TournamentProviderProps> = ({
         champion: tournamentState.champion,
         teams: teamData,
         matches: matchData,
+        confirmedTeams: tournamentState.confirmedTeams,
+        tournamentName: tournamentState.tournamentName,
+        organizer: tournamentState.organizer,
+        raceToScore: tournamentState.raceToScore,
       };
 
       await saveTournamentData(user.uid, tournamentData);
       setError(null); // Clear error on success
     } catch (error) {
       setError("Failed to save tournament data.");
-      console.error("Error saving tournament data:", error);
+      // Error saving tournament data
     }
   };
 
@@ -190,12 +226,7 @@ export const TournamentProvider: React.FC<TournamentProviderProps> = ({
         }
       });
 
-      // Debug: Log the recalculation
-      console.log("Score recalculation:", {
-        matchScores: newMatchScores,
-        newTeamScores,
-        oldTeamScores: prevState.teamScores,
-      });
+      // Score recalculation completed
 
       // Check for champion
       if (newTeamScores[0] === 5) {
@@ -361,6 +392,26 @@ export const TournamentProvider: React.FC<TournamentProviderProps> = ({
     }));
   };
 
+  const setConfirmedTeams = (teams: Team[]) => {
+    setTournamentState((prevState) => ({
+      ...prevState,
+      confirmedTeams: teams,
+    }));
+  };
+
+  const setTournamentInfo = (
+    name: string,
+    organizer: string,
+    raceToScore: string
+  ) => {
+    setTournamentState((prevState) => ({
+      ...prevState,
+      tournamentName: name,
+      organizer: organizer,
+      raceToScore: raceToScore,
+    }));
+  };
+
   // Auto-save tournament data when it changes
   useEffect(() => {
     if (user && !loading) {
@@ -383,7 +434,9 @@ export const TournamentProvider: React.FC<TournamentProviderProps> = ({
     resetMatch,
     resetAllScores,
     undoLastAction,
-    error, // Expose error
+    setConfirmedTeams,
+    setTournamentInfo,
+    error,
   };
 
   return (

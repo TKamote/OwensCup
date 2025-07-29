@@ -8,13 +8,19 @@ import { useAuth } from "../context/AuthContext";
 import { COLORS } from "../constants/theme";
 
 // Import screens
-import HomeScreen from "../screens/home/HomeScreen";
+import HomeScreen from "../screens/HomeScreen";
 import SignInScreen from "../screens/auth/SignInScreen";
 import SignUpScreen from "../screens/auth/SignUpScreen";
 import TourInputScreen from "../screens/tournament/TourInputScreen";
-import TourDashboard from "../screens/tournament/TourDashboard";
+import TournamentSetupScreen from "../screens/tournament/TournamentSetupScreen";
+import TeamOverviewScreen from "../screens/tournament/TeamOverviewScreen";
 import FavouriteTournamentsScreen from "../screens/tournament/FavouriteTournamentsScreen";
 import PastTournamentsScreen from "../screens/tournament/PastTournamentsScreen";
+import LiveTournamentScreen from "../screens/tournament/LiveTournamentScreen";
+import TournamentBracket from "../screens/tournament/TournamentBracket";
+import MatchScreen1 from "../screens/tournament/matches/MatchScreen1";
+import MatchScreen2 from "../screens/tournament/matches/MatchScreen2";
+import MatchScreen3 from "../screens/tournament/matches/MatchScreen3";
 
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
@@ -155,39 +161,23 @@ const TourSettingsStack: React.FC = () => {
         component={TourInputScreen}
         options={{
           headerShown: true,
-          title: "Tournament Settings",
+          title: "Tournament Setup",
         }}
       />
-    </Stack.Navigator>
-  );
-};
-
-// Tour Dashboard Stack Navigator
-const TourDashboardStack: React.FC = () => {
-  return (
-    <Stack.Navigator
-      screenOptions={{
-        headerShown: true,
-        headerStyle: {
-          backgroundColor: COLORS.background.primary,
-          borderBottomWidth: 0.5,
-          borderBottomColor: COLORS.gray[200],
-          height: 105, // Compact but visible header height
-        },
-        headerTintColor: COLORS.primary,
-        headerTitleStyle: {
-          fontWeight: "600",
-          fontSize: 16, // Smaller font size
-        },
-        headerBackTitle: "Back",
-      }}
-    >
       <Stack.Screen
-        name="TourDashboardMain"
-        component={TourDashboard}
+        name="TournamentSetup"
+        component={TournamentSetupScreen}
         options={{
-          headerBackTitle: "Back",
-          title: "Tournament Dashboard",
+          headerShown: true,
+          title: "Tournament Setup",
+        }}
+      />
+      <Stack.Screen
+        name="TeamOverview"
+        component={TeamOverviewScreen}
+        options={{
+          headerShown: true,
+          title: "Team Overview",
         }}
       />
     </Stack.Navigator>
@@ -246,9 +236,6 @@ const TabNavigator: React.FC = () => {
             case "Tour Settings":
               iconName = "cog";
               break;
-            case "Tour Dashboard":
-              iconName = "trophy";
-              break;
             case "Logout":
               iconName = "logout";
               break;
@@ -277,11 +264,10 @@ const TabNavigator: React.FC = () => {
         },
       })}
     >
-      <Tab.Screen name="Home" component={HomeScreen} />
-
       {user ? (
         // Authenticated user tabs
         <>
+          <Tab.Screen name="Home" component={HomeScreen} />
           <Tab.Screen
             name="Tour Settings"
             component={TourInputScreen}
@@ -304,38 +290,7 @@ const TabNavigator: React.FC = () => {
               ),
             })}
           />
-          <Tab.Screen
-            name="Tour Dashboard"
-            component={TourDashboard}
-            options={({ navigation }) => ({
-              headerLeft: () => (
-                <TouchableOpacity
-                  onPress={() => navigation.goBack()}
-                  style={{
-                    flexDirection: "row",
-                    alignItems: "center",
-                    paddingHorizontal: 16,
-                  }}
-                >
-                  <MaterialCommunityIcons
-                    name="arrow-left"
-                    size={24}
-                    color={COLORS.primary}
-                  />
-                  <Text
-                    style={{
-                      color: COLORS.primary,
-                      fontSize: 16,
-                      fontWeight: "500",
-                      marginLeft: 4,
-                    }}
-                  >
-                    Back
-                  </Text>
-                </TouchableOpacity>
-              ),
-            })}
-          />
+
           <Tab.Screen name="Logout" component={LogoutScreen} />
         </>
       ) : (
@@ -357,10 +312,145 @@ const AppNavigator: React.FC = () => {
       <Stack.Navigator screenOptions={{ headerShown: false }}>
         <Stack.Screen name="MainTabs" component={TabNavigator} />
         {user && (
-          <Stack.Screen
-            name="Past Tournaments"
-            component={PastTournamentsStack}
-          />
+          <>
+            <Stack.Screen
+              name="Past Tournaments"
+              component={PastTournamentsStack}
+            />
+            <Stack.Screen
+              name="Live Tournament"
+              component={LiveTournamentScreen}
+              options={{
+                title: "Live Tournament",
+                headerShown: true,
+                headerStyle: {
+                  backgroundColor: COLORS.background.primary,
+                  borderBottomWidth: 0.5,
+                  borderBottomColor: COLORS.gray[300],
+                  height: 105,
+                },
+                headerTintColor: COLORS.primary,
+                headerTitleStyle: {
+                  fontWeight: "600",
+                  fontSize: 16,
+                },
+              }}
+            />
+            <Stack.Screen
+              name="Tournament Bracket"
+              component={TournamentBracket}
+              options={{
+                title: "Tournament Dashboard",
+                headerShown: true,
+                headerStyle: {
+                  backgroundColor: COLORS.background.primary,
+                  borderBottomWidth: 0.5,
+                  borderBottomColor: COLORS.gray[300],
+                  height: 105,
+                },
+                headerTintColor: COLORS.primary,
+                headerTitleStyle: {
+                  fontWeight: "600",
+                  fontSize: 16,
+                },
+              }}
+            />
+            <Stack.Screen
+              name="Match 1"
+              component={MatchScreen1}
+              options={{
+                title: "Match 1",
+                headerShown: true,
+                headerStyle: {
+                  backgroundColor: COLORS.background.primary,
+                  borderBottomWidth: 0.5,
+                  borderBottomColor: COLORS.gray[300],
+                  height: 105,
+                },
+                headerTintColor: COLORS.primary,
+                headerTitleStyle: {
+                  fontWeight: "600",
+                  fontSize: 16,
+                },
+              }}
+            />
+            <Stack.Screen
+              name="Match 2"
+              component={MatchScreen2}
+              options={{
+                title: "Match 2",
+                headerShown: true,
+                headerStyle: {
+                  backgroundColor: COLORS.background.primary,
+                  borderBottomWidth: 0.5,
+                  borderBottomColor: COLORS.gray[300],
+                  height: 105,
+                },
+                headerTintColor: COLORS.primary,
+                headerTitleStyle: {
+                  fontWeight: "600",
+                  fontSize: 16,
+                },
+              }}
+            />
+            <Stack.Screen
+              name="Match 3"
+              component={MatchScreen3}
+              options={{
+                title: "Final Match",
+                headerShown: true,
+                headerStyle: {
+                  backgroundColor: COLORS.background.primary,
+                  borderBottomWidth: 0.5,
+                  borderBottomColor: COLORS.gray[300],
+                  height: 105,
+                },
+                headerTintColor: COLORS.primary,
+                headerTitleStyle: {
+                  fontWeight: "600",
+                  fontSize: 16,
+                },
+              }}
+            />
+            <Stack.Screen
+              name="TeamOverview"
+              component={TeamOverviewScreen}
+              options={{
+                title: "Team Overview",
+                headerShown: true,
+                headerStyle: {
+                  backgroundColor: COLORS.background.primary,
+                  borderBottomWidth: 0.5,
+                  borderBottomColor: COLORS.gray[300],
+                  height: 105,
+                },
+                headerTintColor: COLORS.primary,
+                headerTitleStyle: {
+                  fontWeight: "600",
+                  fontSize: 16,
+                },
+              }}
+            />
+            <Stack.Screen
+              name="TournamentSetup"
+              component={TournamentSetupScreen}
+              options={{
+                title: "Tournament Setup",
+                headerShown: true,
+                headerStyle: {
+                  backgroundColor: COLORS.background.primary,
+                  borderBottomWidth: 0.5,
+                  borderBottomColor: COLORS.gray[300],
+                  height: 105,
+                },
+                headerTintColor: COLORS.primary,
+                headerTitleStyle: {
+                  fontWeight: "600",
+                  fontSize: 16,
+                },
+              }}
+            />
+          </>
         )}
       </Stack.Navigator>
     </NavigationContainer>

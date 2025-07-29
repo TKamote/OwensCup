@@ -9,10 +9,15 @@ interface TeamHeaderProps {
 
 const iconMap: Record<
   string,
-  { name: "billiards" | "triangle-outline" | "account"; color: string }
+  {
+    name: "billiards" | "triangle-outline" | "account" | "shield" | "flag";
+    color: string;
+  }
 > = {
   "Pinoy Sargo": { name: "billiards", color: COLORS.team1 },
   "WBB (Jerome)": { name: "triangle-outline", color: "#8B4513" }, // Wood/brown color
+  Bikol: { name: "shield", color: "#228B22" }, // Forest green
+  Ilongo: { name: "flag", color: "#FF6B35" }, // Orange
 };
 
 const TeamHeader: React.FC<TeamHeaderProps> = ({ teams }) => {

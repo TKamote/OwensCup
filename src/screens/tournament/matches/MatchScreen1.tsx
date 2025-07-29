@@ -13,22 +13,22 @@ import { useNavigation } from "@react-navigation/native";
 import {
   teams as teamData,
   matches as matchData,
-} from "../../utils/tournamentData";
-import TeamHeader from "../../components/tournament/TeamHeader";
-import MatchCard from "../../components/tournament/MatchCard";
+} from "../../../utils/tournamentData";
+import TeamHeader from "../../../components/tournament/TeamHeader";
+import MatchCard from "../../../components/tournament/MatchCard";
 import { MaterialCommunityIcons, MaterialIcons } from "@expo/vector-icons";
-import { useTournament } from "../../context/TournamentContext";
+import { useTournament } from "../../../context/TournamentContext";
 import {
   COLORS,
   FONTS,
   SPACING,
   BORDER_RADIUS,
   SHADOWS,
-} from "../../constants/theme";
+} from "../../../constants/theme";
 
 const windowWidth = Dimensions.get("window").width;
 
-const TourDashboard: React.FC = () => {
+const MatchScreen1: React.FC = () => {
   const navigation = useNavigation();
   const {
     tournamentState,
@@ -322,7 +322,9 @@ const TourDashboard: React.FC = () => {
           />
           <Text style={styles.tournamentTitle}>PBS Cup Aug 2025</Text>
         </View>
-        <Text style={styles.tournamentSubtitle}>Live Tournament</Text>
+        <Text style={styles.tournamentSubtitle}>
+          Match 1: {teamData[0].name} vs {teamData[1].name}
+        </Text>
         <Text style={styles.tournamentOrganizer}>Organized by: Owen</Text>
       </View>
 
@@ -339,10 +341,10 @@ const TourDashboard: React.FC = () => {
       </TouchableOpacity>
 
       <TeamHeader
-        teams={teamData.map((t, i) => ({
-          ...t,
-          score: tournamentState.teamScores[i],
-        }))}
+        teams={[
+          { name: teamData[0].name, score: tournamentState.teamScores[0] },
+          { name: teamData[1].name, score: tournamentState.teamScores[1] },
+        ]}
       />
       <FlatList
         data={matchData}
@@ -360,6 +362,7 @@ const TourDashboard: React.FC = () => {
             }
             onReset={() => handleResetMatch(index)}
             onAdjust={() => handleScoreAdjustment(index)}
+            matchIndex={index}
           />
         )}
         extraData={{
@@ -579,4 +582,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default TourDashboard;
+export default MatchScreen1;

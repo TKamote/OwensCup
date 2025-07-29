@@ -14,8 +14,8 @@ import {
   SPACING,
   BORDER_RADIUS,
   SHADOWS,
-} from "../../constants/theme";
-import { useAuth } from "../../context/AuthContext";
+} from "../constants/theme";
+import { useAuth } from "../context/AuthContext";
 
 interface HomeScreenProps {
   navigation: any;
@@ -26,8 +26,8 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
 
   const handlePBSCupPress = () => {
     if (user) {
-      // Navigate to Tour Dashboard tab for live tournament
-      navigation.navigate("Tour Dashboard");
+      // Navigate to Tournament Bracket for tournament overview
+      navigation.navigate("Tournament Bracket");
     } else {
       Alert.alert(
         "Authentication Required",
@@ -58,12 +58,28 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
 
   const handleFavouriteTournamentsPress = () => {
     if (user) {
-      // Navigate to Tour Dashboard tab for live tournament
-      navigation.navigate("Tour Dashboard");
+      // Navigate to Live Tournament for spectator view
+      navigation.navigate("Live Tournament");
     } else {
       Alert.alert(
         "Authentication Required",
         "Please sign in to view live tournament.",
+        [
+          { text: "Cancel", style: "cancel" },
+          { text: "Sign In", onPress: () => navigation.navigate("Auth") },
+        ]
+      );
+    }
+  };
+
+  const handleTeamOverviewPress = () => {
+    if (user) {
+      // Navigate to Team Overview
+      navigation.navigate("TeamOverview");
+    } else {
+      Alert.alert(
+        "Authentication Required",
+        "Please sign in to view team overview.",
         [
           { text: "Cancel", style: "cancel" },
           { text: "Sign In", onPress: () => navigation.navigate("Auth") },
@@ -77,7 +93,7 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
       {/* Image Section - Replaces Welcome Message */}
 
       <Image
-        source={require("../../../assets/icon.png")}
+        source={require("../../assets/icon.png")}
         style={styles.welcomeImage}
         // resizeMode="contain"
       />
@@ -112,6 +128,18 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
           />
           <Text style={styles.buttonText}>Past Tournaments</Text>
         </TouchableOpacity>
+
+        <TouchableOpacity
+          style={styles.button}
+          onPress={handleTeamOverviewPress}
+        >
+          <MaterialCommunityIcons
+            name="account-group"
+            size={24}
+            color={COLORS.white}
+          />
+          <Text style={styles.buttonText}>Team Overview</Text>
+        </TouchableOpacity>
       </View>
     </View>
   );
@@ -122,9 +150,9 @@ const styles = StyleSheet.create({
     display: "flex",
     flexDirection: "column",
     flex: 1,
-
     justifyContent: "flex-start",
     alignItems: "center",
+    backgroundColor: COLORS.white,
   },
 
   welcomeImage: {
@@ -134,7 +162,6 @@ const styles = StyleSheet.create({
   buttonSection: {
     justifyContent: "center",
     alignItems: "center",
-    paddingTop: SPACING["2xl"],
     gap: SPACING.sm,
     width: "100%",
   },
@@ -143,7 +170,8 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     backgroundColor: COLORS.primary,
-    padding: SPACING.md,
+    paddingVertical: SPACING.md - 2,
+    paddingHorizontal: SPACING.sm,
     borderRadius: BORDER_RADIUS.lg,
     ...SHADOWS.md,
     width: "80%",

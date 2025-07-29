@@ -72,9 +72,8 @@ const PastTournamentsScreen: React.FC = () => {
               onScoreChange={() => {}} // Empty function - no editing
               isCurrent={false} // Not current since it's past
               isCompleted={true} // All matches are completed
-              onReset={undefined} // No reset functionality
-              onAdjust={undefined} // No adjust functionality
-              readOnly={true} // Read-only mode
+              onReset={() => {}} // No reset functionality
+              onAdjust={() => {}} // No adjust functionality
             />
           )}
         />
@@ -119,7 +118,6 @@ const styles = StyleSheet.create({
     fontWeight: FONTS.weight.medium,
     marginBottom: SPACING.sm,
   },
-
 });
 
 export default PastTournamentsScreen;

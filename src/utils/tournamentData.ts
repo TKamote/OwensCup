@@ -2,6 +2,8 @@
 export const teams = [
   { name: "Pinoy Sargo", score: 0 },
   { name: "WBB (Jerome)", score: 0 },
+  { name: "Bikol", score: 0 },
+  { name: "Ilongo", score: 0 },
 ];
 
 export const matches = [

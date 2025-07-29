@@ -88,7 +88,7 @@ export const saveTournamentData = async (
 ) => {
   try {
     // For now, just log the data since we're not implementing full storage yet
-    console.log("Saving tournament data:", tournamentData);
+    // Saving tournament data
     // This will be updated when we implement the proper tournament storage
   } catch (error) {
     throw error;
@@ -125,3 +125,4 @@ export const updateTournamentScore = async (
 
 // Export auth instance for use in context
 export { auth, db };
+ 

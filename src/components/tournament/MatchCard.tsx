@@ -8,6 +8,8 @@ import {
   BORDER_RADIUS,
   SHADOWS,
 } from "../../constants/theme";
+import { useTournament } from "../../context/TournamentContext";
+import { teams as teamData } from "../../utils/tournamentData";
 
 interface MatchCardProps {
   match: {
@@ -23,10 +25,9 @@ interface MatchCardProps {
   isCompleted: boolean;
   onReset?: () => void;
   onAdjust?: () => void;
-  readOnly?: boolean; // New prop for read-only mode
+  readOnly?: boolean;
+  matchIndex: number; // Add match index to determine which teams to show
 }
-
-const teamNames = ["Pinoy Sargo", "WBB (Jerome)"];
 
 const MatchCard: React.FC<MatchCardProps> = ({
   match,
@@ -37,8 +38,23 @@ const MatchCard: React.FC<MatchCardProps> = ({
   isCompleted,
   onReset,
   onAdjust,
-  readOnly = false, // Default to false for backward compatibility
+  readOnly = false,
+  matchIndex,
 }) => {
+  const { tournamentState } = useTournament();
+
+  // Determine which teams to show based on match index
+  let teamNames: [string, string];
+  if (matchIndex === 0) {
+    // Match 1: Pinoy Sargo vs WBB
+    teamNames = [teamData[0].name, teamData[1].name];
+  } else if (matchIndex === 1) {
+    // Match 2: Bikol vs Ilongo
+    teamNames = [teamData[2].name, teamData[3].name];
+  } else {
+    // Final Match: Winner Match 1 vs Winner Match 2
+    teamNames = ["Winner Match 1", "Winner Match 2"];
+  }
   return (
     <View
       style={[

@@ -86,9 +86,8 @@ const FavouriteTournamentsScreen: React.FC = () => {
                 tournamentState.matchScores[index][0] === item.raceTo ||
                 tournamentState.matchScores[index][1] === item.raceTo
               }
-              onReset={undefined} // No reset functionality
-              onAdjust={undefined} // No adjust functionality
-              readOnly={true} // New prop to indicate read-only mode
+              onReset={() => {}} // No reset functionality
+              onAdjust={() => {}} // No adjust functionality
             />
           )}
           extraData={{
