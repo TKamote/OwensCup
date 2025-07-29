@@ -12,7 +12,7 @@ import HomeScreen from "../screens/HomeScreen";
 import SignInScreen from "../screens/auth/SignInScreen";
 import SignUpScreen from "../screens/auth/SignUpScreen";
 import TourInputScreen from "../screens/tournament/TourInputScreen";
-import TournamentSetupScreen from "../screens/tournament/TournamentSetupScreen";
+
 import TeamOverviewScreen from "../screens/tournament/TeamOverviewScreen";
 import FavouriteTournamentsScreen from "../screens/tournament/FavouriteTournamentsScreen";
 import PastTournamentsScreen from "../screens/tournament/PastTournamentsScreen";
@@ -133,8 +133,8 @@ const HomeStack: React.FC = () => {
   );
 };
 
-// Tour Settings Stack Navigator
-const TourSettingsStack: React.FC = () => {
+// Tour Input Stack Navigator
+const TourInputStack: React.FC = () => {
   return (
     <Stack.Navigator
       screenOptions={{
@@ -164,14 +164,7 @@ const TourSettingsStack: React.FC = () => {
           title: "Tournament Setup",
         }}
       />
-      <Stack.Screen
-        name="TournamentSetup"
-        component={TournamentSetupScreen}
-        options={{
-          headerShown: true,
-          title: "Tournament Setup",
-        }}
-      />
+
       <Stack.Screen
         name="TeamOverview"
         component={TeamOverviewScreen}
@@ -233,7 +226,7 @@ const TabNavigator: React.FC = () => {
             case "Auth":
               iconName = "login";
               break;
-            case "Tour Settings":
+            case "Tour Input":
               iconName = "cog";
               break;
             case "Logout":
@@ -269,7 +262,7 @@ const TabNavigator: React.FC = () => {
         <>
           <Tab.Screen name="Home" component={HomeScreen} />
           <Tab.Screen
-            name="Tour Settings"
+            name="Tour Input"
             component={TourInputScreen}
             options={({ navigation }) => ({
               headerLeft: () => (
@@ -417,25 +410,6 @@ const AppNavigator: React.FC = () => {
               component={TeamOverviewScreen}
               options={{
                 title: "Team Overview",
-                headerShown: true,
-                headerStyle: {
-                  backgroundColor: COLORS.background.primary,
-                  borderBottomWidth: 0.5,
-                  borderBottomColor: COLORS.gray[300],
-                  height: 105,
-                },
-                headerTintColor: COLORS.primary,
-                headerTitleStyle: {
-                  fontWeight: "600",
-                  fontSize: 16,
-                },
-              }}
-            />
-            <Stack.Screen
-              name="TournamentSetup"
-              component={TournamentSetupScreen}
-              options={{
-                title: "Tournament Setup",
                 headerShown: true,
                 headerStyle: {
                   backgroundColor: COLORS.background.primary,

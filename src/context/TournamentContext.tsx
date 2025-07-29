@@ -397,6 +397,17 @@ export const TournamentProvider: React.FC<TournamentProviderProps> = ({
       ...prevState,
       confirmedTeams: teams,
     }));
+
+    // Real-time sync to Firebase
+    if (user) {
+      saveTournamentData(user.uid, {
+        ...tournamentState,
+        confirmedTeams: teams,
+      }).catch((error) => {
+        console.error("Error syncing teams to Firebase:", error);
+        setError("Failed to sync teams to cloud");
+      });
+    }
   };
 
   const setTournamentInfo = (
@@ -410,6 +421,19 @@ export const TournamentProvider: React.FC<TournamentProviderProps> = ({
       organizer: organizer,
       raceToScore: raceToScore,
     }));
+
+    // Real-time sync to Firebase
+    if (user) {
+      saveTournamentData(user.uid, {
+        ...tournamentState,
+        tournamentName: name,
+        organizer: organizer,
+        raceToScore: raceToScore,
+      }).catch((error) => {
+        console.error("Error syncing tournament info to Firebase:", error);
+        setError("Failed to sync tournament info to cloud");
+      });
+    }
   };
 
   // Auto-save tournament data when it changes
@@ -423,6 +447,22 @@ export const TournamentProvider: React.FC<TournamentProviderProps> = ({
     tournamentState.currentMatch,
     tournamentState.champion,
   ]);
+
+  // Real-time listener for tournament data changes
+  useEffect(() => {
+    if (!user) return;
+
+    const unsubscribe = loadTournamentData(user.uid, (data) => {
+      if (data) {
+        setTournamentState((prev) => ({
+          ...prev,
+          ...data,
+        }));
+      }
+    });
+
+    return () => unsubscribe();
+  }, [user]);
 
   const value = {
     tournamentState,

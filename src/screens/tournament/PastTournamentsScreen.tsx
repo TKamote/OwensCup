@@ -67,6 +67,7 @@ const PastTournamentsScreen: React.FC = () => {
           renderItem={({ item, index }) => (
             <MatchCard
               match={item}
+              matchIndex={index}
               teamScores={updatedTeamData.map((t) => t.score)}
               matchScore={pastMatchScores[index]}
               onScoreChange={() => {}} // Empty function - no editing

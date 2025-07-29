@@ -41,12 +41,10 @@ interface ConfirmedTeam {
 }
 
 const TourInputScreen: React.FC = () => {
-  const { setConfirmedTeams, setTournamentInfo } = useTournament();
-
-  // Tournament info state
-  const [tournamentName, setTournamentName] = useState("");
-  const [organizer, setOrganizer] = useState("");
-  const [raceToScore, setRaceToScore] = useState("5");
+  const { tournamentState, setConfirmedTeams, setTournamentInfo } =
+    useTournament();
+  const { confirmedTeams, tournamentName, organizer, raceToScore } =
+    tournamentState;
   const [showTournamentInfo, setShowTournamentInfo] = useState(false);
 
   // Current team being configured
@@ -60,11 +58,6 @@ const TourInputScreen: React.FC = () => {
     icon: "trophy",
     isComplete: false,
   });
-
-  // Confirmed teams
-  const [localConfirmedTeams, setLocalConfirmedTeams] = useState<
-    ConfirmedTeam[]
-  >([]);
 
   // Edit state
   const [isEditing, setIsEditing] = useState(false);
@@ -96,10 +89,10 @@ const TourInputScreen: React.FC = () => {
   ];
 
   // Get used colors and icons (exclude the team being edited)
-  const usedColors = localConfirmedTeams
+  const usedColors = confirmedTeams
     .filter((team) => !isEditing || team.id !== editingTeamId)
     .map((team) => team.color);
-  const usedIcons = localConfirmedTeams
+  const usedIcons = confirmedTeams
     .filter((team) => !isEditing || team.id !== editingTeamId)
     .map((team) => team.icon);
 
@@ -155,7 +148,7 @@ const TourInputScreen: React.FC = () => {
       !isEditing ||
       (isEditing &&
         currentTeam.color !==
-          localConfirmedTeams.find((t) => t.id === editingTeamId)?.color)
+          confirmedTeams.find((t) => t.id === editingTeamId)?.color)
     ) {
       if (usedColors.includes(currentTeam.color)) {
         Alert.alert(
@@ -170,7 +163,7 @@ const TourInputScreen: React.FC = () => {
       !isEditing ||
       (isEditing &&
         currentTeam.icon !==
-          localConfirmedTeams.find((t) => t.id === editingTeamId)?.icon)
+          confirmedTeams.find((t) => t.id === editingTeamId)?.icon)
     ) {
       if (usedIcons.includes(currentTeam.icon)) {
         Alert.alert(
@@ -193,20 +186,20 @@ const TourInputScreen: React.FC = () => {
 
     if (isEditing) {
       // Update existing team
-      setLocalConfirmedTeams((prev) =>
-        prev.map((team) =>
-          team.id === editingTeamId ? newConfirmedTeam : team
-        )
+      const updatedTeams = confirmedTeams.map((team) =>
+        team.id === editingTeamId ? newConfirmedTeam : team
       );
+      setConfirmedTeams(updatedTeams);
       setIsEditing(false);
       setEditingTeamId(null);
       Alert.alert("Team Updated", `Team ${currentTeam.name} has been updated!`);
     } else {
       // Add new team
-      setLocalConfirmedTeams((prev) => [...prev, newConfirmedTeam]);
+      const newTeams = [...confirmedTeams, newConfirmedTeam];
+      setConfirmedTeams(newTeams);
 
       // Show tournament info after first team
-      if (localConfirmedTeams.length === 0) {
+      if (confirmedTeams.length === 0) {
         setShowTournamentInfo(true);
       }
 
@@ -215,7 +208,7 @@ const TourInputScreen: React.FC = () => {
 
     // Reset for next team
     const nextTeamId = isEditing
-      ? Math.max(...localConfirmedTeams.map((t) => t.id)) + 1
+      ? Math.max(...confirmedTeams.map((t) => t.id)) + 1
       : currentTeam.id + 1;
     setCurrentTeam({
       id: nextTeamId,
@@ -253,7 +246,7 @@ const TourInputScreen: React.FC = () => {
       return;
     }
 
-    const team = localConfirmedTeams.find((t) => t.id === teamId);
+    const team = confirmedTeams.find((t) => t.id === teamId);
     if (team) {
       setCurrentTeam({
         ...team,
@@ -269,7 +262,7 @@ const TourInputScreen: React.FC = () => {
     setEditingTeamId(null);
 
     // Reset to next available team
-    const nextTeamId = Math.max(...localConfirmedTeams.map((t) => t.id)) + 1;
+    const nextTeamId = Math.max(...confirmedTeams.map((t) => t.id)) + 1;
     setCurrentTeam({
       id: nextTeamId,
       name: "",
@@ -283,10 +276,10 @@ const TourInputScreen: React.FC = () => {
   };
 
   const finalizeTeams = () => {
-    if (localConfirmedTeams.length !== 4) {
+    if (confirmedTeams.length < 4) {
       Alert.alert(
         "Incomplete Teams",
-        "Please add all 4 teams before finalizing."
+        "Please add at least 4 teams before finalizing."
       );
       return;
     }
@@ -305,7 +298,7 @@ const TourInputScreen: React.FC = () => {
   const handleFinalConfirm = () => {
     setShowConfirmModal(false);
     // Save to context
-    setConfirmedTeams(localConfirmedTeams);
+    setConfirmedTeams(confirmedTeams);
     setTournamentInfo(tournamentName, organizer, raceToScore);
     Alert.alert(
       "Tournament Setup Complete",
@@ -326,39 +319,47 @@ const TourInputScreen: React.FC = () => {
         <Text style={styles.teamTitle}>Team {currentTeam.id}</Text>
       </View>
 
-      <Text style={styles.inputLabel}>Team Name *</Text>
-      <TextInput
-        style={styles.input}
-        placeholder="Enter team name"
-        value={currentTeam.name}
-        onChangeText={(text) => updateCurrentTeam("name", text)}
-      />
+      <View style={styles.inlineInputRow}>
+        <Text style={styles.inlineLabel}>Team Name:</Text>
+        <TextInput
+          style={styles.inlineInput}
+          placeholder="Enter team name"
+          value={currentTeam.name}
+          onChangeText={(text) => updateCurrentTeam("name", text)}
+        />
+      </View>
 
-      <Text style={styles.inputLabel}>Manager Name *</Text>
-      <TextInput
-        style={styles.input}
-        placeholder="Enter manager name"
-        value={currentTeam.manager}
-        onChangeText={(text) => updateCurrentTeam("manager", text)}
-      />
+      <View style={styles.inlineInputRow}>
+        <Text style={styles.inlineLabel}>Manager:</Text>
+        <TextInput
+          style={styles.inlineInput}
+          placeholder="Enter manager name"
+          value={currentTeam.manager}
+          onChangeText={(text) => updateCurrentTeam("manager", text)}
+        />
+      </View>
 
-      <Text style={styles.inputLabel}>Captain Name *</Text>
-      <TextInput
-        style={styles.input}
-        placeholder="Enter captain name"
-        value={currentTeam.captain}
-        onChangeText={(text) => updateCurrentTeam("captain", text)}
-      />
+      <View style={styles.inlineInputRow}>
+        <Text style={styles.inlineLabel}>Captain:</Text>
+        <TextInput
+          style={styles.inlineInput}
+          placeholder="Enter captain name"
+          value={currentTeam.captain}
+          onChangeText={(text) => updateCurrentTeam("captain", text)}
+        />
+      </View>
 
-      <Text style={styles.inputLabel}>Players (minimum 5, maximum 7) *</Text>
-      <TextInput
-        style={[styles.input, styles.playersInput]}
-        placeholder="Enter player names separated by commas"
-        value={currentTeam.players}
-        onChangeText={(text) => updateCurrentTeam("players", text)}
-        multiline
-        numberOfLines={3}
-      />
+      <View style={styles.inlineInputRow}>
+        <Text style={styles.inlineLabel}>Players:</Text>
+        <TextInput
+          style={[styles.inlineInput, styles.playersInput]}
+          placeholder="Enter player names separated by commas"
+          value={currentTeam.players}
+          onChangeText={(text) => updateCurrentTeam("players", text)}
+          multiline
+          numberOfLines={3}
+        />
+      </View>
 
       <View style={styles.colorIconSection}>
         <Text style={styles.sectionLabel}>Team Color:</Text>
@@ -428,25 +429,57 @@ const TourInputScreen: React.FC = () => {
   const renderTournamentInfoCard = () => (
     <View style={styles.tournamentInfoCard}>
       <Text style={styles.cardTitle}>Tournament Information</Text>
-      <TextInput
-        style={styles.input}
-        placeholder="Tournament Name"
-        value={tournamentName}
-        onChangeText={setTournamentName}
-      />
-      <TextInput
-        style={styles.input}
-        placeholder="Organizer Name"
-        value={organizer}
-        onChangeText={setOrganizer}
-      />
-      <TextInput
-        style={styles.input}
-        placeholder="Race to Score (default: 5)"
-        value={raceToScore}
-        onChangeText={setRaceToScore}
-        keyboardType="numeric"
-      />
+
+      <View style={styles.inlineInputRow}>
+        <Text style={styles.inlineLabel}>Tournament Name:</Text>
+        <TextInput
+          style={styles.inlineInput}
+          placeholder="Enter tournament name"
+          value={tournamentName}
+          onChangeText={(text) =>
+            setTournamentInfo(text, organizer, raceToScore)
+          }
+        />
+      </View>
+
+      <View style={styles.inlineInputRow}>
+        <Text style={styles.inlineLabel}>Organizer:</Text>
+        <TextInput
+          style={styles.inlineInput}
+          placeholder="Enter organizer name"
+          value={organizer}
+          onChangeText={(text) =>
+            setTournamentInfo(tournamentName, text, raceToScore)
+          }
+        />
+      </View>
+
+      <View style={styles.raceToSection}>
+        <Text style={styles.sectionLabel}>Race to:</Text>
+        <View style={styles.raceToOptions}>
+          {["3", "5", "7", "9"].map((score) => (
+            <TouchableOpacity
+              key={score}
+              style={[
+                styles.raceToOption,
+                raceToScore === score && styles.selectedRaceTo,
+              ]}
+              onPress={() =>
+                setTournamentInfo(tournamentName, organizer, score)
+              }
+            >
+              <Text
+                style={[
+                  styles.raceToOptionText,
+                  raceToScore === score && styles.selectedRaceToText,
+                ]}
+              >
+                {score}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+      </View>
     </View>
   );
 
@@ -518,7 +551,7 @@ const TourInputScreen: React.FC = () => {
   return (
     <ScrollView style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.title}>Tournament Setup</Text>
+        <Text style={styles.title}>Tour Input</Text>
         <TouchableOpacity
           style={styles.rulesButton}
           onPress={() => setShowRulesModal(true)}
@@ -532,6 +565,9 @@ const TourInputScreen: React.FC = () => {
         </TouchableOpacity>
       </View>
 
+      {/* Tournament Info Card - Always at top */}
+      {renderTournamentInfoCard()}
+
       {/* Current Team Input */}
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>
@@ -542,23 +578,18 @@ const TourInputScreen: React.FC = () => {
         {renderCurrentTeamInput()}
       </View>
 
-      {/* Tournament Info Card - Show after first team */}
-      {showTournamentInfo && (
-        <View style={styles.section}>{renderTournamentInfoCard()}</View>
-      )}
-
       {/* Confirmed Teams */}
-      {localConfirmedTeams.length > 0 && (
+      {confirmedTeams.length > 0 && (
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>
-            Confirmed Teams ({localConfirmedTeams.length})
+            Confirmed Teams ({confirmedTeams.length})
           </Text>
 
           {/* Main Tournament Teams (First 4) */}
-          {localConfirmedTeams.slice(0, 4).map(renderConfirmedTeamCard)}
+          {confirmedTeams.slice(0, 4).map(renderConfirmedTeamCard)}
 
           {/* Finalize button appears after 4th team */}
-          {localConfirmedTeams.length >= 4 && (
+          {confirmedTeams.length >= 4 && (
             <TouchableOpacity
               style={styles.finalizeButton}
               onPress={finalizeTeams}
@@ -570,10 +601,10 @@ const TourInputScreen: React.FC = () => {
           )}
 
           {/* Alternate Teams (5+) */}
-          {localConfirmedTeams.length > 4 && (
+          {confirmedTeams.length > 4 && (
             <View style={styles.alternatesSection}>
               <Text style={styles.alternatesTitle}>Alternate Teams</Text>
-              {localConfirmedTeams.slice(4).map(renderAlternateTeamCard)}
+              {confirmedTeams.slice(4).map(renderAlternateTeamCard)}
             </View>
           )}
         </View>
@@ -806,7 +837,7 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.white,
   },
   playersInput: {
-    height: 80,
+    height: 60,
     textAlignVertical: "top",
   },
   colorIconSection: {
@@ -963,6 +994,57 @@ const styles = StyleSheet.create({
     fontWeight: FONTS.weight.bold,
     color: COLORS.text.secondary,
     marginBottom: SPACING.md,
+  },
+  inlineInputRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: SPACING.sm,
+  },
+  inlineLabel: {
+    fontSize: FONTS.size.sm,
+    fontWeight: FONTS.weight.bold,
+    color: COLORS.text.primary,
+    width: 100,
+    marginRight: SPACING.sm,
+  },
+  inlineInput: {
+    flex: 1,
+    borderWidth: 1,
+    borderColor: COLORS.gray[300],
+    borderRadius: BORDER_RADIUS.sm,
+    padding: SPACING.sm,
+    fontSize: FONTS.size.base,
+    backgroundColor: COLORS.white,
+  },
+  raceToSection: {
+    marginTop: SPACING.md,
+  },
+  raceToOptions: {
+    flexDirection: "row",
+    gap: SPACING.xs,
+    marginTop: SPACING.xs,
+  },
+  raceToOption: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    justifyContent: "center",
+    alignItems: "center",
+    borderWidth: 1,
+    borderColor: COLORS.gray[300],
+    backgroundColor: COLORS.white,
+  },
+  selectedRaceTo: {
+    backgroundColor: COLORS.primary,
+    borderColor: COLORS.primary,
+  },
+  raceToOptionText: {
+    fontSize: FONTS.size.sm,
+    fontWeight: FONTS.weight.bold,
+    color: COLORS.text.primary,
+  },
+  selectedRaceToText: {
+    color: COLORS.white,
   },
   modalOverlay: {
     flex: 1,

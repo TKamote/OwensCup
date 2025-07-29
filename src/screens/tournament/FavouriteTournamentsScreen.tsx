@@ -78,6 +78,7 @@ const FavouriteTournamentsScreen: React.FC = () => {
           renderItem={({ item, index }) => (
             <MatchCard
               match={item}
+              matchIndex={index}
               teamScores={tournamentState.teamScores}
               matchScore={tournamentState.matchScores[index]}
               onScoreChange={() => {}} // Empty function - no editing
