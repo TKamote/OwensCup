@@ -33,7 +33,7 @@ const TeamOverviewScreen: React.FC = () => {
   const alternateTeams = teams.slice(4);
 
   const renderTeamCard = (team: Team) => (
-    <View key={team.id} style={styles.teamCard}>
+    <View style={styles.teamCard}>
       <View style={styles.cardHeader}>
         <View style={[styles.teamIcon, { backgroundColor: team.color }]}>
           <MaterialCommunityIcons
@@ -68,7 +68,7 @@ const TeamOverviewScreen: React.FC = () => {
   );
 
   const renderAlternateTeamCard = (team: Team) => (
-    <View key={team.id} style={styles.alternateTeamCard}>
+    <View style={styles.alternateTeamCard}>
       <View style={styles.cardHeader}>
         <View style={[styles.teamIcon, { backgroundColor: team.color }]}>
           <MaterialCommunityIcons
@@ -121,7 +121,16 @@ const TeamOverviewScreen: React.FC = () => {
         {mainTeams.length > 0 ? (
           <>
             <Text style={styles.sectionTitle}>Main Tournament Teams</Text>
-            {mainTeams.map(renderTeamCard)}
+            {mainTeams.map((team) => {
+              const key = `main-${team.id}`;
+              console.log(
+                "TeamOverview: Rendering main team with key:",
+                key,
+                "Team:",
+                team.name
+              );
+              return <View key={key}>{renderTeamCard(team)}</View>;
+            })}
           </>
         ) : (
           <Text style={styles.noTeamsText}>No teams configured yet</Text>
@@ -130,7 +139,16 @@ const TeamOverviewScreen: React.FC = () => {
         {alternateTeams.length > 0 && (
           <View style={styles.alternatesSection}>
             <Text style={styles.alternatesTitle}>Alternate Teams</Text>
-            {alternateTeams.map(renderAlternateTeamCard)}
+            {alternateTeams.map((team) => {
+              const key = `alternate-${team.id}`;
+              console.log(
+                "TeamOverview: Rendering alternate team with key:",
+                key,
+                "Team:",
+                team.name
+              );
+              return <View key={key}>{renderAlternateTeamCard(team)}</View>;
+            })}
           </View>
         )}
       </View>

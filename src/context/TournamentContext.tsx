@@ -166,10 +166,9 @@ export const TournamentProvider: React.FC<TournamentProviderProps> = ({
       setError(null);
       const savedData = await loadTournamentData(user.uid);
 
-      if (savedData && Array.isArray(savedData) && savedData.length > 0) {
-        const latestTournament = savedData[
-          savedData.length - 1
-        ] as TournamentData;
+      if (savedData && Array.isArray(savedData)) {
+        // Handle old format (array)
+        const latestTournament = savedData[savedData.length - 1];
         setTournamentState({
           semiFinal1: latestTournament.semiFinal1 || {
             teamScores: [0, 0],
@@ -199,7 +198,53 @@ export const TournamentProvider: React.FC<TournamentProviderProps> = ({
           organizer: latestTournament.organizer || "",
           raceToScore: latestTournament.raceToScore || "5",
         });
+      } else if (savedData) {
+        // Handle new flattened format
+        const reconstructMatchScores = (flattenedScores: any[]) => {
+          const scores: [number, number][] = [];
+          flattenedScores.forEach((score) => {
+            scores[score.matchIndex] = [score.team0Score, score.team1Score];
+          });
+          return scores;
+        };
+
+        setTournamentState({
+          semiFinal1: {
+            teamScores: savedData.semiFinal1?.teamScores || [0, 0],
+            matchScores: reconstructMatchScores(
+              savedData.semiFinal1?.matchScores || []
+            ),
+            currentMatch: savedData.semiFinal1?.currentMatch || 0,
+            winner: savedData.semiFinal1?.winner || null,
+            modalVisible: savedData.semiFinal1?.modalVisible || false,
+          },
+          semiFinal2: {
+            teamScores: savedData.semiFinal2?.teamScores || [0, 0],
+            matchScores: reconstructMatchScores(
+              savedData.semiFinal2?.matchScores || []
+            ),
+            currentMatch: savedData.semiFinal2?.currentMatch || 0,
+            winner: savedData.semiFinal2?.winner || null,
+            modalVisible: savedData.semiFinal2?.modalVisible || false,
+          },
+          final: {
+            teamScores: savedData.final?.teamScores || [0, 0],
+            matchScores: reconstructMatchScores(
+              savedData.final?.matchScores || []
+            ),
+            currentMatch: savedData.final?.currentMatch || 0,
+            winner: savedData.final?.winner || null,
+            modalVisible: savedData.final?.modalVisible || false,
+          },
+          tournamentChampion: savedData.tournamentChampion || null,
+          tournamentId: savedData.id || null,
+          confirmedTeams: savedData.confirmedTeams || [],
+          tournamentName: savedData.tournamentName || "",
+          organizer: savedData.organizer || "",
+          raceToScore: savedData.raceToScore || "5",
+        });
       } else {
+        // No saved data, use defaults
         setTournamentState({
           semiFinal1: {
             teamScores: [0, 0],
@@ -239,14 +284,56 @@ export const TournamentProvider: React.FC<TournamentProviderProps> = ({
   };
 
   const saveTournament = async () => {
-    if (!user) return;
+    if (!user) {
+      console.log("No user authenticated, skipping save");
+      return;
+    }
 
     try {
       setError(null);
+      console.log("Saving tournament data for user:", user.uid);
+
+      // Flatten the data structure to avoid nested arrays
       const tournamentData = {
-        semiFinal1: tournamentState.semiFinal1,
-        semiFinal2: tournamentState.semiFinal2,
-        final: tournamentState.final,
+        semiFinal1: {
+          teamScores: tournamentState.semiFinal1.teamScores,
+          matchScores: tournamentState.semiFinal1.matchScores.map(
+            (score, index) => ({
+              matchIndex: index,
+              team0Score: score[0],
+              team1Score: score[1],
+            })
+          ),
+          currentMatch: tournamentState.semiFinal1.currentMatch,
+          winner: tournamentState.semiFinal1.winner,
+          modalVisible: tournamentState.semiFinal1.modalVisible,
+        },
+        semiFinal2: {
+          teamScores: tournamentState.semiFinal2.teamScores,
+          matchScores: tournamentState.semiFinal2.matchScores.map(
+            (score, index) => ({
+              matchIndex: index,
+              team0Score: score[0],
+              team1Score: score[1],
+            })
+          ),
+          currentMatch: tournamentState.semiFinal2.currentMatch,
+          winner: tournamentState.semiFinal2.winner,
+          modalVisible: tournamentState.semiFinal2.modalVisible,
+        },
+        final: {
+          teamScores: tournamentState.final.teamScores,
+          matchScores: tournamentState.final.matchScores.map(
+            (score, index) => ({
+              matchIndex: index,
+              team0Score: score[0],
+              team1Score: score[1],
+            })
+          ),
+          currentMatch: tournamentState.final.currentMatch,
+          winner: tournamentState.final.winner,
+          modalVisible: tournamentState.final.modalVisible,
+        },
         tournamentChampion: tournamentState.tournamentChampion,
         confirmedTeams: tournamentState.confirmedTeams,
         tournamentName: tournamentState.tournamentName,
@@ -254,10 +341,20 @@ export const TournamentProvider: React.FC<TournamentProviderProps> = ({
         raceToScore: tournamentState.raceToScore,
       };
 
+      console.log(
+        "Flattened tournament data:",
+        JSON.stringify(tournamentData, null, 2)
+      );
       await saveTournamentData(user.uid, tournamentData);
+      console.log("Tournament saved successfully");
       setError(null);
     } catch (error) {
-      setError("Failed to save tournament data.");
+      console.error("Failed to save tournament:", error);
+      setError(
+        `Failed to save tournament data: ${
+          error instanceof Error ? error.message : "Unknown error"
+        }`
+      );
     }
   };
 
@@ -311,11 +408,11 @@ export const TournamentProvider: React.FC<TournamentProviderProps> = ({
 
       // Check for matchup winner
       if (newTeamScores[0] === 5) {
-        const winner =
+        const winnerTeam =
           matchup === "semiFinal1"
-            ? "Team A"
+            ? prevState.confirmedTeams[0]?.name || "Team A"
             : matchup === "semiFinal2"
-            ? "Team C"
+            ? prevState.confirmedTeams[2]?.name || "Team C"
             : "Winner SF1";
         return {
           ...prevState,
@@ -323,16 +420,16 @@ export const TournamentProvider: React.FC<TournamentProviderProps> = ({
             ...matchupState,
             teamScores: newTeamScores,
             matchScores: newMatchScores,
-            winner,
+            winner: winnerTeam,
             modalVisible: true,
           },
         };
       } else if (newTeamScores[1] === 5) {
-        const winner =
+        const winnerTeam =
           matchup === "semiFinal1"
-            ? "Team B"
+            ? prevState.confirmedTeams[1]?.name || "Team B"
             : matchup === "semiFinal2"
-            ? "Team D"
+            ? prevState.confirmedTeams[3]?.name || "Team D"
             : "Winner SF2";
         return {
           ...prevState,
@@ -340,7 +437,7 @@ export const TournamentProvider: React.FC<TournamentProviderProps> = ({
             ...matchupState,
             teamScores: newTeamScores,
             matchScores: newMatchScores,
-            winner,
+            winner: winnerTeam,
             modalVisible: true,
           },
         };
@@ -531,9 +628,54 @@ export const TournamentProvider: React.FC<TournamentProviderProps> = ({
         confirmedTeams: teams,
       };
 
-      // Save to Firebase with updated state
+      // Save to Firebase with updated state (flattened)
       if (user) {
-        saveTournamentData(user.uid, newState).catch((error) => {
+        const flattenedData = {
+          semiFinal1: {
+            teamScores: newState.semiFinal1.teamScores,
+            matchScores: newState.semiFinal1.matchScores.map(
+              (score, index) => ({
+                matchIndex: index,
+                team0Score: score[0],
+                team1Score: score[1],
+              })
+            ),
+            currentMatch: newState.semiFinal1.currentMatch,
+            winner: newState.semiFinal1.winner,
+            modalVisible: newState.semiFinal1.modalVisible,
+          },
+          semiFinal2: {
+            teamScores: newState.semiFinal2.teamScores,
+            matchScores: newState.semiFinal2.matchScores.map(
+              (score, index) => ({
+                matchIndex: index,
+                team0Score: score[0],
+                team1Score: score[1],
+              })
+            ),
+            currentMatch: newState.semiFinal2.currentMatch,
+            winner: newState.semiFinal2.winner,
+            modalVisible: newState.semiFinal2.modalVisible,
+          },
+          final: {
+            teamScores: newState.final.teamScores,
+            matchScores: newState.final.matchScores.map((score, index) => ({
+              matchIndex: index,
+              team0Score: score[0],
+              team1Score: score[1],
+            })),
+            currentMatch: newState.final.currentMatch,
+            winner: newState.final.winner,
+            modalVisible: newState.final.modalVisible,
+          },
+          tournamentChampion: newState.tournamentChampion,
+          confirmedTeams: newState.confirmedTeams,
+          tournamentName: newState.tournamentName,
+          organizer: newState.organizer,
+          raceToScore: newState.raceToScore,
+        };
+
+        saveTournamentData(user.uid, flattenedData).catch((error) => {
           console.error("Error syncing teams to Firebase:", error);
           setError("Failed to sync teams to cloud");
         });
@@ -556,9 +698,54 @@ export const TournamentProvider: React.FC<TournamentProviderProps> = ({
         raceToScore: raceToScore,
       };
 
-      // Save to Firebase with updated state
+      // Save to Firebase with updated state (flattened)
       if (user) {
-        saveTournamentData(user.uid, newState).catch((error) => {
+        const flattenedData = {
+          semiFinal1: {
+            teamScores: newState.semiFinal1.teamScores,
+            matchScores: newState.semiFinal1.matchScores.map(
+              (score, index) => ({
+                matchIndex: index,
+                team0Score: score[0],
+                team1Score: score[1],
+              })
+            ),
+            currentMatch: newState.semiFinal1.currentMatch,
+            winner: newState.semiFinal1.winner,
+            modalVisible: newState.semiFinal1.modalVisible,
+          },
+          semiFinal2: {
+            teamScores: newState.semiFinal2.teamScores,
+            matchScores: newState.semiFinal2.matchScores.map(
+              (score, index) => ({
+                matchIndex: index,
+                team0Score: score[0],
+                team1Score: score[1],
+              })
+            ),
+            currentMatch: newState.semiFinal2.currentMatch,
+            winner: newState.semiFinal2.winner,
+            modalVisible: newState.semiFinal2.modalVisible,
+          },
+          final: {
+            teamScores: newState.final.teamScores,
+            matchScores: newState.final.matchScores.map((score, index) => ({
+              matchIndex: index,
+              team0Score: score[0],
+              team1Score: score[1],
+            })),
+            currentMatch: newState.final.currentMatch,
+            winner: newState.final.winner,
+            modalVisible: newState.final.modalVisible,
+          },
+          tournamentChampion: newState.tournamentChampion,
+          confirmedTeams: newState.confirmedTeams,
+          tournamentName: newState.tournamentName,
+          organizer: newState.organizer,
+          raceToScore: newState.raceToScore,
+        };
+
+        saveTournamentData(user.uid, flattenedData).catch((error) => {
           console.error("Error syncing tournament info to Firebase:", error);
           setError("Failed to sync tournament info to cloud");
         });

@@ -47,9 +47,9 @@ const TourInputScreen: React.FC = () => {
     tournamentState;
   const [showTournamentInfo, setShowTournamentInfo] = useState(false);
 
-  // Current team being configured
+  // Current team being configured - ID should be based on confirmed teams count
   const [currentTeam, setCurrentTeam] = useState<Team>({
-    id: 1,
+    id: confirmedTeams.length + 1,
     name: "",
     manager: "",
     captain: "",
@@ -66,6 +66,16 @@ const TourInputScreen: React.FC = () => {
   // Modal states
   const [showRulesModal, setShowRulesModal] = useState(false);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
+
+  // Update currentTeam.id when confirmedTeams changes
+  React.useEffect(() => {
+    if (!isEditing) {
+      setCurrentTeam((prev) => ({
+        ...prev,
+        id: confirmedTeams.length + 1,
+      }));
+    }
+  }, [confirmedTeams.length, isEditing]);
 
   const iconOptions = [
     "trophy",
@@ -175,7 +185,7 @@ const TourInputScreen: React.FC = () => {
     }
 
     const newConfirmedTeam: ConfirmedTeam = {
-      id: currentTeam.id,
+      id: isEditing ? editingTeamId! : confirmedTeams.length + 1,
       name: currentTeam.name,
       manager: currentTeam.manager,
       captain: currentTeam.captain,
@@ -208,8 +218,8 @@ const TourInputScreen: React.FC = () => {
 
     // Reset for next team
     const nextTeamId = isEditing
-      ? Math.max(...confirmedTeams.map((t) => t.id)) + 1
-      : currentTeam.id + 1;
+      ? confirmedTeams.length + 1
+      : confirmedTeams.length + 2;
     setCurrentTeam({
       id: nextTeamId,
       name: "",
@@ -484,7 +494,7 @@ const TourInputScreen: React.FC = () => {
   );
 
   const renderConfirmedTeamCard = (team: ConfirmedTeam) => (
-    <View key={team.id} style={styles.confirmedTeamCard}>
+    <View style={styles.confirmedTeamCard}>
       <View style={styles.cardHeader}>
         <View style={[styles.cardIcon, { backgroundColor: team.color }]}>
           <MaterialCommunityIcons
@@ -515,7 +525,7 @@ const TourInputScreen: React.FC = () => {
   );
 
   const renderAlternateTeamCard = (team: ConfirmedTeam) => (
-    <View key={team.id} style={styles.alternateTeamCard}>
+    <View style={styles.alternateTeamCard}>
       <View style={styles.cardHeader}>
         <View style={[styles.cardIcon, { backgroundColor: team.color }]}>
           <MaterialCommunityIcons
@@ -586,7 +596,16 @@ const TourInputScreen: React.FC = () => {
           </Text>
 
           {/* Main Tournament Teams (First 4) */}
-          {confirmedTeams.slice(0, 4).map(renderConfirmedTeamCard)}
+          {confirmedTeams.slice(0, 4).map((team) => {
+            const key = `confirmed-${team.id}`;
+            console.log(
+              "Rendering confirmed team with key:",
+              key,
+              "Team:",
+              team.name
+            );
+            return <View key={key}>{renderConfirmedTeamCard(team)}</View>;
+          })}
 
           {/* Finalize button appears after 4th team */}
           {confirmedTeams.length >= 4 && (
@@ -604,7 +623,16 @@ const TourInputScreen: React.FC = () => {
           {confirmedTeams.length > 4 && (
             <View style={styles.alternatesSection}>
               <Text style={styles.alternatesTitle}>Alternate Teams</Text>
-              {confirmedTeams.slice(4).map(renderAlternateTeamCard)}
+              {confirmedTeams.slice(4).map((team) => {
+                const key = `alternate-${team.id}`;
+                console.log(
+                  "Rendering alternate team with key:",
+                  key,
+                  "Team:",
+                  team.name
+                );
+                return <View key={key}>{renderAlternateTeamCard(team)}</View>;
+              })}
             </View>
           )}
         </View>

@@ -87,20 +87,49 @@ export const saveTournamentData = async (
   tournamentData: any
 ) => {
   try {
-    // For now, just log the data since we're not implementing full storage yet
-    // Saving tournament data
-    // This will be updated when we implement the proper tournament storage
+    console.log("Attempting to save tournament data for user:", userId);
+    console.log("Tournament data:", tournamentData);
+    
+    // Save tournament data to Firestore
+    await setDoc(doc(db, "users", userId, "tournament", "current"), {
+      ...tournamentData,
+      updatedAt: new Date(),
+    });
+    console.log("Tournament data saved successfully");
   } catch (error) {
+    console.error("Error saving tournament data:", error);
+    console.error("Error details:", {
+      code: error.code,
+      message: error.message,
+      userId: userId,
+      dataSize: JSON.stringify(tournamentData).length
+    });
     throw error;
   }
 };
 
 export const loadTournamentData = async (userId: string) => {
   try {
-    // For now, return empty array since we're not storing tournaments in users collection
-    // This will be updated when we implement the proper tournament storage
-    return [];
+    console.log("Attempting to load tournament data for user:", userId);
+    
+    // Load tournament data from Firestore
+    const docRef = doc(db, "users", userId, "tournament", "current");
+    const docSnap = await getDoc(docRef);
+
+    if (docSnap.exists()) {
+      console.log("Tournament data loaded successfully");
+      return docSnap.data();
+    } else {
+      console.log("No tournament data found, returning empty state");
+      return null;
+    }
   } catch (error) {
+    console.error("Error loading tournament data:", error);
+    console.error("Error details:", {
+      code: error.code,
+      message: error.message,
+      userId: userId
+    });
     throw error;
   }
 };
@@ -125,4 +154,3 @@ export const updateTournamentScore = async (
 
 // Export auth instance for use in context
 export { auth, db };
- 
