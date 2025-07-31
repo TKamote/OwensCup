@@ -1,33 +1,40 @@
 import React from "react";
 import { View, Text, StyleSheet } from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
-import { COLORS, FONTS, SPACING, BORDER_RADIUS } from "../../constants/theme";
+import {
+  COLORS,
+  FONTS,
+  SPACING,
+  BORDER_RADIUS,
+  GLASS_SHADOWS,
+} from "../../constants/theme";
+import { useTournament } from "../../context/TournamentContext";
 
 interface TeamHeaderProps {
   teams: { name: string; score: number }[];
 }
 
-const iconMap: Record<
-  string,
-  {
-    name: "billiards" | "triangle-outline" | "account" | "shield" | "flag";
-    color: string;
-  }
-> = {
-  "Pinoy Sargo": { name: "billiards", color: COLORS.team1 },
-  "WBB (Jerome)": { name: "triangle-outline", color: "#8B4513" }, // Wood/brown color
-  Bikol: { name: "shield", color: "#228B22" }, // Forest green
-  Ilongo: { name: "flag", color: "#FF6B35" }, // Orange
-};
-
 const TeamHeader: React.FC<TeamHeaderProps> = ({ teams }) => {
+  const { tournamentState } = useTournament();
+
+  // Determine which teams to show based on the team names
+  // This is a simple heuristic - in a real app you'd pass the team indices
+  const isMatchScreen2 =
+    teams[0]?.name?.includes("Team C") || teams[1]?.name?.includes("Team D");
+
+  const mainTeams = isMatchScreen2
+    ? tournamentState.confirmedTeams.slice(2, 4)
+    : tournamentState.confirmedTeams.slice(0, 2);
+  const team1 = mainTeams[0];
+  const team2 = mainTeams[1];
+
   return (
     <View style={styles.container}>
       <View style={styles.teamBlock}>
         <MaterialCommunityIcons
-          name={iconMap[teams[0].name]?.name || "account"}
+          name={(team1?.icon as any) || "account"}
           size={32}
-          color={iconMap[teams[0].name]?.color || COLORS.gray[500]}
+          color={team1?.color || COLORS.gray[500]}
           style={styles.logo}
         />
         <Text style={styles.name}>{teams[0].name}</Text>
@@ -39,9 +46,9 @@ const TeamHeader: React.FC<TeamHeaderProps> = ({ teams }) => {
       </View>
       <View style={styles.teamBlock}>
         <MaterialCommunityIcons
-          name={iconMap[teams[1].name]?.name || "account"}
+          name={(team2?.icon as any) || "account"}
           size={40}
-          color={iconMap[teams[1].name]?.color || COLORS.gray[500]}
+          color={team2?.color || COLORS.gray[500]}
           style={styles.logo}
         />
         <Text style={styles.name}>{teams[1].name}</Text>
@@ -55,20 +62,28 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    marginVertical: SPACING.md,
-    paddingHorizontal: SPACING.md,
+    marginVertical: SPACING.lg,
+    paddingHorizontal: SPACING.lg,
+    backgroundColor: COLORS.glass.primary,
+    borderRadius: BORDER_RADIUS.xl,
+    paddingVertical: SPACING.md,
+    marginHorizontal: SPACING.md,
+    borderWidth: 1,
+    borderColor: COLORS.glass.border,
+    ...GLASS_SHADOWS.medium,
   },
   teamBlock: {
     alignItems: "center",
     flex: 2,
   },
   logo: {
-    marginBottom: SPACING.xs,
+    marginBottom: SPACING.sm,
   },
   name: {
-    fontWeight: FONTS.weight.bold,
+    fontWeight: FONTS.weight.semibold,
     fontSize: FONTS.size.base,
     textAlign: "center",
+    color: COLORS.text.primary,
   },
   scoreBlock: {
     flex: 2,
@@ -77,18 +92,18 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   score: {
-    fontSize: FONTS.size["2xl"],
+    fontSize: FONTS.size["3xl"],
     fontWeight: FONTS.weight.bold,
     color: COLORS.primary,
     marginHorizontal: SPACING.md,
-    minWidth: 32,
+    minWidth: 40,
     textAlign: "center",
   },
   vs: {
     fontSize: FONTS.size.xl,
     fontWeight: FONTS.weight.bold,
-    color: COLORS.text.primary,
-    marginHorizontal: SPACING.xs,
+    color: COLORS.text.secondary,
+    marginHorizontal: SPACING.sm,
   },
 });
 

@@ -67,6 +67,14 @@ export const COLORS = {
     medium: "rgba(0,0,0,0.2)",
     dark: "rgba(0,0,0,0.3)",
   },
+
+  // Glassmorphism colors
+  glass: {
+    primary: "rgba(255, 255, 255, 0.25)",
+    secondary: "rgba(255, 255, 255, 0.15)",
+    border: "rgba(255, 255, 255, 0.3)",
+    backdrop: "rgba(0, 0, 0, 0.1)",
+  },
 } as const;
 
 // Typography
@@ -107,20 +115,20 @@ export const SPACING = {
   xs: 4,
   sm: 8,
   md: 16,
-  lg: 20,
-  xl: 24,
-  "2xl": 32,
-  "3xl": 40,
-  "4xl": 48,
+  lg: 24,
+  xl: 32,
+  "2xl": 48,
+  "3xl": 64,
 } as const;
 
 // Border radius
 export const BORDER_RADIUS = {
-  sm: 4,
-  md: 8,
-  lg: 12,
-  xl: 16,
-  "2xl": 20,
+  xs: 4,
+  sm: 8,
+  md: 12,
+  lg: 16,
+  xl: 20,
+  "2xl": 24,
   full: 9999,
 } as const;
 
@@ -145,6 +153,31 @@ export const SHADOWS = {
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 1,
     shadowRadius: 8,
+    elevation: 8,
+  },
+} as const;
+
+// Glassmorphism shadows
+export const GLASS_SHADOWS = {
+  light: {
+    shadowColor: COLORS.shadow.light,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 3,
+  },
+  medium: {
+    shadowColor: COLORS.shadow.medium,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 12,
+    elevation: 5,
+  },
+  heavy: {
+    shadowColor: COLORS.shadow.dark,
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.2,
+    shadowRadius: 16,
     elevation: 8,
   },
 } as const;

@@ -1,524 +1,491 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import {
   View,
-  FlatList,
-  StyleSheet,
   Text,
-  Modal,
+  StyleSheet,
+  SafeAreaView,
   TouchableOpacity,
-  Dimensions,
+  FlatList,
+  Modal,
   Alert,
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
+import { useTournament } from "../../../context/TournamentContext";
 import {
   teams as teamData,
   matches as matchData,
 } from "../../../utils/tournamentData";
 import TeamHeader from "../../../components/tournament/TeamHeader";
 import MatchCard from "../../../components/tournament/MatchCard";
-import { MaterialCommunityIcons, MaterialIcons } from "@expo/vector-icons";
-import { useTournament } from "../../../context/TournamentContext";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
 import {
   COLORS,
   FONTS,
   SPACING,
   BORDER_RADIUS,
-  SHADOWS,
+  GLASS_SHADOWS,
 } from "../../../constants/theme";
-
-const windowWidth = Dimensions.get("window").width;
 
 const MatchScreen1: React.FC = () => {
   const navigation = useNavigation();
-  const {
-    tournamentState,
-    updateMatchScore,
-    setModalVisible,
-    loading,
-    resetMatch,
-    resetAllScores,
-    undoLastAction,
-  } = useTournament();
-  const [resetModalVisible, setResetModalVisible] = useState(false);
-  const [scoreAdjustModalVisible, setScoreAdjustModalVisible] = useState(false);
+  const { tournamentState, updateMatchScore, setModalVisible, resetMatch } =
+    useTournament();
+
+  // Use semi-final 1 for this screen
+  const currentMatchup = tournamentState.semiFinal1;
+
   const [selectedMatch, setSelectedMatch] = useState<number | null>(null);
+  const [adjustModalVisible, setAdjustModalVisible] = useState(false);
 
-  if (loading) {
-    return (
-      <View style={styles.loadingContainer}>
-        <Text style={styles.loadingText}>Loading tournament...</Text>
-      </View>
-    );
-  }
+  // Get the teams for this matchup
+  const mainTeams = tournamentState.confirmedTeams.slice(0, 2);
+  const team1 = mainTeams[0];
+  const team2 = mainTeams[1];
 
-  const handleUndo = () => {
-    Alert.alert(
-      "Undo Last Action",
-      "Are you sure you want to undo the last score change?",
-      [
-        { text: "Cancel", style: "cancel" },
-        { text: "Undo", onPress: undoLastAction },
-      ]
-    );
+  // Parse players for each team
+  const getTeamPlayers = (team: any) => {
+    if (!team || !team.players) return [];
+    return team.players.split(",").map((player: string, index: number) => ({
+      id: index + 1,
+      name: player.trim(),
+      designation: `P${index + 1}`,
+    }));
+  };
+
+  const team1Players = getTeamPlayers(team1);
+  const team2Players = getTeamPlayers(team2);
+
+  // Get player names for specific matches
+  const getPlayerNamesForMatch = (matchIndex: number, teamIndex: number) => {
+    const players = teamIndex === 0 ? team1Players : team2Players;
+
+    switch (matchIndex) {
+      case 0: // Match 1: All 5 players
+        return players
+          .slice(0, 5)
+          .map((p: any) => p.name)
+          .join(", ");
+      case 1: // Match 2: Players 2 & 3 (1st Doubles)
+        return `${players[1]?.name || "P2"}, ${players[2]?.name || "P3"}`;
+      case 2: // Match 3: Player 1 (1st Singles)
+        return players[0]?.name || "P1";
+      case 3: // Match 4: Players 4 & 5 (2nd Doubles)
+        return `${players[3]?.name || "P4"}, ${players[4]?.name || "P5"}`;
+      case 4: // Match 5: Player 2 (2nd Singles)
+        return players[1]?.name || "P2";
+      case 5: // Match 6: All 5 players (2nd Team Match)
+        return players
+          .slice(0, 5)
+          .map((p: any) => p.name)
+          .join(", ");
+      case 6: // Match 7: 3rd Doubles (P1 & P3)
+        return `${players[0]?.name || "P1"}, ${players[2]?.name || "P3"}`;
+      case 7: // Match 8: Player 3 (3rd Singles) - Captain's pick
+        return players[2]?.name || "P3";
+      case 8: // Match 9: 4th Singles - Captain's pick
+        return players[3]?.name || "P4";
+      default:
+        return "Players TBD";
+    }
+  };
+
+  const handleScoreChange = (
+    matchIndex: number,
+    teamIndex: 0 | 1,
+    delta: number
+  ) => {
+    updateMatchScore("semiFinal1", matchIndex, teamIndex, delta);
   };
 
   const handleResetMatch = (matchIndex: number) => {
-    Alert.alert(
-      "Reset Match",
-      `Are you sure you want to reset Match ${
-        matchIndex + 1
-      }? This will clear all scores for this match.`,
-      [
-        { text: "Cancel", style: "cancel" },
-        {
-          text: "Reset",
-          style: "destructive",
-          onPress: () => resetMatch(matchIndex),
+    Alert.alert("Reset Match", "Are you sure you want to reset this match?", [
+      { text: "Cancel", style: "cancel" },
+      {
+        text: "Reset",
+        style: "destructive",
+        onPress: () => {
+          resetMatch("semiFinal1", matchIndex);
+          setAdjustModalVisible(false);
+          setSelectedMatch(null);
         },
-      ]
-    );
+      },
+    ]);
   };
 
-  const handleScoreAdjustment = (matchIndex: number) => {
-    setSelectedMatch(matchIndex);
-    setScoreAdjustModalVisible(true);
-  };
-
-  const handleDirectScoreChange = (
+  const handleAdjustScore = (
     matchIndex: number,
     teamIndex: 0 | 1,
     newScore: number
   ) => {
-    const match = matchData[matchIndex];
-    const currentScores = [...tournamentState.matchScores[matchIndex]];
+    const currentScores = [...currentMatchup.matchScores[matchIndex]];
+    const oldScore = currentScores[teamIndex];
 
-    // Validate score
-    if (newScore < 0 || newScore > match.raceTo) {
-      Alert.alert(
-        "Invalid Score",
-        `Score must be between 0 and ${match.raceTo}`
-      );
+    if (newScore < 0 || newScore > 9) {
+      Alert.alert("Invalid Score", "Score must be between 0 and 9");
       return;
     }
 
-    // Calculate the delta
-    const delta = newScore - tournamentState.matchScores[matchIndex][teamIndex];
-
-    // Update the score using the delta
-    updateMatchScore(matchIndex, teamIndex, delta);
-    setScoreAdjustModalVisible(false);
+    const delta = newScore - currentMatchup.matchScores[matchIndex][teamIndex];
+    if (delta !== 0) {
+      handleScoreChange(matchIndex, teamIndex, delta);
+    }
   };
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container}>
       {/* Champion Modal */}
       <Modal
-        visible={tournamentState.modalVisible}
+        visible={currentMatchup.modalVisible}
         transparent
         animationType="fade"
-        onRequestClose={() => setModalVisible(false)}
+        onRequestClose={() => setModalVisible("semiFinal1", false)}
       >
         <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
-            <View style={styles.starsRow}>
-              <MaterialIcons
-                name="star"
-                size={36}
-                color={COLORS.secondary}
-                style={styles.star}
-              />
-              <MaterialIcons
-                name="star"
-                size={44}
-                color={COLORS.secondary}
-                style={styles.star}
-              />
-              <MaterialIcons
-                name="star"
-                size={36}
-                color={COLORS.secondary}
-                style={styles.star}
-              />
-            </View>
+          <View style={styles.championModal}>
+            <MaterialCommunityIcons name="star" size={64} color="#FFD700" />
             <MaterialCommunityIcons
               name="trophy"
-              size={72}
-              color={COLORS.secondary}
-              style={{ marginVertical: SPACING.sm }}
+              size={48}
+              color="#FFD700"
+              style={styles.trophyIcon}
             />
-            <Text style={styles.championText}>Champion!</Text>
-            <Text style={styles.championName}>{tournamentState.champion}</Text>
+            <Text style={styles.championTitle}>Winner!</Text>
+            <Text style={styles.championName}>{currentMatchup.winner}</Text>
+            <Text style={styles.championSubtitle}>Congratulations!</Text>
             <TouchableOpacity
-              style={styles.closeBtn}
-              onPress={() => setModalVisible(false)}
+              style={styles.modalButton}
+              onPress={() => setModalVisible("semiFinal1", false)}
             >
-              <Text style={styles.closeBtnText}>OK</Text>
+              <Text style={styles.modalButtonText}>Continue</Text>
             </TouchableOpacity>
-          </View>
-        </View>
-      </Modal>
-
-      {/* Reset Options Modal */}
-      <Modal
-        visible={resetModalVisible}
-        transparent
-        animationType="slide"
-        onRequestClose={() => setResetModalVisible(false)}
-      >
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
-            <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>Reset Options</Text>
-              <TouchableOpacity onPress={() => setResetModalVisible(false)}>
-                <MaterialCommunityIcons
-                  name="close"
-                  size={24}
-                  color={COLORS.text.primary}
-                />
-              </TouchableOpacity>
-            </View>
-
-            <View style={styles.resetConfirmationContainer}>
-              <Text style={styles.resetConfirmationText}>
-                Reset all scoring to 0?
-              </Text>
-              <View style={styles.resetButtonRow}>
-                <TouchableOpacity
-                  style={[styles.resetButton, styles.noButton]}
-                  onPress={() => setResetModalVisible(false)}
-                >
-                  <Text style={styles.noButtonText}>No</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={[styles.resetButton, styles.yesButton]}
-                  onPress={() => {
-                    resetAllScores();
-                    setResetModalVisible(false);
-                  }}
-                >
-                  <Text style={styles.yesButtonText}>Yes</Text>
-                </TouchableOpacity>
-              </View>
-            </View>
           </View>
         </View>
       </Modal>
 
       {/* Score Adjustment Modal */}
       <Modal
-        visible={scoreAdjustModalVisible}
+        visible={adjustModalVisible}
         transparent
         animationType="slide"
-        onRequestClose={() => setScoreAdjustModalVisible(false)}
+        onRequestClose={() => setAdjustModalVisible(false)}
       >
         <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
-            <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>Adjust Scores</Text>
-              <TouchableOpacity
-                onPress={() => setScoreAdjustModalVisible(false)}
-              >
-                <MaterialCommunityIcons
-                  name="close"
-                  size={24}
-                  color={COLORS.text.primary}
-                />
-              </TouchableOpacity>
-            </View>
+          <View style={styles.adjustModal}>
+            <Text style={styles.adjustModalTitle}>Adjust Score</Text>
+            <Text style={styles.adjustModalSubtitle}>
+              Match {selectedMatch !== null ? selectedMatch + 1 : ""}
+            </Text>
 
             {selectedMatch !== null && (
-              <View style={styles.scoreAdjustmentContent}>
-                <Text style={styles.matchTitle}>
-                  Match {selectedMatch + 1}: {matchData[selectedMatch].type}
-                </Text>
-
-                <View style={styles.scoreAdjustmentRow}>
-                  <Text style={styles.teamName}>{teamData[0].name}</Text>
-                  <TouchableOpacity
-                    style={styles.scoreButton}
-                    onPress={() =>
-                      handleDirectScoreChange(
-                        selectedMatch,
-                        0,
-                        Math.max(
+              <View style={styles.scoreAdjustmentContainer}>
+                <View style={styles.teamScoreAdjustment}>
+                  <Text style={styles.teamName}>{team1?.name || "Team A"}</Text>
+                  <View style={styles.scoreAdjustment}>
+                    <TouchableOpacity
+                      style={styles.scoreButton}
+                      onPress={() =>
+                        handleAdjustScore(
+                          selectedMatch,
                           0,
-                          tournamentState.matchScores[selectedMatch][0] - 1
+                          currentMatchup.matchScores[selectedMatch][0] - 1
                         )
-                      )
-                    }
-                  >
-                    <Text style={styles.scoreButtonText}>-</Text>
-                  </TouchableOpacity>
-                  <Text style={styles.currentScore}>
-                    {tournamentState.matchScores[selectedMatch][0]}
-                  </Text>
-                  <TouchableOpacity
-                    style={styles.scoreButton}
-                    onPress={() =>
-                      handleDirectScoreChange(
-                        selectedMatch,
-                        0,
-                        Math.min(
-                          matchData[selectedMatch].raceTo,
-                          tournamentState.matchScores[selectedMatch][0] + 1
+                      }
+                    >
+                      <Text style={styles.scoreButtonText}>-</Text>
+                    </TouchableOpacity>
+                    <Text style={styles.scoreDisplay}>
+                      {currentMatchup.matchScores[selectedMatch][0]}
+                    </Text>
+                    <TouchableOpacity
+                      style={styles.scoreButton}
+                      onPress={() =>
+                        handleAdjustScore(
+                          selectedMatch,
+                          0,
+                          currentMatchup.matchScores[selectedMatch][0] + 1
                         )
-                      )
-                    }
-                  >
-                    <Text style={styles.scoreButtonText}>+</Text>
-                  </TouchableOpacity>
+                      }
+                    >
+                      <Text style={styles.scoreButtonText}>+</Text>
+                    </TouchableOpacity>
+                  </View>
                 </View>
 
-                <View style={styles.scoreAdjustmentRow}>
-                  <Text style={styles.teamName}>{teamData[1].name}</Text>
-                  <TouchableOpacity
-                    style={styles.scoreButton}
-                    onPress={() =>
-                      handleDirectScoreChange(
-                        selectedMatch,
-                        1,
-                        Math.max(
-                          0,
-                          tournamentState.matchScores[selectedMatch][1] - 1
+                <View style={styles.teamScoreAdjustment}>
+                  <Text style={styles.teamName}>{team2?.name || "Team B"}</Text>
+                  <View style={styles.scoreAdjustment}>
+                    <TouchableOpacity
+                      style={styles.scoreButton}
+                      onPress={() =>
+                        handleAdjustScore(
+                          selectedMatch,
+                          1,
+                          currentMatchup.matchScores[selectedMatch][1] - 1
                         )
-                      )
-                    }
-                  >
-                    <Text style={styles.scoreButtonText}>-</Text>
-                  </TouchableOpacity>
-                  <Text style={styles.currentScore}>
-                    {tournamentState.matchScores[selectedMatch][1]}
-                  </Text>
-                  <TouchableOpacity
-                    style={styles.scoreButton}
-                    onPress={() =>
-                      handleDirectScoreChange(
-                        selectedMatch,
-                        1,
-                        Math.min(
-                          matchData[selectedMatch].raceTo,
-                          tournamentState.matchScores[selectedMatch][1] + 1
+                      }
+                    >
+                      <Text style={styles.scoreButtonText}>-</Text>
+                    </TouchableOpacity>
+                    <Text style={styles.scoreDisplay}>
+                      {currentMatchup.matchScores[selectedMatch][1]}
+                    </Text>
+                    <TouchableOpacity
+                      style={styles.scoreButton}
+                      onPress={() =>
+                        handleAdjustScore(
+                          selectedMatch,
+                          1,
+                          currentMatchup.matchScores[selectedMatch][1] + 1
                         )
-                      )
-                    }
-                  >
-                    <Text style={styles.scoreButtonText}>+</Text>
-                  </TouchableOpacity>
+                      }
+                    >
+                      <Text style={styles.scoreButtonText}>+</Text>
+                    </TouchableOpacity>
+                  </View>
                 </View>
               </View>
             )}
+
+            <View style={styles.modalButtons}>
+              <TouchableOpacity
+                style={[styles.modalButton, styles.resetButton]}
+                onPress={() => {
+                  if (selectedMatch !== null) {
+                    handleResetMatch(selectedMatch);
+                  }
+                }}
+              >
+                <Text style={styles.resetButtonText}>Reset Match</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.modalButton}
+                onPress={() => setAdjustModalVisible(false)}
+              >
+                <Text style={styles.modalButtonText}>Close</Text>
+              </TouchableOpacity>
+            </View>
           </View>
         </View>
       </Modal>
 
-      {/* Tournament Header */}
-      <View style={styles.tournamentHeader}>
-        <View style={styles.tournamentTitleRow}>
+      <View style={styles.header}>
+        <Text style={styles.headerTitle}>Match 1</Text>
+        <TouchableOpacity
+          style={styles.adjustButton}
+          onPress={() => setAdjustModalVisible(true)}
+        >
           <MaterialCommunityIcons
-            name="trophy"
-            size={32}
-            color={COLORS.secondary}
-            style={{ marginRight: SPACING.sm }}
+            name="tune"
+            size={24}
+            color={COLORS.primary}
           />
-          <Text style={styles.tournamentTitle}>PBS Cup Aug 2025</Text>
-        </View>
-        <Text style={styles.tournamentSubtitle}>
-          Match 1: {teamData[0].name} vs {teamData[1].name}
-        </Text>
-        <Text style={styles.tournamentOrganizer}>Organized by: Owen</Text>
+        </TouchableOpacity>
       </View>
 
-      {/* Reset Button */}
-      <TouchableOpacity
-        style={styles.headerResetButton}
-        onPress={() => setResetModalVisible(true)}
-      >
-        <MaterialCommunityIcons
-          name="backup-restore"
-          size={20}
-          color={COLORS.text.secondary}
+      <View style={styles.content}>
+        <TeamHeader
+          teams={[
+            {
+              name: team1?.name || "Team A",
+              score: currentMatchup.teamScores[0],
+            },
+            {
+              name: team2?.name || "Team B",
+              score: currentMatchup.teamScores[1],
+            },
+          ]}
         />
-      </TouchableOpacity>
 
-      <TeamHeader
-        teams={[
-          { name: teamData[0].name, score: tournamentState.teamScores[0] },
-          { name: teamData[1].name, score: tournamentState.teamScores[1] },
-        ]}
-      />
-      <FlatList
-        data={matchData}
-        keyExtractor={(item) => item.number.toString()}
-        renderItem={({ item, index }) => (
-          <MatchCard
-            match={item}
-            teamScores={tournamentState.teamScores}
-            matchScore={tournamentState.matchScores[index]}
-            onScoreChange={(teamIdx) => updateMatchScore(index, teamIdx, 1)}
-            isCurrent={index === tournamentState.currentMatch}
-            isCompleted={
-              tournamentState.matchScores[index][0] === item.raceTo ||
-              tournamentState.matchScores[index][1] === item.raceTo
-            }
-            onReset={() => handleResetMatch(index)}
-            onAdjust={() => handleScoreAdjustment(index)}
-            matchIndex={index}
-          />
-        )}
-        extraData={{
-          matchScores: tournamentState.matchScores,
-          currentMatch: tournamentState.currentMatch,
-        }}
-      />
-    </View>
+        <FlatList
+          data={matchData}
+          keyExtractor={(item) => item.number.toString()}
+          renderItem={({ item, index }) => (
+            <MatchCard
+              match={item}
+              matchIndex={index}
+              teamScores={currentMatchup.teamScores}
+              matchScore={currentMatchup.matchScores[index]}
+              onScoreChange={(teamIdx, delta) =>
+                handleScoreChange(index, teamIdx, delta)
+              }
+              isCurrent={index === currentMatchup.currentMatch}
+              isCompleted={
+                currentMatchup.matchScores[index][0] === item.raceTo ||
+                currentMatchup.matchScores[index][1] === item.raceTo
+              }
+              onReset={() => handleResetMatch(index)}
+              onAdjust={() => {
+                setSelectedMatch(index);
+                setAdjustModalVisible(true);
+              }}
+              playerDisplay={getPlayerNamesForMatch(index, 0)}
+              matchType={getMatchType(index)}
+              teamStartIndex={0} // Use teams 1 & 2 (index 0 & 1)
+            />
+          )}
+          extraData={{
+            matchScores: currentMatchup.matchScores,
+            currentMatch: currentMatchup.currentMatch,
+          }}
+        />
+      </View>
+    </SafeAreaView>
   );
 };
 
+// Helper function to get match type
+const getMatchType = (matchIndex: number): string => {
+  switch (matchIndex) {
+    case 0:
+      return "Team Match";
+    case 1:
+      return "1st Doubles";
+    case 2:
+      return "1st Singles";
+    case 3:
+      return "2nd Doubles";
+    case 4:
+      return "2nd Singles";
+    case 5:
+      return "2nd Team Match";
+    case 6:
+      return "3rd Doubles";
+    case 7:
+      return "3rd Singles";
+    case 8:
+      return "4th Singles";
+    default:
+      return "Match";
+  }
+};
+
 const styles = StyleSheet.create({
-  // 1. Main Container
   container: {
     flex: 1,
     backgroundColor: COLORS.background.primary,
   },
-
-  // 2. Loading State
-  loadingContainer: {
-    flex: 1,
-    justifyContent: "center",
+  header: {
+    flexDirection: "row",
+    justifyContent: "space-between",
     alignItems: "center",
+    paddingHorizontal: SPACING.lg,
+    paddingTop: SPACING.lg,
+    paddingBottom: SPACING.md,
     backgroundColor: COLORS.background.primary,
+    borderBottomWidth: 1,
+    borderBottomColor: COLORS.gray[200],
   },
-  loadingText: {
-    fontSize: FONTS.size.lg,
-    color: COLORS.text.secondary,
+  headerTitle: {
+    fontSize: FONTS.size["4xl"],
+    fontWeight: FONTS.weight.bold,
+    color: COLORS.text.primary,
+    textAlign: "center",
+    flex: 1,
   },
-
-  // 3. Champion Modal Styles
+  adjustButton: {
+    padding: SPACING.sm,
+    backgroundColor: COLORS.glass.secondary,
+    borderRadius: BORDER_RADIUS.md,
+    borderWidth: 1,
+    borderColor: COLORS.glass.border,
+    ...GLASS_SHADOWS.light,
+  },
+  content: {
+    flex: 1,
+    paddingHorizontal: SPACING.md,
+    paddingTop: SPACING.sm,
+  },
   modalOverlay: {
     flex: 1,
     backgroundColor: COLORS.background.modal,
     justifyContent: "center",
     alignItems: "center",
   },
-  modalContent: {
+  championModal: {
     backgroundColor: COLORS.background.secondary,
     borderRadius: BORDER_RADIUS["2xl"],
     padding: SPACING["2xl"],
     alignItems: "center",
-    width: windowWidth * 0.8,
-    ...SHADOWS.lg,
+    width: "80%",
+    ...GLASS_SHADOWS.heavy,
   },
-  starsRow: {
-    flexDirection: "row",
-    justifyContent: "center",
-    alignItems: "center",
+  trophyIcon: {
     marginBottom: SPACING.sm,
   },
-  star: {
-    marginHorizontal: SPACING.xs,
-  },
-  championText: {
-    fontSize: FONTS.size["4xl"],
-    fontWeight: FONTS.weight.bold,
-    color: COLORS.secondary,
-    marginTop: SPACING.sm,
-  },
-  championName: {
+  championTitle: {
     fontSize: FONTS.size["2xl"],
     fontWeight: FONTS.weight.bold,
-    color: COLORS.team2,
-    marginVertical: SPACING.sm,
-    textAlign: "center",
+    color: COLORS.text.primary,
+    marginBottom: SPACING.sm,
   },
-  closeBtn: {
-    marginTop: SPACING.md,
-    backgroundColor: COLORS.secondary,
-    borderRadius: BORDER_RADIUS.md,
+  championName: {
+    fontSize: FONTS.size.xl,
+    fontWeight: FONTS.weight.bold,
+    color: COLORS.primary,
+    marginBottom: SPACING.xs,
+  },
+  championSubtitle: {
+    fontSize: FONTS.size.base,
+    color: COLORS.text.secondary,
+    marginBottom: SPACING.lg,
+  },
+  modalButton: {
+    backgroundColor: COLORS.primary,
+    paddingHorizontal: SPACING.lg,
     paddingVertical: SPACING.sm,
-    paddingHorizontal: SPACING["2xl"],
+    borderRadius: BORDER_RADIUS.md,
+    ...GLASS_SHADOWS.medium,
   },
-  closeBtnText: {
+  modalButtonText: {
     fontSize: FONTS.size.lg,
     fontWeight: FONTS.weight.bold,
     color: COLORS.text.primary,
   },
-
-  // 4. Reset Options Modal Styles
-  modalHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
+  adjustModal: {
+    backgroundColor: COLORS.glass.primary,
+    borderRadius: BORDER_RADIUS["2xl"],
+    padding: SPACING["2xl"],
     alignItems: "center",
-    width: "100%",
-    marginBottom: SPACING.sm,
+    width: "80%",
+    borderWidth: 1,
+    borderColor: COLORS.glass.border,
+    ...GLASS_SHADOWS.heavy,
   },
-  modalTitle: {
+  adjustModalTitle: {
     fontSize: FONTS.size["3xl"],
     fontWeight: FONTS.weight.bold,
     color: COLORS.text.primary,
+    marginBottom: SPACING.sm,
   },
-  resetConfirmationContainer: {
-    alignItems: "center",
-    paddingVertical: SPACING.md,
-  },
-  resetConfirmationText: {
+  adjustModalSubtitle: {
     fontSize: FONTS.size.lg,
-    fontWeight: FONTS.weight.bold,
-    color: COLORS.text.primary,
+    color: COLORS.text.secondary,
     marginBottom: SPACING.md,
-    textAlign: "center",
   },
-  resetButtonRow: {
-    flexDirection: "row",
-    justifyContent: "space-around",
-    width: "100%",
-  },
-  resetButton: {
-    paddingVertical: SPACING.sm,
-    paddingHorizontal: SPACING.xl,
-    borderRadius: BORDER_RADIUS.md,
-    minWidth: 80,
-    alignItems: "center",
-  },
-  noButton: {
-    backgroundColor: COLORS.gray[400],
-  },
-  yesButton: {
-    backgroundColor: COLORS.warning,
-  },
-  noButtonText: {
-    fontSize: FONTS.size.base,
-    fontWeight: FONTS.weight.bold,
-    color: COLORS.text.primary,
-  },
-  yesButtonText: {
-    fontSize: FONTS.size.base,
-    fontWeight: FONTS.weight.bold,
-    color: COLORS.text.primary,
-  },
-
-  // 5. Score Adjustment Modal Styles
-  scoreAdjustmentContent: {
+  scoreAdjustmentContainer: {
     width: "100%",
     alignItems: "center",
-    marginTop: SPACING.sm,
+    marginBottom: SPACING.md,
   },
-  matchTitle: {
-    fontSize: FONTS.size.lg,
-    fontWeight: FONTS.weight.bold,
-    color: COLORS.text.primary,
-    marginBottom: SPACING.sm,
-  },
-  scoreAdjustmentRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-around",
+  teamScoreAdjustment: {
     width: "100%",
-    marginBottom: SPACING.sm,
+    alignItems: "center",
+    marginBottom: SPACING.md,
   },
   teamName: {
     fontSize: FONTS.size.lg,
     fontWeight: FONTS.weight.bold,
     color: COLORS.text.primary,
+    marginBottom: SPACING.sm,
+  },
+  scoreAdjustment: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-around",
+    width: "100%",
+    backgroundColor: COLORS.gray[200],
+    borderRadius: BORDER_RADIUS.md,
+    paddingVertical: SPACING.xs,
   },
   scoreButton: {
     backgroundColor: COLORS.secondary,
@@ -532,53 +499,24 @@ const styles = StyleSheet.create({
     fontWeight: FONTS.weight.bold,
     color: COLORS.text.primary,
   },
-  currentScore: {
+  scoreDisplay: {
     fontSize: FONTS.size.lg,
     fontWeight: FONTS.weight.bold,
     color: COLORS.text.primary,
   },
-
-  // 6. Tournament Header Styles
-  tournamentHeader: {
-    paddingHorizontal: SPACING.md,
-    paddingTop: SPACING.md,
-    paddingBottom: SPACING.sm,
-    backgroundColor: COLORS.background.primary,
-  },
-  tournamentTitleRow: {
+  modalButtons: {
     flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    marginBottom: SPACING.xs,
+    justifyContent: "space-around",
+    width: "100%",
+    marginTop: SPACING.md,
   },
-  tournamentTitle: {
-    fontSize: FONTS.size["3xl"],
+  resetButton: {
+    backgroundColor: COLORS.warning,
+  },
+  resetButtonText: {
+    fontSize: FONTS.size.base,
     fontWeight: FONTS.weight.bold,
     color: COLORS.text.primary,
-    letterSpacing: 1,
-  },
-  tournamentSubtitle: {
-    textAlign: "center",
-    fontSize: FONTS.size.sm,
-    color: COLORS.text.secondary,
-    marginBottom: SPACING.xs,
-  },
-  tournamentOrganizer: {
-    textAlign: "center",
-    fontSize: FONTS.size.sm,
-    color: COLORS.success,
-    marginBottom: SPACING.sm,
-  },
-  // 7. Reset Button Styles
-  headerResetButton: {
-    position: "absolute",
-    top: SPACING.md,
-    right: SPACING.md,
-    backgroundColor: COLORS.warning,
-    borderRadius: BORDER_RADIUS.md,
-    padding: SPACING.xs,
-    ...SHADOWS.sm,
-    zIndex: 1000,
   },
 });
 

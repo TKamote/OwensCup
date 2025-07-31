@@ -26,8 +26,8 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
 
   const handlePBSCupPress = () => {
     if (user) {
-      // Navigate to Tournament Bracket for tournament overview
-      navigation.navigate("Tournament Bracket");
+      // Navigate to Tournament Dashboard for tournament overview
+      navigation.navigate("Tournament Dashboard");
     } else {
       Alert.alert(
         "Authentication Required",
@@ -106,7 +106,7 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
             size={24}
             color={COLORS.white}
           />
-          <Text style={styles.buttonText}>PBS Cup</Text>
+          <Text style={styles.buttonText}>Tournament Dashboard</Text>
         </TouchableOpacity>
 
         <TouchableOpacity

@@ -17,7 +17,7 @@ import TeamOverviewScreen from "../screens/tournament/TeamOverviewScreen";
 import FavouriteTournamentsScreen from "../screens/tournament/FavouriteTournamentsScreen";
 import PastTournamentsScreen from "../screens/tournament/PastTournamentsScreen";
 import LiveTournamentScreen from "../screens/tournament/LiveTournamentScreen";
-import TournamentBracket from "../screens/tournament/TournamentBracket";
+import TournamentDashboard from "../screens/tournament/TournamentDashboard";
 import MatchScreen1 from "../screens/tournament/matches/MatchScreen1";
 import MatchScreen2 from "../screens/tournament/matches/MatchScreen2";
 import MatchScreen3 from "../screens/tournament/matches/MatchScreen3";
@@ -330,8 +330,8 @@ const AppNavigator: React.FC = () => {
               }}
             />
             <Stack.Screen
-              name="Tournament Bracket"
-              component={TournamentBracket}
+              name="Tournament Dashboard"
+              component={TournamentDashboard}
               options={{
                 title: "Tournament Dashboard",
                 headerShown: true,

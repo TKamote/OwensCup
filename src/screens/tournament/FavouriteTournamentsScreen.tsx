@@ -27,14 +27,17 @@ const FavouriteTournamentsScreen: React.FC = () => {
     );
   }
 
+  // Use semi-final 1 for this screen
+  const currentMatchup = tournamentState.semiFinal1;
+
   return (
     <View style={styles.container}>
       {/* Champion Modal */}
       <Modal
-        visible={tournamentState.modalVisible}
+        visible={currentMatchup.modalVisible}
         transparent
         animationType="fade"
-        onRequestClose={() => setModalVisible(false)}
+        onRequestClose={() => setModalVisible("semiFinal1", false)}
       >
         <View style={styles.modalOverlay}>
           <View style={styles.championModal}>
@@ -45,8 +48,8 @@ const FavouriteTournamentsScreen: React.FC = () => {
               color="#FFD700"
               style={styles.trophyIcon}
             />
-            <Text style={styles.championTitle}>Champion!</Text>
-            <Text style={styles.championText}>{tournamentState.champion}</Text>
+            <Text style={styles.championTitle}>Winner!</Text>
+            <Text style={styles.championText}>{currentMatchup.winner}</Text>
             <Text style={styles.championSubtitle}>Congratulations!</Text>
           </View>
         </View>
@@ -63,12 +66,12 @@ const FavouriteTournamentsScreen: React.FC = () => {
           <Text style={styles.title}>PBS Cup August 2025</Text>
         </View>
         <Text style={styles.subtitle}>22 Aug 2025: Organized by Owen</Text>
-        <Text style={styles.viewerText}>Live Tournament</Text>
+        <Text style={styles.viewerText}>Live Tournament - Semi-Final 1</Text>
 
         <TeamHeader
-          teams={teamData.map((t, i) => ({
+          teams={teamData.slice(0, 2).map((t, i) => ({
             ...t,
-            score: tournamentState.teamScores[i],
+            score: currentMatchup.teamScores[i],
           }))}
         />
 
@@ -79,21 +82,21 @@ const FavouriteTournamentsScreen: React.FC = () => {
             <MatchCard
               match={item}
               matchIndex={index}
-              teamScores={tournamentState.teamScores}
-              matchScore={tournamentState.matchScores[index]}
+              teamScores={currentMatchup.teamScores}
+              matchScore={currentMatchup.matchScores[index]}
               onScoreChange={() => {}} // Empty function - no editing
-              isCurrent={index === tournamentState.currentMatch}
+              isCurrent={index === currentMatchup.currentMatch}
               isCompleted={
-                tournamentState.matchScores[index][0] === item.raceTo ||
-                tournamentState.matchScores[index][1] === item.raceTo
+                currentMatchup.matchScores[index][0] === item.raceTo ||
+                currentMatchup.matchScores[index][1] === item.raceTo
               }
               onReset={() => {}} // No reset functionality
               onAdjust={() => {}} // No adjust functionality
             />
           )}
           extraData={{
-            matchScores: tournamentState.matchScores,
-            currentMatch: tournamentState.currentMatch,
+            matchScores: currentMatchup.matchScores,
+            currentMatch: currentMatchup.currentMatch,
           }}
         />
       </View>
