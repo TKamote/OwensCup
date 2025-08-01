@@ -24,6 +24,7 @@ import {
   SPACING,
   BORDER_RADIUS,
   SHADOWS,
+  GLASS_SHADOWS,
 } from "../../../constants/theme";
 
 const MatchScreen3: React.FC = () => {
@@ -36,6 +37,7 @@ const MatchScreen3: React.FC = () => {
 
   const [selectedMatch, setSelectedMatch] = useState<number | null>(null);
   const [adjustModalVisible, setAdjustModalVisible] = useState(false);
+  const [scoreAdjustModalVisible, setScoreAdjustModalVisible] = useState(false);
 
   const handleScoreChange = (
     matchIndex: number,
@@ -110,7 +112,7 @@ const MatchScreen3: React.FC = () => {
         </View>
       </Modal>
 
-      {/* Score Adjustment Modal */}
+      {/* Reset All Scores Modal */}
       <Modal
         visible={adjustModalVisible}
         transparent
@@ -118,9 +120,43 @@ const MatchScreen3: React.FC = () => {
         onRequestClose={() => setAdjustModalVisible(false)}
       >
         <View style={styles.modalOverlay}>
-          <View style={styles.adjustModal}>
-            <Text style={styles.adjustModalTitle}>Adjust Score</Text>
-            <Text style={styles.adjustModalSubtitle}>
+          <View style={styles.resetModal}>
+            <Text style={styles.resetModalTitle}>Reset All Scores</Text>
+            <View style={styles.resetModalButtons}>
+              <TouchableOpacity
+                style={styles.cancelButton}
+                onPress={() => setAdjustModalVisible(false)}
+              >
+                <Text style={styles.cancelButtonText}>Cancel</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.resetConfirmButton}
+                onPress={() => {
+                  // Reset all scores for this matchup
+                  for (let i = 0; i < currentMatchup.matchScores.length; i++) {
+                    resetMatch("final", i);
+                  }
+                  setAdjustModalVisible(false);
+                }}
+              >
+                <Text style={styles.resetConfirmButtonText}>Reset</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
+
+      {/* Score Adjustment Modal */}
+      <Modal
+        visible={scoreAdjustModalVisible}
+        transparent
+        animationType="slide"
+        onRequestClose={() => setScoreAdjustModalVisible(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.resetModal}>
+            <Text style={styles.resetModalTitle}>Adjust Score</Text>
+            <Text style={styles.resetModalSubtitle}>
               Match {selectedMatch !== null ? selectedMatch + 1 : ""}
             </Text>
 
@@ -194,22 +230,18 @@ const MatchScreen3: React.FC = () => {
               </View>
             )}
 
-            <View style={styles.modalButtons}>
+            <View style={styles.resetModalButtons}>
               <TouchableOpacity
-                style={[styles.modalButton, styles.resetButton]}
-                onPress={() => {
-                  if (selectedMatch !== null) {
-                    handleResetMatch(selectedMatch);
-                  }
-                }}
+                style={styles.cancelButton}
+                onPress={() => setScoreAdjustModalVisible(false)}
               >
-                <Text style={styles.resetButtonText}>Reset Match</Text>
+                <Text style={styles.cancelButtonText}>Cancel</Text>
               </TouchableOpacity>
               <TouchableOpacity
-                style={styles.modalButton}
-                onPress={() => setAdjustModalVisible(false)}
+                style={styles.cancelButton}
+                onPress={() => setScoreAdjustModalVisible(false)}
               >
-                <Text style={styles.modalButtonText}>Close</Text>
+                <Text style={styles.cancelButtonText}>Reset</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -217,34 +249,33 @@ const MatchScreen3: React.FC = () => {
       </Modal>
 
       <View style={styles.header}>
-        <TouchableOpacity
-          style={styles.backButton}
-          onPress={() => navigation.goBack()}
-        >
-          <MaterialCommunityIcons
-            name="arrow-left"
-            size={24}
-            color={COLORS.primary}
-          />
-        </TouchableOpacity>
+        <View style={styles.headerSpacer} />
         <Text style={styles.headerTitle}>Final Match</Text>
-        <TouchableOpacity
-          style={styles.adjustButton}
-          onPress={() => setAdjustModalVisible(true)}
-        >
-          <MaterialCommunityIcons
-            name="tune"
-            size={24}
-            color={COLORS.primary}
-          />
-        </TouchableOpacity>
+        <View style={styles.headerButtons}>
+          <TouchableOpacity
+            style={styles.headerButton}
+            onPress={() => setAdjustModalVisible(true)}
+          >
+            <MaterialCommunityIcons
+              name="reload"
+              size={24}
+              color={COLORS.warning}
+            />
+          </TouchableOpacity>
+        </View>
       </View>
 
       <View style={styles.content}>
         <TeamHeader
           teams={[
-            { name: "Winner Match 1", score: currentMatchup.teamScores[0] },
-            { name: "Winner Match 2", score: currentMatchup.teamScores[1] },
+            {
+              name: tournamentState.semiFinal1.winner || "Winner Match 1",
+              score: currentMatchup.teamScores[0],
+            },
+            {
+              name: tournamentState.semiFinal2.winner || "Winner Match 2",
+              score: currentMatchup.teamScores[1],
+            },
           ]}
         />
 
@@ -268,7 +299,7 @@ const MatchScreen3: React.FC = () => {
               onReset={() => handleResetMatch(index)}
               onAdjust={() => {
                 setSelectedMatch(index);
-                setAdjustModalVisible(true);
+                setScoreAdjustModalVisible(true);
               }}
             />
           )}
@@ -296,6 +327,9 @@ const styles = StyleSheet.create({
     paddingBottom: SPACING.sm,
     backgroundColor: COLORS.background.primary,
   },
+  headerSpacer: {
+    width: SPACING.md, // Adjust as needed for spacing
+  },
   backButton: {
     padding: SPACING.xs,
   },
@@ -307,6 +341,18 @@ const styles = StyleSheet.create({
   },
   adjustButton: {
     padding: SPACING.xs,
+  },
+  headerButtons: {
+    flexDirection: "row",
+    gap: SPACING.sm,
+  },
+  headerButton: {
+    padding: SPACING.sm,
+    backgroundColor: COLORS.glass.secondary,
+    borderRadius: BORDER_RADIUS.md,
+    borderWidth: 1,
+    borderColor: COLORS.glass.border,
+    ...GLASS_SHADOWS.light,
   },
   content: {
     flex: 1,
@@ -353,6 +399,9 @@ const styles = StyleSheet.create({
     borderRadius: BORDER_RADIUS.md,
     paddingVertical: SPACING.sm,
     paddingHorizontal: SPACING["2xl"],
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
   },
   modalButtonText: {
     fontSize: FONTS.size.lg,
@@ -360,11 +409,13 @@ const styles = StyleSheet.create({
     color: COLORS.text.primary,
   },
   adjustModal: {
-    backgroundColor: COLORS.background.secondary,
+    backgroundColor: COLORS.white,
     borderRadius: BORDER_RADIUS["2xl"],
     padding: SPACING["2xl"],
     alignItems: "center",
     width: "80%",
+    borderWidth: 1,
+    borderColor: COLORS.gray[200],
     ...SHADOWS.lg,
   },
   adjustModalTitle: {
@@ -414,7 +465,7 @@ const styles = StyleSheet.create({
   scoreButtonText: {
     fontSize: FONTS.size.lg,
     fontWeight: FONTS.weight.bold,
-    color: COLORS.text.primary,
+    color: COLORS.white,
   },
   scoreDisplay: {
     fontSize: FONTS.size.lg,
@@ -428,12 +479,73 @@ const styles = StyleSheet.create({
     marginTop: SPACING.md,
   },
   resetButton: {
-    backgroundColor: COLORS.warning,
+    backgroundColor: COLORS.glass.secondary,
+    borderWidth: 2,
+    borderColor: COLORS.glass.border,
+    borderRadius: BORDER_RADIUS.lg,
+    paddingVertical: SPACING.md,
+    paddingHorizontal: SPACING.xl,
+    ...GLASS_SHADOWS.medium,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: SPACING.sm,
   },
   resetButtonText: {
-    fontSize: FONTS.size.base,
+    fontSize: FONTS.size.lg,
     fontWeight: FONTS.weight.bold,
     color: COLORS.text.primary,
+  },
+  resetModal: {
+    backgroundColor: COLORS.white,
+    borderRadius: BORDER_RADIUS["2xl"],
+    padding: SPACING["2xl"],
+    alignItems: "center",
+    width: "80%",
+    borderWidth: 1,
+    borderColor: COLORS.gray[200],
+    ...SHADOWS.lg,
+  },
+  resetModalTitle: {
+    fontSize: FONTS.size["3xl"],
+    fontWeight: FONTS.weight.bold,
+    color: COLORS.text.primary,
+    marginBottom: SPACING.sm,
+  },
+  resetModalSubtitle: {
+    fontSize: FONTS.size.lg,
+    color: COLORS.text.secondary,
+    marginBottom: SPACING.md,
+  },
+  resetModalButtons: {
+    flexDirection: "row",
+    justifyContent: "space-around",
+    width: "100%",
+    marginTop: SPACING.md,
+  },
+  cancelButton: {
+    backgroundColor: COLORS.primary,
+    paddingHorizontal: SPACING.lg,
+    paddingVertical: SPACING.sm,
+    borderRadius: BORDER_RADIUS.md,
+    ...GLASS_SHADOWS.medium,
+  },
+  cancelButtonText: {
+    fontSize: FONTS.size.lg,
+    fontWeight: FONTS.weight.bold,
+    color: COLORS.white,
+  },
+  resetConfirmButton: {
+    backgroundColor: COLORS.warning,
+    paddingHorizontal: SPACING.lg,
+    paddingVertical: SPACING.sm,
+    borderRadius: BORDER_RADIUS.md,
+    ...GLASS_SHADOWS.medium,
+  },
+  resetConfirmButtonText: {
+    fontSize: FONTS.size.lg,
+    fontWeight: FONTS.weight.bold,
+    color: COLORS.white,
   },
 });
 

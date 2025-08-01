@@ -147,7 +147,7 @@ const TournamentDashboard = () => {
             style={styles.finalCard}
             onPress={() => handleMatchSelect(3)}
           >
-            <Text style={styles.matchTitle}>Championship</Text>
+            <Text style={styles.matchTitle}>Match 3</Text>
             <View style={styles.teamsContainer}>
               <Text style={styles.teamName}>{getFinalTeams().team1}</Text>
               <Text style={styles.vs}>vs</Text>

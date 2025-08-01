@@ -130,7 +130,7 @@ const MatchCard: React.FC<MatchCardProps> = ({
             {onReset && (
               <TouchableOpacity style={styles.actionButton} onPress={onReset}>
                 <MaterialCommunityIcons
-                  name="refresh"
+                  name="reload"
                   size={16}
                   color={COLORS.warning}
                 />
@@ -236,8 +236,8 @@ const styles = StyleSheet.create({
     marginVertical: SPACING.sm,
     marginHorizontal: SPACING.md,
     ...GLASS_SHADOWS.heavy,
-    borderWidth: 1,
-    borderColor: COLORS.glass.border,
+    borderWidth: 2,
+    borderColor: COLORS.gray[400],
   },
   current: {
     borderColor: COLORS.primary,
@@ -290,7 +290,7 @@ const styles = StyleSheet.create({
     minHeight: 100,
     ...GLASS_SHADOWS.medium,
     borderWidth: 1,
-    borderColor: COLORS.glass.border,
+    borderColor: COLORS.gray[300],
   },
   scoreBtnActive: {
     backgroundColor: COLORS.primary + "20",

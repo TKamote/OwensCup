@@ -28,6 +28,15 @@ const TeamHeader: React.FC<TeamHeaderProps> = ({ teams }) => {
   const team1 = mainTeams[0];
   const team2 = mainTeams[1];
 
+  // Get actual team names or use placeholders
+  const getTeamName = (index: number) => {
+    if (index === 0) {
+      return team1?.name || teams[0].name;
+    } else {
+      return team2?.name || teams[1].name;
+    }
+  };
+
   return (
     <View style={styles.container}>
       <View style={styles.teamBlock}>
@@ -37,7 +46,7 @@ const TeamHeader: React.FC<TeamHeaderProps> = ({ teams }) => {
           color={team1?.color || COLORS.gray[500]}
           style={styles.logo}
         />
-        <Text style={styles.name}>{teams[0].name}</Text>
+        <Text style={styles.name}>{getTeamName(0)}</Text>
       </View>
       <View style={styles.scoreBlock}>
         <Text style={styles.score}>{teams[0].score}</Text>
@@ -51,7 +60,7 @@ const TeamHeader: React.FC<TeamHeaderProps> = ({ teams }) => {
           color={team2?.color || COLORS.gray[500]}
           style={styles.logo}
         />
-        <Text style={styles.name}>{teams[1].name}</Text>
+        <Text style={styles.name}>{getTeamName(1)}</Text>
       </View>
     </View>
   );
