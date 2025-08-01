@@ -121,14 +121,8 @@ const TeamOverviewScreen: React.FC = () => {
         {mainTeams.length > 0 ? (
           <>
             <Text style={styles.sectionTitle}>Main Tournament Teams</Text>
-            {mainTeams.map((team) => {
-              const key = `main-${team.id}`;
-              console.log(
-                "TeamOverview: Rendering main team with key:",
-                key,
-                "Team:",
-                team.name
-              );
+            {mainTeams.map((team, index) => {
+              const key = `main-${team.name}-${index}`;
               return <View key={key}>{renderTeamCard(team)}</View>;
             })}
           </>
@@ -139,14 +133,8 @@ const TeamOverviewScreen: React.FC = () => {
         {alternateTeams.length > 0 && (
           <View style={styles.alternatesSection}>
             <Text style={styles.alternatesTitle}>Alternate Teams</Text>
-            {alternateTeams.map((team) => {
-              const key = `alternate-${team.id}`;
-              console.log(
-                "TeamOverview: Rendering alternate team with key:",
-                key,
-                "Team:",
-                team.name
-              );
+            {alternateTeams.map((team, index) => {
+              const key = `alternate-${team.name}-${index}`;
               return <View key={key}>{renderAlternateTeamCard(team)}</View>;
             })}
           </View>

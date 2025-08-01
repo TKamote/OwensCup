@@ -49,7 +49,7 @@ const TourInputScreen: React.FC = () => {
 
   // Current team being configured - ID should be based on confirmed teams count
   const [currentTeam, setCurrentTeam] = useState<Team>({
-    id: confirmedTeams.length + 1,
+    id: Date.now(), // Use timestamp for unique ID
     name: "",
     manager: "",
     captain: "",
@@ -72,7 +72,7 @@ const TourInputScreen: React.FC = () => {
     if (!isEditing) {
       setCurrentTeam((prev) => ({
         ...prev,
-        id: confirmedTeams.length + 1,
+        id: Date.now(), // Use timestamp for unique ID
       }));
     }
   }, [confirmedTeams.length, isEditing]);
@@ -271,8 +271,8 @@ const TourInputScreen: React.FC = () => {
     setIsEditing(false);
     setEditingTeamId(null);
 
-    // Reset to next available team
-    const nextTeamId = Math.max(...confirmedTeams.map((t) => t.id)) + 1;
+    // Use timestamp for unique ID instead of relying on team.id
+    const nextTeamId = Date.now();
     setCurrentTeam({
       id: nextTeamId,
       name: "",
@@ -596,14 +596,8 @@ const TourInputScreen: React.FC = () => {
           </Text>
 
           {/* Main Tournament Teams (First 4) */}
-          {confirmedTeams.slice(0, 4).map((team) => {
-            const key = `confirmed-${team.id}`;
-            console.log(
-              "Rendering confirmed team with key:",
-              key,
-              "Team:",
-              team.name
-            );
+          {confirmedTeams.slice(0, 4).map((team, index) => {
+            const key = `confirmed-${team.name}-${index}`;
             return <View key={key}>{renderConfirmedTeamCard(team)}</View>;
           })}
 
@@ -623,14 +617,8 @@ const TourInputScreen: React.FC = () => {
           {confirmedTeams.length > 4 && (
             <View style={styles.alternatesSection}>
               <Text style={styles.alternatesTitle}>Alternate Teams</Text>
-              {confirmedTeams.slice(4).map((team) => {
-                const key = `alternate-${team.id}`;
-                console.log(
-                  "Rendering alternate team with key:",
-                  key,
-                  "Team:",
-                  team.name
-                );
+              {confirmedTeams.slice(4).map((team, index) => {
+                const key = `alternate-${team.name}-${index + 4}`;
                 return <View key={key}>{renderAlternateTeamCard(team)}</View>;
               })}
             </View>
