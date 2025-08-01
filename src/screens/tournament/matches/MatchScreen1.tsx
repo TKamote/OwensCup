@@ -417,6 +417,9 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   headerButtons: {
+    position: "absolute",
+    right: 20,
+    top: 20,
     flexDirection: "row",
     gap: SPACING.sm,
   },
