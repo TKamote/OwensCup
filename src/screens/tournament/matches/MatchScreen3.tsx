@@ -39,6 +39,16 @@ const MatchScreen3: React.FC = () => {
   const [adjustModalVisible, setAdjustModalVisible] = useState(false);
   const [scoreAdjustModalVisible, setScoreAdjustModalVisible] = useState(false);
 
+  // Get the winner team objects
+  const getWinnerTeamObject = (winnerName: string) => {
+    return tournamentState.confirmedTeams.find(
+      (team) => team.name === winnerName
+    );
+  };
+
+  const winner1 = getWinnerTeamObject(tournamentState.semiFinal1.winner || "");
+  const winner2 = getWinnerTeamObject(tournamentState.semiFinal2.winner || "");
+
   const handleScoreChange = (
     matchIndex: number,
     teamIndex: 0 | 1,
@@ -277,6 +287,7 @@ const MatchScreen3: React.FC = () => {
               score: currentMatchup.teamScores[1],
             },
           ]}
+          teamObjects={[winner1 || null, winner2 || null]}
         />
 
         <FlatList

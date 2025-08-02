@@ -326,6 +326,7 @@ const MatchScreen2: React.FC = () => {
               score: currentMatchup.teamScores[1],
             },
           ]}
+          teamObjects={[team1, team2]}
         />
 
         <FlatList

@@ -13,6 +13,9 @@ import {
 const LiveTournamentScreen: React.FC = () => {
   const { tournamentState } = useTournament();
 
+  // Get the first 4 teams (main teams) from confirmed teams
+  const mainTeams = tournamentState.confirmedTeams.slice(0, 4);
+
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
@@ -28,14 +31,18 @@ const LiveTournamentScreen: React.FC = () => {
             <Text style={styles.matchupTitle}>Semi-Final 1</Text>
             <View style={styles.teamRow}>
               <View style={styles.teamCard}>
-                <Text style={styles.teamName}>{teamData[0].name}</Text>
+                <Text style={styles.teamName}>
+                  {mainTeams[0]?.name || "Team A"}
+                </Text>
                 <Text style={styles.teamScore}>
                   {tournamentState.semiFinal1.teamScores[0]}
                 </Text>
               </View>
               <Text style={styles.vs}>vs</Text>
               <View style={styles.teamCard}>
-                <Text style={styles.teamName}>{teamData[1].name}</Text>
+                <Text style={styles.teamName}>
+                  {mainTeams[1]?.name || "Team B"}
+                </Text>
                 <Text style={styles.teamScore}>
                   {tournamentState.semiFinal1.teamScores[1]}
                 </Text>
@@ -47,14 +54,18 @@ const LiveTournamentScreen: React.FC = () => {
             <Text style={styles.matchupTitle}>Semi-Final 2</Text>
             <View style={styles.teamRow}>
               <View style={styles.teamCard}>
-                <Text style={styles.teamName}>{teamData[2].name}</Text>
+                <Text style={styles.teamName}>
+                  {mainTeams[2]?.name || "Team C"}
+                </Text>
                 <Text style={styles.teamScore}>
                   {tournamentState.semiFinal2.teamScores[0]}
                 </Text>
               </View>
               <Text style={styles.vs}>vs</Text>
               <View style={styles.teamCard}>
-                <Text style={styles.teamName}>{teamData[3].name}</Text>
+                <Text style={styles.teamName}>
+                  {mainTeams[3]?.name || "Team D"}
+                </Text>
                 <Text style={styles.teamScore}>
                   {tournamentState.semiFinal2.teamScores[1]}
                 </Text>

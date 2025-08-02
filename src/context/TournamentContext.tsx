@@ -540,18 +540,24 @@ export const TournamentProvider: React.FC<TournamentProviderProps> = ({
           matchScores: newSemiFinal1MatchScores,
           teamScores: [0, 0] as [number, number],
           currentMatch: 0,
+          winner: null, // Clear winner
+          modalVisible: false, // Clear modal
         },
         semiFinal2: {
           ...prevState.semiFinal2,
           matchScores: newSemiFinal2MatchScores,
           teamScores: [0, 0] as [number, number],
           currentMatch: 0,
+          winner: null, // Clear winner
+          modalVisible: false, // Clear modal
         },
         final: {
           ...prevState.final,
           matchScores: newFinalMatchScores,
           teamScores: [0, 0] as [number, number],
           currentMatch: 0,
+          winner: null, // Clear winner
+          modalVisible: false, // Clear modal
         },
         tournamentChampion: null,
       };
@@ -622,11 +628,16 @@ export const TournamentProvider: React.FC<TournamentProviderProps> = ({
   };
 
   const setConfirmedTeams = (teams: Team[]) => {
+    console.log("setConfirmedTeams called with:", teams);
+    console.log("Current user:", user?.uid);
+
     setTournamentState((prevState) => {
       const newState = {
         ...prevState,
         confirmedTeams: teams,
       };
+
+      console.log("New state with teams:", newState.confirmedTeams);
 
       // Save to Firebase with updated state (flattened)
       if (user) {
@@ -675,10 +686,18 @@ export const TournamentProvider: React.FC<TournamentProviderProps> = ({
           raceToScore: newState.raceToScore,
         };
 
-        saveTournamentData(user.uid, flattenedData).catch((error) => {
-          console.error("Error syncing teams to Firebase:", error);
-          setError("Failed to sync teams to cloud");
-        });
+        console.log("Saving to Firebase:", flattenedData);
+
+        saveTournamentData(user.uid, flattenedData)
+          .then(() => {
+            console.log("Successfully saved to Firebase");
+          })
+          .catch((error) => {
+            console.error("Error syncing teams to Firebase:", error);
+            setError("Failed to sync teams to cloud");
+          });
+      } else {
+        console.log("No user found, cannot save to Firebase");
       }
 
       return newState;

@@ -33,6 +33,12 @@ const TournamentDashboard = () => {
   // Get the first 4 teams (main teams) from confirmed teams
   const mainTeams = tournamentState.confirmedTeams.slice(0, 4);
 
+  console.log(
+    "TournamentDashboard - confirmedTeams:",
+    tournamentState.confirmedTeams
+  );
+  console.log("TournamentDashboard - mainTeams:", mainTeams);
+
   // Determine match status based on tournament state
   const getMatchStatus = (matchNumber: number) => {
     if (matchNumber === 1) {

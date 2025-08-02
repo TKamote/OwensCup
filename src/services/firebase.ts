@@ -87,49 +87,32 @@ export const saveTournamentData = async (
   tournamentData: any
 ) => {
   try {
-    console.log("Attempting to save tournament data for user:", userId);
-    console.log("Tournament data:", tournamentData);
-    
-    // Save tournament data to Firestore
+    console.log("Firebase: Saving tournament data for user:", userId);
+    console.log("Firebase: Tournament data:", tournamentData);
+
     await setDoc(doc(db, "users", userId, "tournament", "current"), {
       ...tournamentData,
       updatedAt: new Date(),
     });
-    console.log("Tournament data saved successfully");
+
+    console.log("Firebase: Successfully saved tournament data");
   } catch (error) {
-    console.error("Error saving tournament data:", error);
-    console.error("Error details:", {
-      code: error.code,
-      message: error.message,
-      userId: userId,
-      dataSize: JSON.stringify(tournamentData).length
-    });
+    console.error("Firebase: Error saving tournament data:", error);
     throw error;
   }
 };
 
 export const loadTournamentData = async (userId: string) => {
   try {
-    console.log("Attempting to load tournament data for user:", userId);
-    
-    // Load tournament data from Firestore
     const docRef = doc(db, "users", userId, "tournament", "current");
     const docSnap = await getDoc(docRef);
 
     if (docSnap.exists()) {
-      console.log("Tournament data loaded successfully");
       return docSnap.data();
     } else {
-      console.log("No tournament data found, returning empty state");
       return null;
     }
   } catch (error) {
-    console.error("Error loading tournament data:", error);
-    console.error("Error details:", {
-      code: error.code,
-      message: error.message,
-      userId: userId
-    });
     throw error;
   }
 };

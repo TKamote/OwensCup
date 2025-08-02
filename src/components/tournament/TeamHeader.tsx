@@ -12,28 +12,22 @@ import { useTournament } from "../../context/TournamentContext";
 
 interface TeamHeaderProps {
   teams: { name: string; score: number }[];
+  teamObjects?: ({ icon: string; color: string } | null)[];
 }
 
-const TeamHeader: React.FC<TeamHeaderProps> = ({ teams }) => {
+const TeamHeader: React.FC<TeamHeaderProps> = ({ teams, teamObjects }) => {
   const { tournamentState } = useTournament();
 
-  // Determine which teams to show based on the team names
-  // This is a simple heuristic - in a real app you'd pass the team indices
-  const isMatchScreen2 =
-    teams[0]?.name?.includes("Team C") || teams[1]?.name?.includes("Team D");
-
-  const mainTeams = isMatchScreen2
-    ? tournamentState.confirmedTeams.slice(2, 4)
-    : tournamentState.confirmedTeams.slice(0, 2);
-  const team1 = mainTeams[0];
-  const team2 = mainTeams[1];
+  // Use passed team objects if available, otherwise fall back to confirmed teams
+  const team1 = teamObjects?.[0] || tournamentState.confirmedTeams[0];
+  const team2 = teamObjects?.[1] || tournamentState.confirmedTeams[1];
 
   // Get actual team names or use placeholders
   const getTeamName = (index: number) => {
     if (index === 0) {
-      return team1?.name || teams[0].name;
+      return teams[0].name || team1?.name || "Team A";
     } else {
-      return team2?.name || teams[1].name;
+      return teams[1].name || team2?.name || "Team B";
     }
   };
 
