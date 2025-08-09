@@ -300,6 +300,60 @@ export const TournamentProvider: React.FC<TournamentProviderProps> = ({
     }
   }, [user]);
 
+  // Assign team IDs to matches when teams are loaded
+  useEffect(() => {
+    if (tournamentState.confirmedTeams.length >= 4) {
+      console.log("Teams loaded, assigning team IDs to matches");
+      setTournamentState((prev) => {
+        const updatedRounds = { ...prev.rounds };
+        
+        // Assign team IDs to semiFinal1 (teams 0 & 1)
+        updatedRounds.semiFinal1.matches = updatedRounds.semiFinal1.matches.map((match: any) => ({
+          ...match,
+          team1Id: prev.confirmedTeams[0].id,
+          team2Id: prev.confirmedTeams[1].id,
+        }));
+        
+        // Assign team IDs to semiFinal2 (teams 2 & 3)
+        updatedRounds.semiFinal2.matches = updatedRounds.semiFinal2.matches.map((match: any) => ({
+          ...match,
+          team1Id: prev.confirmedTeams[2].id,
+          team2Id: prev.confirmedTeams[3].id,
+        }));
+
+        return {
+          ...prev,
+          rounds: updatedRounds,
+        };
+      });
+    }
+  }, [tournamentState.confirmedTeams.length]);
+
+  // Update Final round with winning teams when semi-finals are completed
+  useEffect(() => {
+    const sf1Winner = tournamentState.rounds.semiFinal1.winnerTeamId;
+    const sf2Winner = tournamentState.rounds.semiFinal2.winnerTeamId;
+    
+    if (sf1Winner && sf2Winner) {
+      console.log("Both semi-finals completed, updating Final round with winners:", sf1Winner, sf2Winner);
+      setTournamentState((prev) => {
+        const updatedRounds = { ...prev.rounds };
+        
+        // Update Final round matches with the winning team IDs
+        updatedRounds.final.matches = updatedRounds.final.matches.map((match: any) => ({
+          ...match,
+          team1Id: sf1Winner,
+          team2Id: sf2Winner,
+        }));
+
+        return {
+          ...prev,
+          rounds: updatedRounds,
+        };
+      });
+    }
+  }, [tournamentState.rounds.semiFinal1.winnerTeamId, tournamentState.rounds.semiFinal2.winnerTeamId]);
+
   const addToHistory = (action: Omit<ActionHistory, "timestamp">) => {
     setActionHistory((prev) => [...prev, { ...action, timestamp: Date.now() }]);
   };
@@ -454,6 +508,8 @@ export const TournamentProvider: React.FC<TournamentProviderProps> = ({
             };
           })
           .filter(Boolean);
+
+
 
         setTournamentState({
           tournamentId: savedData.tournamentId || generateTournamentId(),
@@ -702,7 +758,11 @@ export const TournamentProvider: React.FC<TournamentProviderProps> = ({
         updatedMatch.team1Score >= raceToScore ||
         updatedMatch.team2Score >= raceToScore;
 
-      console.log(`Match ${matchIndex + 1} - Scores: [${updatedMatch.team1Score}, ${updatedMatch.team2Score}], Race to: ${raceToScore}, Completed: ${isMatchCompleted}`);
+      console.log(
+        `Match ${matchIndex + 1} - Scores: [${updatedMatch.team1Score}, ${
+          updatedMatch.team2Score
+        }], Race to: ${raceToScore}, Completed: ${isMatchCompleted}`
+      );
 
       if (isMatchCompleted) {
         // Determine match winner
@@ -712,7 +772,9 @@ export const TournamentProvider: React.FC<TournamentProviderProps> = ({
         updatedMatch.isCompleted = true;
 
         console.log(
-          `🎯 Match ${matchIndex + 1} completed! Winner: Team ${matchWinner + 1} (${updatedMatch.winnerId})`
+          `🎯 Match ${matchIndex + 1} completed! Winner: Team ${
+            matchWinner + 1
+          } (${updatedMatch.winnerId})`
         );
       } else {
         // If match is no longer completed (e.g., race-to-score was increased), reset completion
@@ -733,8 +795,6 @@ export const TournamentProvider: React.FC<TournamentProviderProps> = ({
         (m) => m.winnerId === match.team2Id
       ).length;
 
-      console.log(`Round ${roundName} - Team1 Wins: ${team1Wins}, Team2 Wins: ${team2Wins}, Completed Matches: ${completedMatches.length}`);
-
       // Check if round is completed (best of 9 matches = 5 wins needed)
       const winsNeeded = Math.ceil(9 / 2); // 5 wins needed
       let roundWinnerId = null;
@@ -743,16 +803,22 @@ export const TournamentProvider: React.FC<TournamentProviderProps> = ({
       if (team1Wins >= winsNeeded) {
         roundWinnerId = match.team1Id;
         isRoundCompleted = true;
-        console.log(`🏆 Round ${roundName} completed! Winner: Team 1 (${roundWinnerId})`);
+        console.log(
+          `🏆 Round ${roundName} completed! Winner: Team 1 (${roundWinnerId})`
+        );
       } else if (team2Wins >= winsNeeded) {
         roundWinnerId = match.team2Id;
         isRoundCompleted = true;
-        console.log(`🏆 Round ${roundName} completed! Winner: Team 2 (${roundWinnerId})`);
+        console.log(
+          `🏆 Round ${roundName} completed! Winner: Team 2 (${roundWinnerId})`
+        );
       } else {
         // If no team has enough wins, round is not completed
         roundWinnerId = null;
         isRoundCompleted = false;
-        console.log(`Round ${roundName} - No winner yet. Need ${winsNeeded} wins.`);
+        console.log(
+          `Round ${roundName} - No winner yet. Need ${winsNeeded} wins.`
+        );
       }
 
       // Add to history
@@ -962,6 +1028,7 @@ export const TournamentProvider: React.FC<TournamentProviderProps> = ({
   };
 
   const setConfirmedTeams = (teams: Team[]) => {
+    console.log("setConfirmedTeams called with teams:", teams.length);
     // Convert teams to new structure with unique IDs and Player arrays
     const teamsWithUniqueIds = teams.map((team) => {
       // Generate unique team ID if not already present
@@ -980,10 +1047,38 @@ export const TournamentProvider: React.FC<TournamentProviderProps> = ({
       };
     });
 
-    setTournamentState((prev) => ({
-      ...prev,
-      confirmedTeams: teamsWithUniqueIds,
-    }));
+    setTournamentState((prev) => {
+      // Update matches with real team IDs
+      const updatedRounds = { ...prev.rounds };
+
+      // Assign team IDs to semiFinal1 (teams 0 & 1)
+      if (teamsWithUniqueIds.length >= 2) {
+        updatedRounds.semiFinal1.matches = updatedRounds.semiFinal1.matches.map(
+          (match) => ({
+            ...match,
+            team1Id: teamsWithUniqueIds[0].id,
+            team2Id: teamsWithUniqueIds[1].id,
+          })
+        );
+      }
+
+      // Assign team IDs to semiFinal2 (teams 2 & 3)
+      if (teamsWithUniqueIds.length >= 4) {
+        updatedRounds.semiFinal2.matches = updatedRounds.semiFinal2.matches.map(
+          (match) => ({
+            ...match,
+            team1Id: teamsWithUniqueIds[2].id,
+            team2Id: teamsWithUniqueIds[3].id,
+          })
+        );
+      }
+
+      return {
+        ...prev,
+        confirmedTeams: teamsWithUniqueIds,
+        rounds: updatedRounds,
+      };
+    });
 
     console.log("Teams set with unique IDs:", teamsWithUniqueIds);
   };

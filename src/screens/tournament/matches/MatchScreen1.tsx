@@ -40,15 +40,23 @@ const MatchScreen1: React.FC = () => {
   const [scoreAdjustModalVisible, setScoreAdjustModalVisible] = useState(false);
   const [winnerModalVisible, setWinnerModalVisible] = useState(false);
 
-  // Debug winner modal visibility
+  // Simple winner detection - check if any team has 5 wins
   useEffect(() => {
-    console.log(`Winner modal visibility changed to: ${winnerModalVisible}`);
-  }, [winnerModalVisible]);
+    const teamScores = [0, 0];
+    currentMatchup.matches.forEach((match) => {
+      if (match.isCompleted) {
+        if (match.team1Score > match.team2Score) {
+          teamScores[0]++;
+        } else {
+          teamScores[1]++;
+        }
+      }
+    });
 
-  // Debug modal visibility
-  useEffect(() => {
-    console.log(`scoreAdjustModalVisible: ${scoreAdjustModalVisible}`);
-  }, [scoreAdjustModalVisible]);
+    if (teamScores[0] >= 5 || teamScores[1] >= 5) {
+      setWinnerModalVisible(true);
+    }
+  }, [currentMatchup.matches]);
 
   // Get the teams for this matchup
   const mainTeams = tournamentState.confirmedTeams.slice(0, 2);
@@ -73,25 +81,6 @@ const MatchScreen1: React.FC = () => {
 
   const team1Players = getTeamPlayers(team1);
   const team2Players = getTeamPlayers(team2);
-
-  // Debug selectedMatch state
-  useEffect(() => {
-    if (selectedMatch !== null) {
-      console.log(`selectedMatch changed to: ${selectedMatch}`);
-      console.log(`Current match data:`, currentMatchup.matches[selectedMatch]);
-    }
-  }, [selectedMatch, currentMatchup.matches]);
-
-  // Watch for round completion and show winner modal
-  useEffect(() => {
-    console.log(
-      `Round completion check - isCompleted: ${currentMatchup.isCompleted}, winnerTeamId: ${currentMatchup.winnerTeamId}`
-    );
-    if (currentMatchup.isCompleted && currentMatchup.winnerTeamId) {
-      console.log("🎉 Round completed! Showing winner modal");
-      setWinnerModalVisible(true);
-    }
-  }, [currentMatchup.isCompleted, currentMatchup.winnerTeamId]);
 
   // Get player names for specific matches
   const getPlayerNamesForMatch = (matchIndex: number, teamIndex: number) => {
@@ -382,7 +371,7 @@ const MatchScreen1: React.FC = () => {
       </Modal>
 
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>Match 1</Text>
+        <Text style={styles.headerTitle}>Semifinal 1</Text>
         <View style={styles.headerButtons}>
           <TouchableOpacity
             style={styles.headerButton}
@@ -392,19 +381,6 @@ const MatchScreen1: React.FC = () => {
               name="reload"
               size={24}
               color={COLORS.warning}
-            />
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.headerButton}
-            onPress={() => {
-              console.log("Test button pressed - showing winner modal");
-              setWinnerModalVisible(true);
-            }}
-          >
-            <MaterialCommunityIcons
-              name="trophy"
-              size={24}
-              color={COLORS.success}
             />
           </TouchableOpacity>
         </View>

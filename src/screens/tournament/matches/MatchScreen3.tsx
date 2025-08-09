@@ -372,6 +372,78 @@ const MatchScreen3: React.FC = () => {
             const match = currentMatchup.matches[index];
             const isCompleted = match.isCompleted;
 
+            // Get the correct teams for the Final round
+            const finalTeam1 = getWinnerTeamObject(
+              tournamentState.rounds.semiFinal1.winnerTeamId
+            );
+            const finalTeam2 = getWinnerTeamObject(
+              tournamentState.rounds.semiFinal2.winnerTeamId
+            );
+
+            // Get player names for this specific match
+            const getPlayerNamesForMatch = (
+              matchIndex: number,
+              teamIndex: number
+            ) => {
+              const team = teamIndex === 0 ? finalTeam1 : finalTeam2;
+              if (!team || !team.players) return "Unknown";
+
+              const players = team.players;
+              switch (matchIndex) {
+                case 0: // Match 1: All 5 players - show all player names
+                  return players.map((p) => p.name).join(", ");
+                case 1: // Match 2: Players 2 & 3 (1st Doubles)
+                  return `${players[1]?.name || "P2"}, ${
+                    players[2]?.name || "P3"
+                  }`;
+                case 2: // Match 3: Player 1 (1st Singles)
+                  return players[0]?.name || "P1";
+                case 3: // Match 4: Players 4 & 5 (2nd Doubles)
+                  return `${players[3]?.name || "P4"}, ${
+                    players[4]?.name || "P5"
+                  }`;
+                case 4: // Match 5: Player 2 (2nd Singles)
+                  return players[1]?.name || "P2";
+                case 5: // Match 6: All 5 players (2nd Team Match) - show all player names
+                  return players.map((p) => p.name).join(", ");
+                case 6: // Match 7: 3rd Doubles (P1 & P3)
+                  return `${players[0]?.name || "P1"}, ${
+                    players[2]?.name || "P3"
+                  }`;
+                case 7: // Match 8: Player 3 (3rd Singles) - Captain's pick
+                  return players[2]?.name || "P3";
+                case 8: // Match 9: 4th Singles - Captain's pick
+                  return players[3]?.name || "P4";
+                default:
+                  return "Players TBD";
+              }
+            };
+
+            const getMatchType = (matchIndex: number) => {
+              switch (matchIndex) {
+                case 0:
+                  return "1st Team Match";
+                case 1:
+                  return "1st Doubles";
+                case 2:
+                  return "1st Singles";
+                case 3:
+                  return "2nd Doubles";
+                case 4:
+                  return "2nd Singles";
+                case 5:
+                  return "2nd Team Match";
+                case 6:
+                  return "3rd Doubles";
+                case 7:
+                  return "3rd Singles";
+                case 8:
+                  return "4th Singles";
+                default:
+                  return "Match";
+              }
+            };
+
             return (
               <MatchCard
                 match={item}
@@ -388,6 +460,10 @@ const MatchScreen3: React.FC = () => {
                   setSelectedMatch(index);
                   setScoreAdjustModalVisible(true);
                 }}
+                playerDisplay={getPlayerNamesForMatch(index, 0)}
+                matchType={getMatchType(index)}
+                // Pass the actual Final round teams instead of using teamStartIndex
+                teamStartIndex={-1} // Special value to indicate Final round
               />
             );
           }}

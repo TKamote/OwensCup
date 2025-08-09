@@ -5,7 +5,9 @@ import {
   StyleSheet,
   SafeAreaView,
   TouchableOpacity,
+  ScrollView,
 } from "react-native";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 import { useTournament } from "../../context/TournamentContext";
 import {
@@ -76,9 +78,16 @@ const TournamentDashboard = () => {
       return {
         team1: sf1Winner?.name || "Winner Match 1",
         team2: sf2Winner?.name || "Winner Match 2",
+        team1Obj: sf1Winner,
+        team2Obj: sf2Winner,
       };
     }
-    return { team1: "Winner Match 1", team2: "Winner Match 2" };
+    return {
+      team1: "Winner Match 1",
+      team2: "Winner Match 2",
+      team1Obj: null,
+      team2Obj: null,
+    };
   };
 
   return (
@@ -95,7 +104,10 @@ const TournamentDashboard = () => {
         )}
       </View>
 
-      <View style={styles.bracketContainer}>
+      <ScrollView
+        style={styles.bracketContainer}
+        showsVerticalScrollIndicator={false}
+      >
         <View style={styles.semiFinals}>
           <Text style={styles.roundTitle}>Semi-Finals</Text>
 
@@ -103,15 +115,29 @@ const TournamentDashboard = () => {
             style={styles.matchCard}
             onPress={() => handleMatchSelect(1)}
           >
-            <Text style={styles.matchTitle}>Match 1</Text>
+            <Text style={styles.matchTitle}>Semifinal 1</Text>
             <View style={styles.teamsContainer}>
-              <Text style={styles.teamName}>
-                {mainTeams[0]?.name || "Team A"}
-              </Text>
+              <View style={styles.teamWithIcon}>
+                <MaterialCommunityIcons
+                  name={(mainTeams[0]?.icon as any) || "account"}
+                  size={32}
+                  color={mainTeams[0]?.color || COLORS.primary}
+                />
+                <Text style={styles.teamName}>
+                  {mainTeams[0]?.name || "Team A"}
+                </Text>
+              </View>
               <Text style={styles.vs}>vs</Text>
-              <Text style={styles.teamName}>
-                {mainTeams[1]?.name || "Team B"}
-              </Text>
+              <View style={styles.teamWithIcon}>
+                <MaterialCommunityIcons
+                  name={(mainTeams[1]?.icon as any) || "account"}
+                  size={32}
+                  color={mainTeams[1]?.color || COLORS.primary}
+                />
+                <Text style={styles.teamName}>
+                  {mainTeams[1]?.name || "Team B"}
+                </Text>
+              </View>
             </View>
             <View style={styles.scoreContainer}>
               <Text style={styles.score}>
@@ -144,15 +170,29 @@ const TournamentDashboard = () => {
             style={styles.matchCard}
             onPress={() => handleMatchSelect(2)}
           >
-            <Text style={styles.matchTitle}>Match 2</Text>
+            <Text style={styles.matchTitle}>Semifinal 2</Text>
             <View style={styles.teamsContainer}>
-              <Text style={styles.teamName}>
-                {mainTeams[2]?.name || "Team C"}
-              </Text>
+              <View style={styles.teamWithIcon}>
+                <MaterialCommunityIcons
+                  name={(mainTeams[2]?.icon as any) || "account"}
+                  size={32}
+                  color={mainTeams[2]?.color || COLORS.primary}
+                />
+                <Text style={styles.teamName}>
+                  {mainTeams[2]?.name || "Team C"}
+                </Text>
+              </View>
               <Text style={styles.vs}>vs</Text>
-              <Text style={styles.teamName}>
-                {mainTeams[3]?.name || "Team D"}
-              </Text>
+              <View style={styles.teamWithIcon}>
+                <MaterialCommunityIcons
+                  name={(mainTeams[3]?.icon as any) || "account"}
+                  size={32}
+                  color={mainTeams[3]?.color || COLORS.primary}
+                />
+                <Text style={styles.teamName}>
+                  {mainTeams[3]?.name || "Team D"}
+                </Text>
+              </View>
             </View>
             <View style={styles.scoreContainer}>
               <Text style={styles.score}>
@@ -188,11 +228,25 @@ const TournamentDashboard = () => {
             style={styles.finalCard}
             onPress={() => handleMatchSelect(3)}
           >
-            <Text style={styles.matchTitle}>Match 3</Text>
+            <Text style={styles.matchTitle}>Final</Text>
             <View style={styles.teamsContainer}>
-              <Text style={styles.teamName}>{getFinalTeams().team1}</Text>
+              <View style={styles.teamWithIcon}>
+                <MaterialCommunityIcons
+                  name={(getFinalTeams().team1Obj?.icon as any) || "account"}
+                  size={32}
+                  color={getFinalTeams().team1Obj?.color || COLORS.primary}
+                />
+                <Text style={styles.teamName}>{getFinalTeams().team1}</Text>
+              </View>
               <Text style={styles.vs}>vs</Text>
-              <Text style={styles.teamName}>{getFinalTeams().team2}</Text>
+              <View style={styles.teamWithIcon}>
+                <MaterialCommunityIcons
+                  name={(getFinalTeams().team2Obj?.icon as any) || "account"}
+                  size={32}
+                  color={getFinalTeams().team2Obj?.color || COLORS.primary}
+                />
+                <Text style={styles.teamName}>{getFinalTeams().team2}</Text>
+              </View>
             </View>
             <View style={styles.scoreContainer}>
               <Text style={styles.score}>
@@ -232,7 +286,7 @@ const TournamentDashboard = () => {
             </Text>
           </View>
         )}
-      </View>
+      </ScrollView>
     </SafeAreaView>
   );
 };
@@ -293,6 +347,11 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     alignItems: "center",
     marginBottom: SPACING.sm,
+  },
+  teamWithIcon: {
+    flexDirection: "column",
+    alignItems: "center",
+    gap: SPACING.xs,
   },
   teamName: {
     fontSize: FONTS.size.lg,

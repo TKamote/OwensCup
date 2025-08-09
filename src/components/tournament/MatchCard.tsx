@@ -49,12 +49,28 @@ const MatchCard: React.FC<MatchCardProps> = ({
   const { tournamentState } = useTournament();
 
   // Use the teamStartIndex to determine which teams to show
-  const mainTeams = tournamentState.confirmedTeams.slice(
-    teamStartIndex,
-    teamStartIndex + 2
-  );
-  const team1 = mainTeams[0];
-  const team2 = mainTeams[1];
+  let team1, team2;
+
+  if (teamStartIndex === -1) {
+    // Special case for Final round - use the actual Final round teams
+    const sf1Winner = tournamentState.rounds.semiFinal1.winnerTeamId;
+    const sf2Winner = tournamentState.rounds.semiFinal2.winnerTeamId;
+
+    team1 = tournamentState.confirmedTeams.find(
+      (team) => team.id === sf1Winner
+    );
+    team2 = tournamentState.confirmedTeams.find(
+      (team) => team.id === sf2Winner
+    );
+  } else {
+    // Normal case - use teamStartIndex
+    const mainTeams = tournamentState.confirmedTeams.slice(
+      teamStartIndex,
+      teamStartIndex + 2
+    );
+    team1 = mainTeams[0];
+    team2 = mainTeams[1];
+  }
 
   // Parse players for each team
   const getTeamPlayers = (team: any) => {
@@ -75,10 +91,10 @@ const MatchCard: React.FC<MatchCardProps> = ({
     const players = teamIndex === 0 ? team1Players : team2Players;
 
     switch (matchIndex) {
-      case 0: // Match 1: All 5 players - show team name
-        return teamIndex === 0
-          ? team1?.name || "Team A"
-          : team2?.name || "Team B";
+      case 0: // Match 1: All 5 players - show all player names
+        const team1AllPlayers = team1Players.map((p) => p.name).join(", ");
+        const team2AllPlayers = team2Players.map((p) => p.name).join(", ");
+        return teamIndex === 0 ? team1AllPlayers : team2AllPlayers;
       case 1: // Match 2: Players 2 & 3 (1st Doubles)
         return `${players[1]?.name || "P2"}, ${players[2]?.name || "P3"}`;
       case 2: // Match 3: Player 1 (1st Singles)
@@ -87,10 +103,10 @@ const MatchCard: React.FC<MatchCardProps> = ({
         return `${players[3]?.name || "P4"}, ${players[4]?.name || "P5"}`;
       case 4: // Match 5: Player 2 (2nd Singles)
         return players[1]?.name || "P2";
-      case 5: // Match 6: All 5 players (2nd Team Match) - show team name
-        return teamIndex === 0
-          ? team1?.name || "Team A"
-          : team2?.name || "Team B";
+      case 5: // Match 6: All 5 players (2nd Team Match) - show all player names
+        const team1AllPlayers2 = team1Players.map((p) => p.name).join(", ");
+        const team2AllPlayers2 = team2Players.map((p) => p.name).join(", ");
+        return teamIndex === 0 ? team1AllPlayers2 : team2AllPlayers2;
       case 6: // Match 7: 3rd Doubles (P1 & P3)
         return `${players[0]?.name || "P1"}, ${players[2]?.name || "P3"}`;
       case 7: // Match 8: Player 3 (3rd Singles) - Captain's pick
@@ -104,6 +120,12 @@ const MatchCard: React.FC<MatchCardProps> = ({
 
   const leftPlayerName = getPlayerNamesForMatch(matchIndex, 0);
   const rightPlayerName = getPlayerNamesForMatch(matchIndex, 1);
+
+  // Always use team icons for consistency
+  const getIconForMatch = (teamIndex: number) => {
+    const team = teamIndex === 0 ? team1 : team2;
+    return (team?.icon as any) || "account";
+  };
 
   return (
     <View
@@ -147,10 +169,10 @@ const MatchCard: React.FC<MatchCardProps> = ({
         )}
       </View>
 
-      <Text style={styles.subtitle}>
-        Players: {playerDisplay || match.players}
-      </Text>
-      <Text style={styles.subtitle}>Race to {match.raceTo}</Text>
+      <View style={styles.matchInfoRow}>
+        <Text style={styles.subtitle}>Race to {match.raceTo}</Text>
+        {isCompleted && <Text style={styles.completedText}>Completed</Text>}
+      </View>
 
       <View style={styles.scoreRow}>
         {!readOnly ? (
@@ -169,16 +191,13 @@ const MatchCard: React.FC<MatchCardProps> = ({
             >
               <View style={styles.teamInfo}>
                 <MaterialCommunityIcons
-                  name={(team1?.icon as any) || "account"}
+                  name={getIconForMatch(0)}
                   size={24}
                   color={team1?.color || COLORS.primary}
                 />
                 <Text style={styles.playerName}>{leftPlayerName}</Text>
               </View>
               <Text style={styles.score}>{matchScore[0]}</Text>
-              {isCompleted && matchScore[0] === match.raceTo && (
-                <Text style={styles.completedText}>Completed</Text>
-              )}
             </TouchableOpacity>
 
             {/* Right Team/Player */}
@@ -195,16 +214,13 @@ const MatchCard: React.FC<MatchCardProps> = ({
             >
               <View style={styles.teamInfo}>
                 <MaterialCommunityIcons
-                  name={(team2?.icon as any) || "account"}
+                  name={getIconForMatch(1)}
                   size={24}
                   color={team2?.color || COLORS.primary}
                 />
                 <Text style={styles.playerName}>{rightPlayerName}</Text>
               </View>
               <Text style={styles.score}>{matchScore[1]}</Text>
-              {isCompleted && matchScore[1] === match.raceTo && (
-                <Text style={styles.completedText}>Completed</Text>
-              )}
             </TouchableOpacity>
           </>
         ) : (
@@ -213,30 +229,24 @@ const MatchCard: React.FC<MatchCardProps> = ({
             <View style={styles.scoreBtn}>
               <View style={styles.teamInfo}>
                 <MaterialCommunityIcons
-                  name={(team1?.icon as any) || "account"}
+                  name={getIconForMatch(0)}
                   size={24}
                   color={team1?.color || COLORS.primary}
                 />
                 <Text style={styles.playerName}>{leftPlayerName}</Text>
               </View>
               <Text style={styles.score}>{matchScore[0]}</Text>
-              {isCompleted && matchScore[0] === match.raceTo && (
-                <Text style={styles.completedText}>Completed</Text>
-              )}
             </View>
             <View style={styles.scoreBtn}>
               <View style={styles.teamInfo}>
                 <MaterialCommunityIcons
-                  name={(team2?.icon as any) || "account"}
+                  name={getIconForMatch(1)}
                   size={24}
                   color={team2?.color || COLORS.primary}
                 />
                 <Text style={styles.playerName}>{rightPlayerName}</Text>
               </View>
               <Text style={styles.score}>{matchScore[1]}</Text>
-              {isCompleted && matchScore[1] === match.raceTo && (
-                <Text style={styles.completedText}>Completed</Text>
-              )}
             </View>
           </>
         )}
@@ -278,6 +288,12 @@ const styles = StyleSheet.create({
   subtitle: {
     fontSize: FONTS.size.xs,
     color: COLORS.text.secondary,
+    marginBottom: SPACING.xs,
+  },
+  matchInfoRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     marginBottom: SPACING.xs,
   },
   actionButtons: {

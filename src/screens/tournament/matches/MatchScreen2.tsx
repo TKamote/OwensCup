@@ -39,6 +39,7 @@ const MatchScreen2: React.FC = () => {
   const [adjustModalVisible, setAdjustModalVisible] = useState(false);
   const [scoreAdjustModalVisible, setScoreAdjustModalVisible] = useState(false);
   const [winnerModalVisible, setWinnerModalVisible] = useState(false);
+  const [roundWinner, setRoundWinner] = useState<string | null>(null);
 
   // Get the teams for this matchup (teams 3 & 4)
   const mainTeams = tournamentState.confirmedTeams.slice(2, 4);
@@ -64,11 +65,14 @@ const MatchScreen2: React.FC = () => {
   const team1Players = getTeamPlayers(team1);
   const team2Players = getTeamPlayers(team2);
 
-  // Watch for round completion and show winner modal
+  // Use the context's round winner instead of calculating locally
   useEffect(() => {
     if (currentMatchup.isCompleted && currentMatchup.winnerTeamId) {
-      console.log("Round completed! Showing winner modal");
+      setRoundWinner(currentMatchup.winnerTeamId);
       setWinnerModalVisible(true);
+    } else {
+      setRoundWinner(null);
+      setWinnerModalVisible(false);
     }
   }, [currentMatchup.isCompleted, currentMatchup.winnerTeamId]);
 
@@ -186,9 +190,9 @@ const MatchScreen2: React.FC = () => {
             />
             <Text style={styles.championTitle}>Winner!</Text>
             <Text style={styles.championName}>
-              {currentMatchup.winnerTeamId
+              {roundWinner
                 ? tournamentState.confirmedTeams.find(
-                    (t) => t.id === currentMatchup.winnerTeamId
+                    (t) => t.id === roundWinner
                   )?.name || "Winner"
                 : "Winner"}
             </Text>
@@ -356,19 +360,7 @@ const MatchScreen2: React.FC = () => {
       </Modal>
 
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>Match 2</Text>
-        <View style={styles.headerButtons}>
-          <TouchableOpacity
-            style={styles.headerButton}
-            onPress={() => setAdjustModalVisible(true)}
-          >
-            <MaterialCommunityIcons
-              name="reload"
-              size={24}
-              color={COLORS.warning}
-            />
-          </TouchableOpacity>
-        </View>
+        <Text style={styles.headerTitle}>Semifinal 2</Text>
       </View>
 
       <View style={styles.content}>
@@ -519,6 +511,38 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingTop: SPACING.sm,
   },
+  winnerSection: {
+    backgroundColor: COLORS.success,
+    borderRadius: BORDER_RADIUS.lg,
+    padding: SPACING.lg,
+    marginHorizontal: SPACING.md,
+    marginVertical: SPACING.md,
+    alignItems: "center",
+    ...SHADOWS.md,
+  },
+  winnerTitle: {
+    fontSize: FONTS.size.xl,
+    fontWeight: FONTS.weight.bold,
+    color: COLORS.white,
+    marginBottom: SPACING.sm,
+  },
+  winnerName: {
+    fontSize: FONTS.size.lg,
+    fontWeight: FONTS.weight.medium,
+    color: COLORS.white,
+    marginBottom: SPACING.xs,
+  },
+  winnerId: {
+    fontSize: FONTS.size.sm,
+    color: COLORS.white,
+    opacity: 0.8,
+    marginBottom: SPACING.xs,
+  },
+  roundId: {
+    fontSize: FONTS.size.sm,
+    color: COLORS.white,
+    opacity: 0.8,
+  },
   modalOverlay: {
     flex: 1,
     backgroundColor: "rgba(0, 0, 0, 0.7)",
@@ -526,14 +550,14 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   championModal: {
-    backgroundColor: COLORS.glass.primary,
+    backgroundColor: COLORS.white,
     borderRadius: BORDER_RADIUS["2xl"],
     padding: SPACING["2xl"],
     alignItems: "center",
     width: "80%",
     borderWidth: 1,
-    borderColor: COLORS.glass.border,
-    ...GLASS_SHADOWS.heavy,
+    borderColor: COLORS.gray[200],
+    ...SHADOWS.lg,
   },
   trophyIcon: {
     marginBottom: SPACING.sm,
@@ -560,12 +584,12 @@ const styles = StyleSheet.create({
     paddingHorizontal: SPACING.lg,
     paddingVertical: SPACING.sm,
     borderRadius: BORDER_RADIUS.md,
-    ...GLASS_SHADOWS.medium,
+    ...SHADOWS.md,
   },
   modalButtonText: {
     fontSize: FONTS.size.lg,
     fontWeight: FONTS.weight.bold,
-    color: COLORS.text.primary,
+    color: COLORS.white,
   },
   adjustModal: {
     backgroundColor: COLORS.white,
