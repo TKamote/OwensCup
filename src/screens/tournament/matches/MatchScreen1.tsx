@@ -147,17 +147,11 @@ const MatchScreen1: React.FC = () => {
     teamIndex: 0 | 1,
     newScore: number
   ) => {
-    console.log(
-      `Adjusting score: Match ${matchIndex}, Team ${teamIndex}, New Score: ${newScore}`
-    );
-
     // Get current match scores from the new structure
     const currentMatch = currentMatchup.matches[matchIndex];
     const currentScores = [currentMatch.team1Score, currentMatch.team2Score];
     const oldScore = currentScores[teamIndex];
     const raceToScore = parseInt(tournamentState.raceToScore);
-
-    console.log(`Current scores: [${currentScores}], Race to: ${raceToScore}`);
 
     if (newScore < 0) {
       Alert.alert("Invalid Score", "Score cannot be negative");
@@ -171,13 +165,9 @@ const MatchScreen1: React.FC = () => {
     }
 
     const delta = newScore - currentScores[teamIndex];
-    console.log(`Delta: ${delta}`);
 
     if (delta !== 0) {
-      console.log(`Calling handleScoreChange with delta: ${delta}`);
       handleScoreChange(matchIndex, teamIndex, delta);
-    } else {
-      console.log("No change in score");
     }
   };
 
@@ -274,7 +264,6 @@ const MatchScreen1: React.FC = () => {
                     <TouchableOpacity
                       style={styles.scoreButton}
                       onPress={() => {
-                        console.log("Minus button pressed for Team 1");
                         handleAdjustScore(
                           selectedMatch,
                           0,
@@ -296,7 +285,6 @@ const MatchScreen1: React.FC = () => {
                     <TouchableOpacity
                       style={styles.scoreButton}
                       onPress={() => {
-                        console.log("Plus button pressed for Team 1");
                         handleAdjustScore(
                           selectedMatch,
                           0,
@@ -318,7 +306,6 @@ const MatchScreen1: React.FC = () => {
                     <TouchableOpacity
                       style={styles.scoreButton}
                       onPress={() => {
-                        console.log("Minus button pressed for Team 2");
                         handleAdjustScore(
                           selectedMatch,
                           1,
@@ -340,7 +327,6 @@ const MatchScreen1: React.FC = () => {
                     <TouchableOpacity
                       style={styles.scoreButton}
                       onPress={() => {
-                        console.log("Plus button pressed for Team 2");
                         handleAdjustScore(
                           selectedMatch,
                           1,
@@ -437,7 +423,6 @@ const MatchScreen1: React.FC = () => {
                 isCompleted={isCompleted}
                 onReset={() => handleResetMatch(index)}
                 onAdjust={() => {
-                  console.log(`Opening adjust modal for match ${index}`);
                   setSelectedMatch(index);
                   setScoreAdjustModalVisible(true);
                 }}

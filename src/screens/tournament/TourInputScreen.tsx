@@ -231,14 +231,11 @@ const TourInputScreen: React.FC = () => {
 
     if (isEditing) {
       // Update existing team
-      console.log("Updating team with ID:", editingTeamId);
-      console.log("Teams before update:", confirmedTeams);
 
       const updatedTeams = confirmedTeams.map((team) =>
         team.id === editingTeamId ? newConfirmedTeam : team
       );
 
-      console.log("Teams after update:", updatedTeams);
       setConfirmedTeams(updatedTeams);
       setIsEditing(false);
       setEditingTeamId(null);
@@ -264,8 +261,7 @@ const TourInputScreen: React.FC = () => {
     const availableColors = colorOptions.filter(
       (color) => !usedColors.includes(color)
     );
-    console.log("Used colors:", usedColors);
-    console.log("Available colors:", availableColors);
+
     return availableColors.length > 0 ? availableColors[0] : colorOptions[0];
   };
 
@@ -273,8 +269,7 @@ const TourInputScreen: React.FC = () => {
     const availableIcons = iconOptions.filter(
       (icon) => !usedIcons.includes(icon)
     );
-    console.log("Used icons:", usedIcons);
-    console.log("Available icons:", availableIcons);
+
     return availableIcons.length > 0 ? availableIcons[0] : iconOptions[0];
   };
 
@@ -307,11 +302,7 @@ const TourInputScreen: React.FC = () => {
       return;
     }
 
-    console.log("Editing team with ID:", teamId);
-    console.log("All confirmed teams:", confirmedTeams);
-
     const team = confirmedTeams.find((t) => t.id === teamId);
-    console.log("Found team:", team);
 
     if (team) {
       setCurrentTeam({
@@ -392,9 +383,6 @@ const TourInputScreen: React.FC = () => {
           text: "Reset Everything",
           style: "destructive",
           onPress: () => {
-            console.log("Reset button pressed");
-            console.log("Before reset - Tournament state:", tournamentState);
-
             // Clear all tournament data
             setConfirmedTeams([]);
             setTournamentInfo("", "", "5");
@@ -402,8 +390,6 @@ const TourInputScreen: React.FC = () => {
 
             // Reset tournament state to clear lock
             resetAllScores();
-
-            console.log("After reset - Tournament state should be cleared");
 
             Alert.alert(
               "Tournament Reset",

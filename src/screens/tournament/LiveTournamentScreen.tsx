@@ -1,5 +1,5 @@
 import React from "react";
-import { View, Text, StyleSheet, SafeAreaView } from "react-native";
+import { View, Text, StyleSheet, SafeAreaView, ScrollView } from "react-native";
 import { useTournament } from "../../context/TournamentContext";
 import { teams as teamData } from "../../utils/tournamentData";
 import {
@@ -66,7 +66,7 @@ const LiveTournamentScreen: React.FC = () => {
         </Text>
       </View>
 
-      <View style={styles.content}>
+      <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
         <View style={styles.semiFinalsSection}>
           <Text style={styles.sectionTitle}>Semi-Finals</Text>
 
@@ -110,9 +110,9 @@ const LiveTournamentScreen: React.FC = () => {
         </View>
 
         <View style={styles.finalSection}>
-          <Text style={styles.sectionTitle}>Final</Text>
+          <Text style={styles.sectionTitle}>Championship</Text>
           <View style={styles.matchupContainer}>
-            <Text style={styles.matchupTitle}>Championship</Text>
+            <Text style={styles.matchupTitle}>Final</Text>
             <View style={styles.teamRow}>
               <View style={styles.teamCard}>
                 <Text style={styles.teamName}>{semiFinal1Winner}</Text>
@@ -133,7 +133,7 @@ const LiveTournamentScreen: React.FC = () => {
             <Text style={styles.championName}>{tournamentChampion}</Text>
           </View>
         )}
-      </View>
+      </ScrollView>
     </SafeAreaView>
   );
 };

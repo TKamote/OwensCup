@@ -145,7 +145,6 @@ const MatchCard: React.FC<MatchCardProps> = ({
               <TouchableOpacity
                 style={styles.actionButton}
                 onPress={() => {
-                  console.log(`Pencil button pressed for match ${matchIndex}`);
                   onAdjust();
                 }}
               >
@@ -180,9 +179,6 @@ const MatchCard: React.FC<MatchCardProps> = ({
             {/* Left Team/Player */}
             <TouchableOpacity
               onPress={() => {
-                console.log(
-                  `MatchCard left button pressed: matchIndex=${matchIndex}, isCompleted=${isCompleted}`
-                );
                 onScoreChange(0, 1);
               }}
               style={[styles.scoreBtn, styles.scoreBtnActive]}
@@ -203,9 +199,6 @@ const MatchCard: React.FC<MatchCardProps> = ({
             {/* Right Team/Player */}
             <TouchableOpacity
               onPress={() => {
-                console.log(
-                  `MatchCard right button pressed: matchIndex=${matchIndex}, isCompleted=${isCompleted}`
-                );
                 onScoreChange(1, 1);
               }}
               style={[styles.scoreBtn, styles.scoreBtnActive]}
