@@ -58,11 +58,12 @@ const MatchCard: React.FC<MatchCardProps> = ({
 
   // Parse players for each team
   const getTeamPlayers = (team: any) => {
-    if (!team || !team.players) return [];
-    return team.players.split(",").map((player: string, index: number) => ({
-      id: index + 1,
-      name: player.trim(),
-      designation: `P${index + 1}`,
+    if (!team || !team.players || !Array.isArray(team.players)) return [];
+
+    return team.players.map((player: any, index: number) => ({
+      id: player.id || `player_${index + 1}`,
+      name: player.name || "Unknown Player",
+      designation: player.designation || `P${index + 1}`,
     }));
   };
 
@@ -119,7 +120,13 @@ const MatchCard: React.FC<MatchCardProps> = ({
         {!readOnly && (
           <View style={styles.actionButtons}>
             {onAdjust && (
-              <TouchableOpacity style={styles.actionButton} onPress={onAdjust}>
+              <TouchableOpacity
+                style={styles.actionButton}
+                onPress={() => {
+                  console.log(`Pencil button pressed for match ${matchIndex}`);
+                  onAdjust();
+                }}
+              >
                 <MaterialCommunityIcons
                   name="pencil"
                   size={16}
@@ -150,7 +157,12 @@ const MatchCard: React.FC<MatchCardProps> = ({
           <>
             {/* Left Team/Player */}
             <TouchableOpacity
-              onPress={() => onScoreChange(0, 1)}
+              onPress={() => {
+                console.log(
+                  `MatchCard left button pressed: matchIndex=${matchIndex}, isCompleted=${isCompleted}`
+                );
+                onScoreChange(0, 1);
+              }}
               style={[styles.scoreBtn, styles.scoreBtnActive]}
               disabled={isCompleted}
               activeOpacity={0.7}
@@ -171,7 +183,12 @@ const MatchCard: React.FC<MatchCardProps> = ({
 
             {/* Right Team/Player */}
             <TouchableOpacity
-              onPress={() => onScoreChange(1, 1)}
+              onPress={() => {
+                console.log(
+                  `MatchCard right button pressed: matchIndex=${matchIndex}, isCompleted=${isCompleted}`
+                );
+                onScoreChange(1, 1);
+              }}
               style={[styles.scoreBtn, styles.scoreBtnActive]}
               disabled={isCompleted}
               activeOpacity={0.7}

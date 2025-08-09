@@ -10,12 +10,18 @@ import {
 } from "../../constants/theme";
 import { useTournament } from "../../context/TournamentContext";
 
+interface Player {
+  id: string;
+  name: string;
+  designation: string;
+}
+
 interface Team {
-  id: number;
+  id: string;
   name: string;
   manager: string;
   captain: string;
-  players: string;
+  players: Player[];
   color: string;
   icon: string;
 }
@@ -61,7 +67,9 @@ const TeamOverviewScreen: React.FC = () => {
 
         <View style={styles.detailRow}>
           <Text style={styles.detailLabel}>Players:</Text>
-          <Text style={styles.detailValue}>{team.players}</Text>
+          <Text style={styles.detailValue}>
+            {team.players.map(player => player.name).join(", ")}
+          </Text>
         </View>
       </View>
     </View>
@@ -99,7 +107,9 @@ const TeamOverviewScreen: React.FC = () => {
 
         <View style={styles.detailRow}>
           <Text style={styles.detailLabel}>Players:</Text>
-          <Text style={styles.detailValue}>{team.players}</Text>
+          <Text style={styles.detailValue}>
+            {team.players.map(player => player.name).join(", ")}
+          </Text>
         </View>
       </View>
     </View>

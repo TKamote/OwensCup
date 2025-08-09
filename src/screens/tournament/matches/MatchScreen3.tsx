@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -33,21 +33,35 @@ const MatchScreen3: React.FC = () => {
     useTournament();
 
   // Use final matchup for this screen
-  const currentMatchup = tournamentState.final;
+  const currentMatchup = tournamentState.rounds.final;
 
   const [selectedMatch, setSelectedMatch] = useState<number | null>(null);
   const [adjustModalVisible, setAdjustModalVisible] = useState(false);
   const [scoreAdjustModalVisible, setScoreAdjustModalVisible] = useState(false);
+  const [winnerModalVisible, setWinnerModalVisible] = useState(false);
 
   // Get the winner team objects
-  const getWinnerTeamObject = (winnerName: string) => {
+  const getWinnerTeamObject = (winnerTeamId: string | null) => {
+    if (!winnerTeamId) return null;
     return tournamentState.confirmedTeams.find(
-      (team) => team.name === winnerName
+      (team) => team.id === winnerTeamId
     );
   };
 
-  const winner1 = getWinnerTeamObject(tournamentState.semiFinal1.winner || "");
-  const winner2 = getWinnerTeamObject(tournamentState.semiFinal2.winner || "");
+  const winner1 = getWinnerTeamObject(
+    tournamentState.rounds.semiFinal1.winnerTeamId
+  );
+  const winner2 = getWinnerTeamObject(
+    tournamentState.rounds.semiFinal2.winnerTeamId
+  );
+
+  // Watch for round completion and show winner modal
+  useEffect(() => {
+    if (currentMatchup.isCompleted && currentMatchup.winnerTeamId) {
+      console.log("Round completed! Showing winner modal");
+      setWinnerModalVisible(true);
+    }
+  }, [currentMatchup.isCompleted, currentMatchup.winnerTeamId]);
 
   const handleScoreChange = (
     matchIndex: number,
@@ -77,17 +91,37 @@ const MatchScreen3: React.FC = () => {
     teamIndex: 0 | 1,
     newScore: number
   ) => {
-    const currentScores = [...currentMatchup.matchScores[matchIndex]];
-    const oldScore = currentScores[teamIndex];
+    console.log(
+      `Adjusting score: Match ${matchIndex}, Team ${teamIndex}, New Score: ${newScore}`
+    );
 
-    if (newScore < 0 || newScore > 9) {
-      Alert.alert("Invalid Score", "Score must be between 0 and 9");
+    // Get current match scores from the new structure
+    const currentMatch = currentMatchup.matches[matchIndex];
+    const currentScores = [currentMatch.team1Score, currentMatch.team2Score];
+    const oldScore = currentScores[teamIndex];
+    const raceToScore = parseInt(tournamentState.raceToScore);
+
+    console.log(`Current scores: [${currentScores}], Race to: ${raceToScore}`);
+
+    if (newScore < 0) {
+      Alert.alert("Invalid Score", "Score cannot be negative");
       return;
     }
 
-    const delta = newScore - currentMatchup.matchScores[matchIndex][teamIndex];
+    // Allow scores up to raceToScore + 1 for adjustment purposes
+    if (newScore > raceToScore + 1) {
+      Alert.alert("Invalid Score", `Score cannot exceed ${raceToScore + 1}`);
+      return;
+    }
+
+    const delta = newScore - currentScores[teamIndex];
+    console.log(`Delta: ${delta}`);
+
     if (delta !== 0) {
+      console.log(`Calling handleScoreChange with delta: ${delta}`);
       handleScoreChange(matchIndex, teamIndex, delta);
+    } else {
+      console.log("No change in score");
     }
   };
 
@@ -95,10 +129,10 @@ const MatchScreen3: React.FC = () => {
     <SafeAreaView style={styles.container}>
       {/* Champion Modal */}
       <Modal
-        visible={currentMatchup.modalVisible}
+        visible={winnerModalVisible}
         transparent
         animationType="fade"
-        onRequestClose={() => setModalVisible("final", false)}
+        onRequestClose={() => setWinnerModalVisible(false)}
       >
         <View style={styles.modalOverlay}>
           <View style={styles.championModal}>
@@ -110,11 +144,16 @@ const MatchScreen3: React.FC = () => {
               style={styles.trophyIcon}
             />
             <Text style={styles.championTitle}>Champion!</Text>
-            <Text style={styles.championName}>{currentMatchup.winner}</Text>
+            <Text style={styles.championName}>
+              {currentMatchup.winnerTeamId
+                ? getWinnerTeamObject(currentMatchup.winnerTeamId)?.name ||
+                  "Champion"
+                : "Champion"}
+            </Text>
             <Text style={styles.championSubtitle}>Congratulations!</Text>
             <TouchableOpacity
               style={styles.modalButton}
-              onPress={() => setModalVisible("final", false)}
+              onPress={() => setWinnerModalVisible(false)}
             >
               <Text style={styles.modalButtonText}>Continue</Text>
             </TouchableOpacity>
@@ -143,7 +182,7 @@ const MatchScreen3: React.FC = () => {
                 style={styles.resetConfirmButton}
                 onPress={() => {
                   // Reset all scores for this matchup
-                  for (let i = 0; i < currentMatchup.matchScores.length; i++) {
+                  for (let i = 0; i < currentMatchup.matches.length; i++) {
                     resetMatch("final", i);
                   }
                   setAdjustModalVisible(false);
@@ -177,28 +216,37 @@ const MatchScreen3: React.FC = () => {
                   <View style={styles.scoreAdjustment}>
                     <TouchableOpacity
                       style={styles.scoreButton}
-                      onPress={() =>
+                      onPress={() => {
+                        console.log("Minus button pressed for Team 1");
                         handleAdjustScore(
                           selectedMatch,
                           0,
-                          currentMatchup.matchScores[selectedMatch][0] - 1
-                        )
-                      }
+                          tournamentState.rounds.final.matches[selectedMatch]
+                            .team1Score - 1
+                        );
+                      }}
+                      activeOpacity={0.7}
                     >
                       <Text style={styles.scoreButtonText}>-</Text>
                     </TouchableOpacity>
                     <Text style={styles.scoreDisplay}>
-                      {currentMatchup.matchScores[selectedMatch][0]}
+                      {
+                        tournamentState.rounds.final.matches[selectedMatch]
+                          .team1Score
+                      }
                     </Text>
                     <TouchableOpacity
                       style={styles.scoreButton}
-                      onPress={() =>
+                      onPress={() => {
+                        console.log("Plus button pressed for Team 1");
                         handleAdjustScore(
                           selectedMatch,
                           0,
-                          currentMatchup.matchScores[selectedMatch][0] + 1
-                        )
-                      }
+                          tournamentState.rounds.final.matches[selectedMatch]
+                            .team1Score + 1
+                        );
+                      }}
+                      activeOpacity={0.7}
                     >
                       <Text style={styles.scoreButtonText}>+</Text>
                     </TouchableOpacity>
@@ -210,28 +258,37 @@ const MatchScreen3: React.FC = () => {
                   <View style={styles.scoreAdjustment}>
                     <TouchableOpacity
                       style={styles.scoreButton}
-                      onPress={() =>
+                      onPress={() => {
+                        console.log("Minus button pressed for Team 2");
                         handleAdjustScore(
                           selectedMatch,
                           1,
-                          currentMatchup.matchScores[selectedMatch][1] - 1
-                        )
-                      }
+                          tournamentState.rounds.final.matches[selectedMatch]
+                            .team2Score - 1
+                        );
+                      }}
+                      activeOpacity={0.7}
                     >
                       <Text style={styles.scoreButtonText}>-</Text>
                     </TouchableOpacity>
                     <Text style={styles.scoreDisplay}>
-                      {currentMatchup.matchScores[selectedMatch][1]}
+                      {
+                        tournamentState.rounds.final.matches[selectedMatch]
+                          .team2Score
+                      }
                     </Text>
                     <TouchableOpacity
                       style={styles.scoreButton}
-                      onPress={() =>
+                      onPress={() => {
+                        console.log("Plus button pressed for Team 2");
                         handleAdjustScore(
                           selectedMatch,
                           1,
-                          currentMatchup.matchScores[selectedMatch][1] + 1
-                        )
-                      }
+                          tournamentState.rounds.final.matches[selectedMatch]
+                            .team2Score + 1
+                        );
+                      }}
+                      activeOpacity={0.7}
                     >
                       <Text style={styles.scoreButtonText}>+</Text>
                     </TouchableOpacity>
@@ -245,13 +302,7 @@ const MatchScreen3: React.FC = () => {
                 style={styles.cancelButton}
                 onPress={() => setScoreAdjustModalVisible(false)}
               >
-                <Text style={styles.cancelButtonText}>Cancel</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={styles.cancelButton}
-                onPress={() => setScoreAdjustModalVisible(false)}
-              >
-                <Text style={styles.cancelButtonText}>Reset</Text>
+                <Text style={styles.cancelButtonText}>Close</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -276,47 +327,72 @@ const MatchScreen3: React.FC = () => {
       </View>
 
       <View style={styles.content}>
-        <TeamHeader
-          teams={[
-            {
-              name: tournamentState.semiFinal1.winner || "Winner Match 1",
-              score: currentMatchup.teamScores[0],
-            },
-            {
-              name: tournamentState.semiFinal2.winner || "Winner Match 2",
-              score: currentMatchup.teamScores[1],
-            },
-          ]}
-          teamObjects={[winner1 || null, winner2 || null]}
-        />
+        {/* Calculate team scores from matches */}
+        {(() => {
+          const teamScores = [0, 0];
+          currentMatchup.matches.forEach((match) => {
+            if (match.isCompleted) {
+              if (match.team1Score > match.team2Score) {
+                teamScores[0]++;
+              } else {
+                teamScores[1]++;
+              }
+            }
+          });
+
+          return (
+            <TeamHeader
+              teams={[
+                {
+                  name: tournamentState.rounds.semiFinal1.winnerTeamId
+                    ? getWinnerTeamObject(
+                        tournamentState.rounds.semiFinal1.winnerTeamId
+                      )?.name || "Winner Match 1"
+                    : "Winner Match 1",
+                  score: teamScores[0],
+                },
+                {
+                  name: tournamentState.rounds.semiFinal2.winnerTeamId
+                    ? getWinnerTeamObject(
+                        tournamentState.rounds.semiFinal2.winnerTeamId
+                      )?.name || "Winner Match 2"
+                    : "Winner Match 2",
+                  score: teamScores[1],
+                },
+              ]}
+              teamObjects={[winner1 || null, winner2 || null]}
+            />
+          );
+        })()}
 
         <FlatList
           data={matchData}
           keyExtractor={(item) => item.number.toString()}
-          renderItem={({ item, index }) => (
-            <MatchCard
-              match={item}
-              matchIndex={index}
-              teamScores={currentMatchup.teamScores}
-              matchScore={currentMatchup.matchScores[index]}
-              onScoreChange={(teamIdx, delta) =>
-                handleScoreChange(index, teamIdx, delta)
-              }
-              isCurrent={index === currentMatchup.currentMatch}
-              isCompleted={
-                currentMatchup.matchScores[index][0] === item.raceTo ||
-                currentMatchup.matchScores[index][1] === item.raceTo
-              }
-              onReset={() => handleResetMatch(index)}
-              onAdjust={() => {
-                setSelectedMatch(index);
-                setScoreAdjustModalVisible(true);
-              }}
-            />
-          )}
+          renderItem={({ item, index }) => {
+            const match = currentMatchup.matches[index];
+            const isCompleted = match.isCompleted;
+
+            return (
+              <MatchCard
+                match={item}
+                matchIndex={index}
+                teamScores={[0, 0]} // TODO: Calculate from matches
+                matchScore={[match.team1Score, match.team2Score]}
+                onScoreChange={(teamIdx, delta) =>
+                  handleScoreChange(index, teamIdx, delta)
+                }
+                isCurrent={false} // TODO: Implement current match logic
+                isCompleted={isCompleted}
+                onReset={() => handleResetMatch(index)}
+                onAdjust={() => {
+                  setSelectedMatch(index);
+                  setScoreAdjustModalVisible(true);
+                }}
+              />
+            );
+          }}
           extraData={{
-            matchScores: currentMatchup.matchScores,
-            currentMatch: currentMatchup.currentMatch,
+            matches: currentMatchup.matches,
           }}
         />
       </View>
@@ -468,10 +544,11 @@ const styles = StyleSheet.create({
   scoreButton: {
     backgroundColor: COLORS.primary,
     borderRadius: BORDER_RADIUS.sm,
-    width: 40,
-    height: 40,
+    width: 44,
+    height: 44,
     justifyContent: "center",
     alignItems: "center",
+    ...SHADOWS.sm,
   },
   scoreButtonText: {
     fontSize: FONTS.size.lg,

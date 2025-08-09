@@ -28,13 +28,13 @@ const FavouriteTournamentsScreen: React.FC = () => {
   }
 
   // Use semi-final 1 for this screen
-  const currentMatchup = tournamentState.semiFinal1;
+  const currentMatchup = tournamentState.rounds.semiFinal1;
 
   return (
     <View style={styles.container}>
       {/* Champion Modal */}
       <Modal
-        visible={currentMatchup.modalVisible}
+        visible={false} // TODO: Implement modal visibility logic for new structure
         transparent
         animationType="fade"
         onRequestClose={() => setModalVisible("semiFinal1", false)}
@@ -49,7 +49,13 @@ const FavouriteTournamentsScreen: React.FC = () => {
               style={styles.trophyIcon}
             />
             <Text style={styles.championTitle}>Winner!</Text>
-            <Text style={styles.championText}>{currentMatchup.winner}</Text>
+            <Text style={styles.championText}>
+              {currentMatchup.winnerTeamId
+                ? tournamentState.confirmedTeams.find(
+                    (t) => t.id === currentMatchup.winnerTeamId
+                  )?.name || "Winner"
+                : "Winner"}
+            </Text>
             <Text style={styles.championSubtitle}>Congratulations!</Text>
           </View>
         </View>
@@ -63,40 +69,63 @@ const FavouriteTournamentsScreen: React.FC = () => {
             color={COLORS.secondary}
             style={{ marginRight: SPACING.sm }}
           />
-          <Text style={styles.title}>PBS Cup August 2025</Text>
+          <Text style={styles.title}>
+            {tournamentState.tournamentName || "Tournament"}
+          </Text>
         </View>
-        <Text style={styles.subtitle}>22 Aug 2025: Organized by Owen</Text>
+        <Text style={styles.subtitle}>
+          {tournamentState.organizer
+            ? `Organized by ${tournamentState.organizer}`
+            : "Tournament"}
+        </Text>
         <Text style={styles.viewerText}>Live Tournament - Semi-Final 1</Text>
 
-        <TeamHeader
-          teams={teamData.slice(0, 2).map((t, i) => ({
-            ...t,
-            score: currentMatchup.teamScores[i],
-          }))}
-        />
+        {/* Calculate team scores from matches */}
+        {(() => {
+          const teamScores = [0, 0];
+          currentMatchup.matches.forEach((match) => {
+            if (match.isCompleted) {
+              if (match.team1Score > match.team2Score) {
+                teamScores[0]++;
+              } else {
+                teamScores[1]++;
+              }
+            }
+          });
+
+          return (
+            <TeamHeader
+              teams={teamData.slice(0, 2).map((t, i) => ({
+                ...t,
+                score: teamScores[i],
+              }))}
+            />
+          );
+        })()}
 
         <FlatList
           data={matchData}
           keyExtractor={(item) => item.number.toString()}
-          renderItem={({ item, index }) => (
-            <MatchCard
-              match={item}
-              matchIndex={index}
-              teamScores={currentMatchup.teamScores}
-              matchScore={currentMatchup.matchScores[index]}
-              onScoreChange={() => {}} // Empty function - no editing
-              isCurrent={index === currentMatchup.currentMatch}
-              isCompleted={
-                currentMatchup.matchScores[index][0] === item.raceTo ||
-                currentMatchup.matchScores[index][1] === item.raceTo
-              }
-              onReset={() => {}} // No reset functionality
-              onAdjust={() => {}} // No adjust functionality
-            />
-          )}
+          renderItem={({ item, index }) => {
+            const match = currentMatchup.matches[index];
+            const isCompleted = match.isCompleted;
+
+            return (
+              <MatchCard
+                match={item}
+                matchIndex={index}
+                teamScores={[0, 0]} // TODO: Calculate from matches
+                matchScore={[match.team1Score, match.team2Score]}
+                onScoreChange={() => {}} // Empty function - no editing
+                isCurrent={false} // TODO: Implement current match logic
+                isCompleted={isCompleted}
+                onReset={() => {}} // No reset functionality
+                onAdjust={() => {}} // No adjust functionality
+              />
+            );
+          }}
           extraData={{
-            matchScores: currentMatchup.matchScores,
-            currentMatch: currentMatchup.currentMatch,
+            matches: currentMatchup.matches,
           }}
         />
       </View>

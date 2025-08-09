@@ -42,28 +42,41 @@ const TournamentDashboard = () => {
   // Determine match status based on tournament state
   const getMatchStatus = (matchNumber: number) => {
     if (matchNumber === 1) {
-      return tournamentState.semiFinal1.winner ? "Completed" : "Active";
+      return tournamentState.rounds.semiFinal1.winnerTeamId
+        ? "Completed"
+        : "Active";
     } else if (matchNumber === 2) {
-      return tournamentState.semiFinal2.winner ? "Completed" : "Active";
+      return tournamentState.rounds.semiFinal2.winnerTeamId
+        ? "Completed"
+        : "Active";
     } else if (matchNumber === 3) {
       if (
-        !tournamentState.semiFinal1.winner ||
-        !tournamentState.semiFinal2.winner
+        !tournamentState.rounds.semiFinal1.winnerTeamId ||
+        !tournamentState.rounds.semiFinal2.winnerTeamId
       ) {
         return "Pending";
       }
-      return tournamentState.final.winner ? "Completed" : "Active";
+      return tournamentState.rounds.final.winnerTeamId ? "Completed" : "Active";
     }
     return "Pending";
   };
 
   // Get winner names for final match
   const getFinalTeams = () => {
-    const sf1Winner = tournamentState.semiFinal1.winner;
-    const sf2Winner = tournamentState.semiFinal2.winner;
+    const sf1WinnerId = tournamentState.rounds.semiFinal1.winnerTeamId;
+    const sf2WinnerId = tournamentState.rounds.semiFinal2.winnerTeamId;
 
-    if (sf1Winner && sf2Winner) {
-      return { team1: sf1Winner, team2: sf2Winner };
+    if (sf1WinnerId && sf2WinnerId) {
+      const sf1Winner = tournamentState.confirmedTeams.find(
+        (t) => t.id === sf1WinnerId
+      );
+      const sf2Winner = tournamentState.confirmedTeams.find(
+        (t) => t.id === sf2WinnerId
+      );
+      return {
+        team1: sf1Winner?.name || "Winner Match 1",
+        team2: sf2Winner?.name || "Winner Match 2",
+      };
     }
     return { team1: "Winner Match 1", team2: "Winner Match 2" };
   };
@@ -102,8 +115,19 @@ const TournamentDashboard = () => {
             </View>
             <View style={styles.scoreContainer}>
               <Text style={styles.score}>
-                {tournamentState.semiFinal1.teamScores[0]} -{" "}
-                {tournamentState.semiFinal1.teamScores[1]}
+                {(() => {
+                  const teamScores = [0, 0];
+                  tournamentState.rounds.semiFinal1.matches.forEach((match) => {
+                    if (match.isCompleted) {
+                      if (match.team1Score > match.team2Score) {
+                        teamScores[0]++;
+                      } else {
+                        teamScores[1]++;
+                      }
+                    }
+                  });
+                  return `${teamScores[0]} - ${teamScores[1]}`;
+                })()}
               </Text>
             </View>
             <Text
@@ -132,8 +156,19 @@ const TournamentDashboard = () => {
             </View>
             <View style={styles.scoreContainer}>
               <Text style={styles.score}>
-                {tournamentState.semiFinal2.teamScores[0]} -{" "}
-                {tournamentState.semiFinal2.teamScores[1]}
+                {(() => {
+                  const teamScores = [0, 0];
+                  tournamentState.rounds.semiFinal2.matches.forEach((match) => {
+                    if (match.isCompleted) {
+                      if (match.team1Score > match.team2Score) {
+                        teamScores[0]++;
+                      } else {
+                        teamScores[1]++;
+                      }
+                    }
+                  });
+                  return `${teamScores[0]} - ${teamScores[1]}`;
+                })()}
               </Text>
             </View>
             <Text
@@ -161,8 +196,19 @@ const TournamentDashboard = () => {
             </View>
             <View style={styles.scoreContainer}>
               <Text style={styles.score}>
-                {tournamentState.final.teamScores[0]} -{" "}
-                {tournamentState.final.teamScores[1]}
+                {(() => {
+                  const teamScores = [0, 0];
+                  tournamentState.rounds.final.matches.forEach((match) => {
+                    if (match.isCompleted) {
+                      if (match.team1Score > match.team2Score) {
+                        teamScores[0]++;
+                      } else {
+                        teamScores[1]++;
+                      }
+                    }
+                  });
+                  return `${teamScores[0]} - ${teamScores[1]}`;
+                })()}
               </Text>
             </View>
             <Text
@@ -176,11 +222,13 @@ const TournamentDashboard = () => {
           </TouchableOpacity>
         </View>
 
-        {tournamentState.tournamentChampion && (
+        {tournamentState.tournamentChampionTeamId && (
           <View style={styles.championSection}>
             <Text style={styles.championTitle}>🏆 Tournament Champion</Text>
             <Text style={styles.championName}>
-              {tournamentState.tournamentChampion}
+              {tournamentState.confirmedTeams.find(
+                (t) => t.id === tournamentState.tournamentChampionTeamId
+              )?.name || "Champion"}
             </Text>
           </View>
         )}

@@ -27,11 +27,11 @@ interface SignUpScreenProps {
 const SignUpScreen: React.FC<SignUpScreenProps> = ({ onSwitchToSignIn }) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [displayName, setDisplayName] = useState("");
+  const [userOrPlayerName, setUserOrPlayerName] = useState("");
   const { signUp, loading } = useAuth();
 
   const handleSignUp = async () => {
-    if (!email || !password || !displayName) {
+    if (!email || !password || !userOrPlayerName) {
       Alert.alert("Error", "Please fill in all fields");
       return;
     }
@@ -41,8 +41,15 @@ const SignUpScreen: React.FC<SignUpScreenProps> = ({ onSwitchToSignIn }) => {
       return;
     }
 
+    // Email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      Alert.alert("Error", "Please enter a valid email address");
+      return;
+    }
+
     try {
-      await signUp(email, password, displayName);
+      await signUp(email, password, userOrPlayerName);
     } catch (error: any) {
       console.error("Sign up error:", error);
 
@@ -58,6 +65,8 @@ const SignUpScreen: React.FC<SignUpScreenProps> = ({ onSwitchToSignIn }) => {
           "Password is too weak. Please choose a stronger password.";
       } else if (error.code === "auth/network-request-failed") {
         errorMessage = "Network error. Please check your internet connection.";
+      } else if (error.code === "name-already-taken") {
+        errorMessage = "This name is already taken. Please choose a different name.";
       } else if (error.message) {
         errorMessage = error.message;
       }
@@ -81,9 +90,9 @@ const SignUpScreen: React.FC<SignUpScreenProps> = ({ onSwitchToSignIn }) => {
         <View style={styles.form}>
           <TextInput
             style={styles.input}
-            placeholder="Display Name"
-            value={displayName}
-            onChangeText={setDisplayName}
+            placeholder="User or Player Name"
+            value={userOrPlayerName}
+            onChangeText={setUserOrPlayerName}
             autoCapitalize="words"
             placeholderTextColor={COLORS.text.disabled}
           />
@@ -198,4 +207,3 @@ const styles = StyleSheet.create({
 });
 
 export default SignUpScreen;
- 

@@ -19,23 +19,30 @@ import {
 } from "../../constants/theme";
 import { useTournament } from "../../context/TournamentContext";
 
+// Player interface with unique ID
+interface Player {
+  id: string;
+  name: string;
+  designation: string;
+}
+
 interface Team {
-  id: number;
+  id: string; // Changed from number to string
   name: string;
   manager: string;
   captain: string;
-  players: string;
+  players: Player[]; // Always Player array now
   color: string;
   icon: string;
   isComplete: boolean;
 }
 
 interface ConfirmedTeam {
-  id: number;
+  id: string; // Changed from number to string
   name: string;
   manager: string;
   captain: string;
-  players: string;
+  players: Player[]; // Always Player array now
   color: string;
   icon: string;
 }
@@ -46,6 +53,7 @@ const TourInputScreen: React.FC = () => {
     setConfirmedTeams,
     setTournamentInfo,
     resetAllScores,
+    finalizeTournament,
   } = useTournament();
   const { confirmedTeams, tournamentName, organizer, raceToScore } =
     tournamentState;
@@ -53,11 +61,11 @@ const TourInputScreen: React.FC = () => {
 
   // Current team being configured - ID should be based on confirmed teams count
   const [currentTeam, setCurrentTeam] = useState<Team>({
-    id: Date.now(), // Use timestamp for unique ID
+    id: Date.now().toString(), // Use timestamp string for unique ID
     name: "",
     manager: "",
     captain: "",
-    players: "",
+    players: [],
     color: "#007AFF",
     icon: "trophy",
     isComplete: false,
@@ -65,7 +73,7 @@ const TourInputScreen: React.FC = () => {
 
   // Edit state
   const [isEditing, setIsEditing] = useState(false);
-  const [editingTeamId, setEditingTeamId] = useState<number | null>(null);
+  const [editingTeamId, setEditingTeamId] = useState<string | null>(null); // Changed from number to string
 
   // Modal states
   const [showRulesModal, setShowRulesModal] = useState(false);
@@ -76,7 +84,7 @@ const TourInputScreen: React.FC = () => {
     if (!isEditing) {
       setCurrentTeam((prev) => ({
         ...prev,
-        id: Date.now(), // Use timestamp for unique ID
+        id: Date.now().toString(), // Use timestamp string for unique ID
         color: getNextAvailableColor(), // Get next available color
         icon: getNextAvailableIcon(), // Get next available icon
       }));
@@ -124,30 +132,42 @@ const TourInputScreen: React.FC = () => {
     setCurrentTeam((prev) => ({ ...prev, icon }));
   };
 
+  // Helper function to get players display string
+  const getPlayersDisplayString = (players: Player[]): string => {
+    return players.map((player) => player.name).join(", ");
+  };
+
+  // Helper function to validate team
   const validateTeam = (team: Team): boolean => {
-    if (
-      !team.name.trim() ||
-      !team.manager.trim() ||
-      !team.captain.trim() ||
-      !team.players.trim()
-    ) {
-      Alert.alert("Missing Information", "Please fill in all required fields.");
+    if (!team.name.trim()) {
+      Alert.alert("Error", "Please enter a team name");
       return false;
     }
 
-    const playerCount = team.players
-      .split(",")
-      .filter((player) => player.trim()).length;
-    if (playerCount < 5) {
-      Alert.alert("Invalid Player Count", "Please enter at least 5 players.");
+    if (!team.manager.trim()) {
+      Alert.alert("Error", "Please enter a manager name");
       return false;
     }
 
-    if (playerCount > 7) {
-      Alert.alert(
-        "Invalid Player Count",
-        "Maximum 7 players allowed (5 main + 2 alternates)."
-      );
+    if (!team.captain.trim()) {
+      Alert.alert("Error", "Please enter a captain name");
+      return false;
+    }
+
+    // Check if players field is not empty
+    const playersString = getPlayersDisplayString(team.players);
+    if (!playersString.trim()) {
+      Alert.alert("Error", "Please enter player names");
+      return false;
+    }
+
+    // Check for duplicate team names
+    const existingTeam = confirmedTeams.find(
+      (confirmedTeam) =>
+        confirmedTeam.name.toLowerCase() === team.name.toLowerCase()
+    );
+    if (existingTeam && (!isEditing || existingTeam.id !== editingTeamId)) {
+      Alert.alert("Error", "A team with this name already exists");
       return false;
     }
 
@@ -155,11 +175,11 @@ const TourInputScreen: React.FC = () => {
   };
 
   const addCurrentTeam = () => {
-    // Prevent adding teams if tournament has started
-    if (isTournamentStarted()) {
+    // Prevent adding teams if tournament is finalized
+    if (isTournamentFinalized()) {
       Alert.alert(
         "Tournament Locked",
-        "Cannot add teams once the tournament has started. Team data is locked for data integrity."
+        "Cannot add teams once the tournament is finalized. Team data is locked for data integrity."
       );
       return;
     }
@@ -200,7 +220,7 @@ const TourInputScreen: React.FC = () => {
     }
 
     const newConfirmedTeam: ConfirmedTeam = {
-      id: isEditing ? editingTeamId! : Date.now(), // Use timestamp for new teams
+      id: isEditing ? editingTeamId! : Date.now().toString(), // Use timestamp for new teams
       name: currentTeam.name,
       manager: currentTeam.manager,
       captain: currentTeam.captain,
@@ -258,39 +278,17 @@ const TourInputScreen: React.FC = () => {
     return availableIcons.length > 0 ? availableIcons[0] : iconOptions[0];
   };
 
-  // Check if any matches are completed (tournament has started)
-  const isTournamentStarted = () => {
-    const hasWinners =
-      tournamentState.semiFinal1.winner ||
-      tournamentState.semiFinal2.winner ||
-      tournamentState.final.winner;
-    const hasScores =
-      tournamentState.semiFinal1.teamScores[0] > 0 ||
-      tournamentState.semiFinal1.teamScores[1] > 0 ||
-      tournamentState.semiFinal2.teamScores[0] > 0 ||
-      tournamentState.semiFinal2.teamScores[1] > 0 ||
-      tournamentState.final.teamScores[0] > 0 ||
-      tournamentState.final.teamScores[1] > 0;
-
-    console.log("Tournament lock check:");
-    console.log("- Winners:", {
-      sf1: tournamentState.semiFinal1.winner,
-      sf2: tournamentState.semiFinal2.winner,
-      final: tournamentState.final.winner,
-    });
-    console.log("- Scores:", {
-      sf1: tournamentState.semiFinal1.teamScores,
-      sf2: tournamentState.semiFinal2.teamScores,
-      final: tournamentState.final.teamScores,
-    });
-    console.log("- Has winners:", hasWinners);
-    console.log("- Has scores:", hasScores);
-    console.log("- Tournament locked:", hasWinners || hasScores);
-
-    return hasWinners || hasScores;
+  // Check if tournament is finalized (locked for editing)
+  const isTournamentFinalized = () => {
+    return tournamentState.tournamentFinalized || false;
   };
 
-  const editConfirmedTeam = (teamId: number) => {
+  // Check if we have enough teams to start
+  const canFinalizeTournament = () => {
+    return confirmedTeams.length >= 4;
+  };
+
+  const editConfirmedTeam = (teamId: string) => {
     // Prevent editing if already editing another team
     if (isEditing) {
       Alert.alert(
@@ -300,11 +298,11 @@ const TourInputScreen: React.FC = () => {
       return;
     }
 
-    // Prevent editing if tournament has started
-    if (isTournamentStarted()) {
+    // Prevent editing if tournament is finalized
+    if (isTournamentFinalized()) {
       Alert.alert(
         "Tournament Locked",
-        "Cannot edit teams once the tournament has started. Team data is locked for data integrity."
+        "Cannot edit teams once the tournament is finalized. Team data is locked for data integrity."
       );
       return;
     }
@@ -335,23 +333,23 @@ const TourInputScreen: React.FC = () => {
 
   const resetCurrentTeam = () => {
     setCurrentTeam({
-      id: Date.now(), // Always use timestamp for unique ID
+      id: Date.now().toString(), // Always use timestamp for unique ID
       name: "",
       manager: "",
       captain: "",
-      players: "",
+      players: [],
       color: getNextAvailableColor(),
       icon: getNextAvailableIcon(),
       isComplete: false,
     });
   };
 
-  const deleteConfirmedTeam = (teamId: number) => {
-    // Prevent deleting if tournament has started
-    if (isTournamentStarted()) {
+  const deleteConfirmedTeam = (teamId: string) => {
+    // Prevent deleting if tournament is finalized
+    if (isTournamentFinalized()) {
       Alert.alert(
         "Tournament Locked",
-        "Cannot delete teams once the tournament has started. Team data is locked for data integrity."
+        "Cannot delete teams once the tournament is finalized. Team data is locked for data integrity."
       );
       return;
     }
@@ -442,9 +440,11 @@ const TourInputScreen: React.FC = () => {
     // Save to context
     setConfirmedTeams(confirmedTeams);
     setTournamentInfo(tournamentName, organizer, raceToScore);
+    // Finalize the tournament - this locks team editing
+    finalizeTournament();
     Alert.alert(
-      "Tournament Setup Complete",
-      "Teams have been finalized! Tournament is ready to begin."
+      "Tournament Finalized",
+      "Teams have been finalized and locked! Tournament is ready to begin."
     );
   };
 
@@ -500,8 +500,21 @@ const TourInputScreen: React.FC = () => {
         <TextInput
           style={[styles.inlineInput, styles.playersInput]}
           placeholder="Enter player names separated by commas"
-          value={currentTeam.players}
-          onChangeText={(text) => updateCurrentTeam("players", text)}
+          value={getPlayersDisplayString(currentTeam.players)}
+          onChangeText={(text) => {
+            const playerNames = text.split(",").map((name) => name.trim());
+            const players: Player[] = [];
+            playerNames.forEach((name) => {
+              if (name) {
+                players.push({
+                  id: Date.now().toString(), // Simple unique ID for new players
+                  name: name,
+                  designation: "Player", // Default designation
+                });
+              }
+            });
+            setCurrentTeam((prev) => ({ ...prev, players }));
+          }}
           multiline
           numberOfLines={3}
         />
@@ -632,98 +645,81 @@ const TourInputScreen: React.FC = () => {
   );
 
   const renderConfirmedTeamCard = (team: ConfirmedTeam) => (
-    <View style={styles.confirmedTeamCard}>
-      <View style={styles.cardHeader}>
-        <View style={[styles.cardIcon, { backgroundColor: team.color }]}>
+    <View key={team.id} style={styles.confirmedTeamCard}>
+      <View style={styles.teamHeader}>
+        <View style={styles.teamInfo}>
           <MaterialCommunityIcons
             name={team.icon as any}
-            size={20}
-            color="white"
+            size={24}
+            color={team.color}
           />
+          <Text style={styles.teamName}>{team.name}</Text>
         </View>
-        <Text style={styles.cardTeamName}>{team.name}</Text>
-        <TouchableOpacity
-          style={styles.editButton}
-          onPress={() => {
-            Alert.alert("Team Options", "What would you like to do?", [
-              {
-                text: "Edit Team",
-                onPress: () => editConfirmedTeam(team.id),
-              },
-              {
-                text: "Delete Team",
-                style: "destructive",
-                onPress: () => deleteConfirmedTeam(team.id),
-              },
-              {
-                text: "Cancel",
-                style: "cancel",
-              },
-            ]);
-          }}
-        >
-          <MaterialCommunityIcons
-            name="pencil"
-            size={16}
-            color={COLORS.primary}
-          />
-        </TouchableOpacity>
+        <View style={styles.teamActions}>
+          {!isTournamentFinalized() && (
+            <>
+              <TouchableOpacity
+                style={styles.editButton}
+                onPress={() => editConfirmedTeam(team.id)}
+              >
+                <MaterialCommunityIcons
+                  name="pencil"
+                  size={16}
+                  color={COLORS.white}
+                />
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.deleteButton}
+                onPress={() => deleteConfirmedTeam(team.id)}
+              >
+                <MaterialCommunityIcons
+                  name="delete"
+                  size={16}
+                  color={COLORS.white}
+                />
+              </TouchableOpacity>
+            </>
+          )}
+        </View>
       </View>
-
-      <View style={styles.cardDetails}>
-        <Text style={styles.cardDetailText}>Manager: {team.manager}</Text>
-        <Text style={styles.cardDetailText}>Captain: {team.captain}</Text>
-        <Text style={styles.cardDetailText}>Players: {team.players}</Text>
+      <View style={styles.teamDetails}>
+        <Text style={styles.teamDetailText}>
+          <Text style={styles.label}>Manager:</Text> {team.manager}
+        </Text>
+        <Text style={styles.teamDetailText}>
+          <Text style={styles.label}>Captain:</Text> {team.captain}
+        </Text>
+        <Text style={styles.teamDetailText}>
+          <Text style={styles.label}>Players:</Text>{" "}
+          {getPlayersDisplayString(team.players)}
+        </Text>
       </View>
     </View>
   );
 
   const renderAlternateTeamCard = (team: ConfirmedTeam) => (
-    <View style={styles.alternateTeamCard}>
-      <View style={styles.cardHeader}>
-        <View style={[styles.cardIcon, { backgroundColor: team.color }]}>
+    <View key={team.id} style={styles.alternateTeamCard}>
+      <View style={styles.teamHeader}>
+        <View style={styles.teamInfo}>
           <MaterialCommunityIcons
             name={team.icon as any}
             size={20}
-            color="white"
+            color={team.color}
           />
+          <Text style={styles.alternateTeamName}>{team.name}</Text>
         </View>
-        <Text style={styles.cardTeamName}>{team.name}</Text>
-        <View style={styles.alternateBadge}>
-          <Text style={styles.alternateBadgeText}>ALT</Text>
-        </View>
-        <TouchableOpacity
-          style={styles.editButton}
-          onPress={() => {
-            Alert.alert("Team Options", "What would you like to do?", [
-              {
-                text: "Edit Team",
-                onPress: () => editConfirmedTeam(team.id),
-              },
-              {
-                text: "Delete Team",
-                style: "destructive",
-                onPress: () => deleteConfirmedTeam(team.id),
-              },
-              {
-                text: "Cancel",
-                style: "cancel",
-              },
-            ]);
-          }}
-        >
-          <MaterialCommunityIcons
-            name="pencil"
-            size={16}
-            color={COLORS.primary}
-          />
-        </TouchableOpacity>
       </View>
-
-      <View style={styles.cardDetails}>
-        <Text style={styles.cardDetailText}>Manager: {team.manager}</Text>
-        <Text style={styles.cardDetailText}>Captain: {team.captain}</Text>
-        <Text style={styles.cardDetailText}>Players: {team.players}</Text>
+      <View style={styles.teamDetails}>
+        <Text style={styles.alternateTeamDetailText}>
+          <Text style={styles.label}>Manager:</Text> {team.manager}
+        </Text>
+        <Text style={styles.alternateTeamDetailText}>
+          <Text style={styles.label}>Captain:</Text> {team.captain}
+        </Text>
+        <Text style={styles.alternateTeamDetailText}>
+          <Text style={styles.label}>Players:</Text>{" "}
+          {getPlayersDisplayString(team.players)}
+        </Text>
       </View>
     </View>
   );
@@ -758,7 +754,7 @@ const TourInputScreen: React.FC = () => {
       {renderTournamentInfoCard()}
 
       {/* Tournament Lock Status */}
-      {isTournamentStarted() && (
+      {isTournamentFinalized() && (
         <View style={styles.lockStatus}>
           <MaterialCommunityIcons
             name="lock"
@@ -771,15 +767,17 @@ const TourInputScreen: React.FC = () => {
         </View>
       )}
 
-      {/* Current Team Input */}
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>
-          {isEditing
-            ? `Edit Team ${editingTeamId}`
-            : `Add Team ${confirmedTeams.length + 1}`}
-        </Text>
-        {renderCurrentTeamInput()}
-      </View>
+      {/* Current Team Input - Hidden when tournament is finalized */}
+      {!isTournamentFinalized() && (
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>
+            {isEditing
+              ? `Edit Team ${editingTeamId}`
+              : `Add Team ${confirmedTeams.length + 1}`}
+          </Text>
+          {renderCurrentTeamInput()}
+        </View>
+      )}
 
       {/* Confirmed Teams */}
       {confirmedTeams.length > 0 && (
@@ -795,13 +793,13 @@ const TourInputScreen: React.FC = () => {
           })}
 
           {/* Finalize button appears after 4th team */}
-          {confirmedTeams.length >= 4 && (
+          {confirmedTeams.length >= 4 && !isTournamentFinalized() && (
             <TouchableOpacity
               style={styles.finalizeButton}
               onPress={finalizeTeams}
             >
               <Text style={styles.finalizeButtonText}>
-                Finalize Tournament Teams
+                🏆 Finalize & Lock Tournament
               </Text>
             </TouchableOpacity>
           )}
@@ -1378,6 +1376,47 @@ const styles = StyleSheet.create({
     color: COLORS.white,
     fontWeight: FONTS.weight.medium,
     marginLeft: SPACING.xs,
+  },
+  teamInfo: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: SPACING.sm,
+  },
+  teamName: {
+    fontSize: FONTS.size.base,
+    fontWeight: FONTS.weight.bold,
+    color: COLORS.text.primary,
+    marginLeft: SPACING.sm,
+  },
+  teamActions: {
+    flexDirection: "row",
+    marginLeft: "auto",
+  },
+  deleteButton: {
+    padding: SPACING.xs,
+  },
+  teamDetails: {
+    marginTop: SPACING.xs,
+  },
+  teamDetailText: {
+    fontSize: FONTS.size.sm,
+    color: COLORS.text.secondary,
+    marginBottom: 2,
+  },
+  label: {
+    fontWeight: FONTS.weight.bold,
+    color: COLORS.text.primary,
+  },
+  alternateTeamName: {
+    fontSize: FONTS.size.base,
+    fontWeight: FONTS.weight.bold,
+    color: COLORS.text.primary,
+    marginLeft: SPACING.sm,
+  },
+  alternateTeamDetailText: {
+    fontSize: FONTS.size.sm,
+    color: COLORS.text.secondary,
+    marginBottom: 2,
   },
 });
 

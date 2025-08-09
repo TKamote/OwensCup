@@ -16,11 +16,12 @@ interface User {
 interface AuthContextType {
   user: User | null;
   loading: boolean;
+  isAuthenticated: boolean;
   signIn: (email: string, password: string) => Promise<void>;
   signUp: (
     email: string,
     password: string,
-    displayName: string
+    userOrPlayerName: string
   ) => Promise<void>;
   signOut: () => Promise<void>;
 }
@@ -44,15 +45,24 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    console.log("Setting up Firebase Auth state listener...");
+
     const unsubscribe = auth.onAuthStateChanged(
       (firebaseUser: FirebaseUser | null) => {
+        console.log(
+          "Auth state changed:",
+          firebaseUser ? "User logged in" : "User logged out"
+        );
+
         if (firebaseUser) {
+          console.log("User authenticated:", firebaseUser.email);
           setUser({
             uid: firebaseUser.uid,
             email: firebaseUser.email,
             displayName: firebaseUser.displayName,
           });
         } else {
+          console.log("No user authenticated");
           setUser(null);
         }
         setLoading(false);
@@ -75,14 +85,14 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const signUp = async (
     email: string,
     password: string,
-    displayName: string
+    userOrPlayerName: string
   ) => {
     setLoading(true);
     try {
       await createUserWithEmailAndPasswordFirebase(
         email,
         password,
-        displayName
+        userOrPlayerName
       );
     } catch (error) {
       setLoading(false);
@@ -103,6 +113,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const value = {
     user,
     loading,
+    isAuthenticated: !!user,
     signIn,
     signUp,
     signOut,

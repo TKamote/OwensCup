@@ -12,7 +12,7 @@ import { useTournament } from "../../context/TournamentContext";
 
 interface TeamHeaderProps {
   teams: { name: string; score: number }[];
-  teamObjects?: ({ icon: string; color: string } | null)[];
+  teamObjects?: ({ icon: string; color: string; name?: string } | null)[];
 }
 
 const TeamHeader: React.FC<TeamHeaderProps> = ({ teams, teamObjects }) => {

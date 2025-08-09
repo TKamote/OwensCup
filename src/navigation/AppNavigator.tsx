@@ -12,6 +12,7 @@ import HomeScreen from "../screens/HomeScreen";
 import SignInScreen from "../screens/auth/SignInScreen";
 import SignUpScreen from "../screens/auth/SignUpScreen";
 import TourInputScreen from "../screens/tournament/TourInputScreen";
+import AdminDashboard from "../screens/admin/AdminDashboard";
 
 import TeamOverviewScreen from "../screens/tournament/TeamOverviewScreen";
 import FavouriteTournamentsScreen from "../screens/tournament/FavouriteTournamentsScreen";
@@ -217,7 +218,14 @@ const TabNavigator: React.FC = () => {
     <Tab.Navigator
       screenOptions={({ route }) => ({
         tabBarIcon: ({ focused, color, size }) => {
-          let iconName: "home" | "login" | "cog" | "trophy" | "logout" | "help";
+          let iconName:
+            | "home"
+            | "login"
+            | "cog"
+            | "trophy"
+            | "logout"
+            | "help"
+            | "shield-crown";
 
           switch (route.name) {
             case "Home":
@@ -228,6 +236,9 @@ const TabNavigator: React.FC = () => {
               break;
             case "Tour Input":
               iconName = "cog";
+              break;
+            case "Admin":
+              iconName = "shield-crown";
               break;
             case "Logout":
               iconName = "logout";
@@ -283,7 +294,13 @@ const TabNavigator: React.FC = () => {
               ),
             })}
           />
-
+          <Tab.Screen
+            name="Admin"
+            component={AdminDashboard}
+            options={{
+              title: "Admin Dashboard",
+            }}
+          />
           <Tab.Screen name="Logout" component={LogoutScreen} />
         </>
       ) : (
