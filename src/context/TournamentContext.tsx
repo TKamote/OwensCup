@@ -303,23 +303,26 @@ export const TournamentProvider: React.FC<TournamentProviderProps> = ({
   // Assign team IDs to matches when teams are loaded
   useEffect(() => {
     if (tournamentState.confirmedTeams.length >= 4) {
-      console.log("Teams loaded, assigning team IDs to matches");
       setTournamentState((prev) => {
         const updatedRounds = { ...prev.rounds };
-        
+
         // Assign team IDs to semiFinal1 (teams 0 & 1)
-        updatedRounds.semiFinal1.matches = updatedRounds.semiFinal1.matches.map((match: any) => ({
-          ...match,
-          team1Id: prev.confirmedTeams[0].id,
-          team2Id: prev.confirmedTeams[1].id,
-        }));
-        
+        updatedRounds.semiFinal1.matches = updatedRounds.semiFinal1.matches.map(
+          (match: any) => ({
+            ...match,
+            team1Id: prev.confirmedTeams[0].id,
+            team2Id: prev.confirmedTeams[1].id,
+          })
+        );
+
         // Assign team IDs to semiFinal2 (teams 2 & 3)
-        updatedRounds.semiFinal2.matches = updatedRounds.semiFinal2.matches.map((match: any) => ({
-          ...match,
-          team1Id: prev.confirmedTeams[2].id,
-          team2Id: prev.confirmedTeams[3].id,
-        }));
+        updatedRounds.semiFinal2.matches = updatedRounds.semiFinal2.matches.map(
+          (match: any) => ({
+            ...match,
+            team1Id: prev.confirmedTeams[2].id,
+            team2Id: prev.confirmedTeams[3].id,
+          })
+        );
 
         return {
           ...prev,
@@ -333,18 +336,19 @@ export const TournamentProvider: React.FC<TournamentProviderProps> = ({
   useEffect(() => {
     const sf1Winner = tournamentState.rounds.semiFinal1.winnerTeamId;
     const sf2Winner = tournamentState.rounds.semiFinal2.winnerTeamId;
-    
+
     if (sf1Winner && sf2Winner) {
-      console.log("Both semi-finals completed, updating Final round with winners:", sf1Winner, sf2Winner);
       setTournamentState((prev) => {
         const updatedRounds = { ...prev.rounds };
-        
+
         // Update Final round matches with the winning team IDs
-        updatedRounds.final.matches = updatedRounds.final.matches.map((match: any) => ({
-          ...match,
-          team1Id: sf1Winner,
-          team2Id: sf2Winner,
-        }));
+        updatedRounds.final.matches = updatedRounds.final.matches.map(
+          (match: any) => ({
+            ...match,
+            team1Id: sf1Winner,
+            team2Id: sf2Winner,
+          })
+        );
 
         return {
           ...prev,
@@ -352,7 +356,10 @@ export const TournamentProvider: React.FC<TournamentProviderProps> = ({
         };
       });
     }
-  }, [tournamentState.rounds.semiFinal1.winnerTeamId, tournamentState.rounds.semiFinal2.winnerTeamId]);
+  }, [
+    tournamentState.rounds.semiFinal1.winnerTeamId,
+    tournamentState.rounds.semiFinal2.winnerTeamId,
+  ]);
 
   const addToHistory = (action: Omit<ActionHistory, "timestamp">) => {
     setActionHistory((prev) => [...prev, { ...action, timestamp: Date.now() }]);
@@ -420,11 +427,9 @@ export const TournamentProvider: React.FC<TournamentProviderProps> = ({
 
       const savedData = await loadTournamentData(user.uid);
 
-      console.log("Loading tournament data:", savedData);
-
       if (savedData && Array.isArray(savedData)) {
         // Old array format - skip it and use defaults
-        console.log("Found old array format, skipping and using defaults");
+
         setTournamentState({
           tournamentId: generateTournamentId(),
           tournamentName: "",
@@ -471,7 +476,6 @@ export const TournamentProvider: React.FC<TournamentProviderProps> = ({
         Array.isArray(savedData.confirmedTeams)
       ) {
         // Handle new flattened format with proper structure validation
-        console.log("Found new flattened format, loading tournament data");
 
         // Validate and ensure all teams have proper structure
         const validatedTeams = savedData.confirmedTeams
@@ -508,8 +512,6 @@ export const TournamentProvider: React.FC<TournamentProviderProps> = ({
             };
           })
           .filter(Boolean);
-
-
 
         setTournamentState({
           tournamentId: savedData.tournamentId || generateTournamentId(),
@@ -553,7 +555,7 @@ export const TournamentProvider: React.FC<TournamentProviderProps> = ({
         });
       } else {
         // No saved data, use defaults
-        console.log("No saved data found, using default tournament state");
+
         setTournamentState({
           tournamentId: generateTournamentId(),
           tournamentName: "",
@@ -624,8 +626,6 @@ export const TournamentProvider: React.FC<TournamentProviderProps> = ({
         setError("Cannot save data - database connection lost");
         return;
       }
-
-      console.log("Saving tournament data for user:", user.uid);
 
       // Flatten the data structure to avoid nested arrays
       const tournamentData = {
@@ -712,7 +712,7 @@ export const TournamentProvider: React.FC<TournamentProviderProps> = ({
         JSON.stringify(tournamentData, null, 2)
       );
       await saveTournamentData(user.uid, tournamentData);
-      console.log("Tournament saved successfully");
+
       setError(null);
     } catch (error) {
       console.error("Failed to save tournament:", error);
@@ -1028,7 +1028,6 @@ export const TournamentProvider: React.FC<TournamentProviderProps> = ({
   };
 
   const setConfirmedTeams = (teams: Team[]) => {
-    console.log("setConfirmedTeams called with teams:", teams.length);
     // Convert teams to new structure with unique IDs and Player arrays
     const teamsWithUniqueIds = teams.map((team) => {
       // Generate unique team ID if not already present
@@ -1079,8 +1078,6 @@ export const TournamentProvider: React.FC<TournamentProviderProps> = ({
         rounds: updatedRounds,
       };
     });
-
-    console.log("Teams set with unique IDs:", teamsWithUniqueIds);
   };
 
   const setTournamentInfo = (
@@ -1178,7 +1175,6 @@ export const TournamentProvider: React.FC<TournamentProviderProps> = ({
       tournamentFinalized: true,
       updatedAt: new Date(),
     }));
-    console.log("Tournament finalized - teams are now locked");
   };
 
   const resetTournamentDataContext = () => {
@@ -1232,12 +1228,10 @@ export const TournamentProvider: React.FC<TournamentProviderProps> = ({
       updatedAt: new Date(),
     });
     setActionHistory([]);
-    console.log("Tournament data context reset with unique IDs");
   };
 
   // Clear all data when database is deleted
   const clearAllData = () => {
-    console.log("Clearing all local tournament data");
     resetTournamentDataContext();
     setError("All local data has been cleared due to database deletion.");
   };
@@ -1314,7 +1308,6 @@ export const TournamentProvider: React.FC<TournamentProviderProps> = ({
   // Auto-save tournament data when it changes
   useEffect(() => {
     if (user && !loading) {
-      console.log("Auto-saving tournament data due to state change");
       saveTournament();
     }
   }, [

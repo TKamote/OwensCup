@@ -121,9 +121,6 @@ const MatchScreen1: React.FC = () => {
     teamIndex: 0 | 1,
     delta: number
   ) => {
-    console.log(
-      `handleScoreChange called: matchIndex=${matchIndex}, teamIndex=${teamIndex}, delta=${delta}`
-    );
     updateMatchScore("semiFinal1", matchIndex, teamIndex, delta);
   };
 

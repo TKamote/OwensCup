@@ -58,7 +58,6 @@ const MatchScreen3: React.FC = () => {
   // Watch for round completion and show winner modal
   useEffect(() => {
     if (currentMatchup.isCompleted && currentMatchup.winnerTeamId) {
-      console.log("Round completed! Showing winner modal");
       setWinnerModalVisible(true);
     }
   }, [currentMatchup.isCompleted, currentMatchup.winnerTeamId]);

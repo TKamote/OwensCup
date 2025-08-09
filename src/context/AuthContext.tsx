@@ -45,24 +45,15 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    console.log("Setting up Firebase Auth state listener...");
-
     const unsubscribe = auth.onAuthStateChanged(
       (firebaseUser: FirebaseUser | null) => {
-        console.log(
-          "Auth state changed:",
-          firebaseUser ? "User logged in" : "User logged out"
-        );
-
         if (firebaseUser) {
-          console.log("User authenticated:", firebaseUser.email);
           setUser({
             uid: firebaseUser.uid,
             email: firebaseUser.email,
             displayName: firebaseUser.displayName,
           });
         } else {
-          console.log("No user authenticated");
           setUser(null);
         }
         setLoading(false);

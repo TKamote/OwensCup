@@ -347,6 +347,18 @@ const MatchScreen2: React.FC = () => {
 
       <View style={styles.header}>
         <Text style={styles.headerTitle}>Semifinal 2</Text>
+        <View style={styles.headerButtons}>
+          <TouchableOpacity
+            style={styles.headerButton}
+            onPress={() => setAdjustModalVisible(true)}
+          >
+            <MaterialCommunityIcons
+              name="reload"
+              size={24}
+              color={COLORS.warning}
+            />
+          </TouchableOpacity>
+        </View>
       </View>
 
       <View style={styles.content}>

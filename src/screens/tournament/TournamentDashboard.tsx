@@ -270,16 +270,19 @@ const TournamentDashboard = () => {
           </TouchableOpacity>
         </View>
 
-        {tournamentState.tournamentChampionTeamId && (
-          <View style={styles.championSection}>
-            <Text style={styles.championTitle}>🏆 Tournament Champion</Text>
-            <Text style={styles.championName}>
-              {tournamentState.confirmedTeams.find(
-                (t) => t.id === tournamentState.tournamentChampionTeamId
-              )?.name || "Champion"}
-            </Text>
-          </View>
-        )}
+        {tournamentState.tournamentChampionTeamId &&
+          tournamentState.rounds.semiFinal1.winnerTeamId &&
+          tournamentState.rounds.semiFinal2.winnerTeamId &&
+          tournamentState.rounds.final.winnerTeamId && (
+            <View style={styles.championSection}>
+              <Text style={styles.championTitle}>🏆 Tournament Champion</Text>
+              <Text style={styles.championName}>
+                {tournamentState.confirmedTeams.find(
+                  (t) => t.id === tournamentState.tournamentChampionTeamId
+                )?.name || "Champion"}
+              </Text>
+            </View>
+          )}
       </ScrollView>
     </SafeAreaView>
   );
