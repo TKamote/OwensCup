@@ -92,8 +92,12 @@ const MatchCard: React.FC<MatchCardProps> = ({
 
     switch (matchIndex) {
       case 0: // Match 1: All 5 players - show all player names
-        const team1AllPlayers = team1Players.map((p) => p.name).join(", ");
-        const team2AllPlayers = team2Players.map((p) => p.name).join(", ");
+        const team1AllPlayers = team1Players
+          .map((p: { id: string; name: string; designation: string }) => p.name)
+          .join(", ");
+        const team2AllPlayers = team2Players
+          .map((p: { id: string; name: string; designation: string }) => p.name)
+          .join(", ");
         return teamIndex === 0 ? team1AllPlayers : team2AllPlayers;
       case 1: // Match 2: Players 2 & 3 (1st Doubles)
         return `${players[1]?.name || "P2"}, ${players[2]?.name || "P3"}`;
@@ -104,8 +108,12 @@ const MatchCard: React.FC<MatchCardProps> = ({
       case 4: // Match 5: Player 2 (2nd Singles)
         return players[1]?.name || "P2";
       case 5: // Match 6: All 5 players (2nd Team Match) - show all player names
-        const team1AllPlayers2 = team1Players.map((p) => p.name).join(", ");
-        const team2AllPlayers2 = team2Players.map((p) => p.name).join(", ");
+        const team1AllPlayers2 = team1Players
+          .map((p: { id: string; name: string; designation: string }) => p.name)
+          .join(", ");
+        const team2AllPlayers2 = team2Players
+          .map((p: { id: string; name: string; designation: string }) => p.name)
+          .join(", ");
         return teamIndex === 0 ? team1AllPlayers2 : team2AllPlayers2;
       case 6: // Match 7: 3rd Doubles (P1 & P3)
         return `${players[0]?.name || "P1"}, ${players[2]?.name || "P3"}`;
@@ -252,16 +260,15 @@ const styles = StyleSheet.create({
   card: {
     backgroundColor: COLORS.glass.primary,
     borderRadius: BORDER_RADIUS.lg,
-    padding: SPACING.md,
-    marginVertical: SPACING.sm,
-    marginHorizontal: SPACING.md,
+    padding: SPACING.sm,
+    margin: SPACING.sm,
     ...GLASS_SHADOWS.heavy,
-    borderWidth: 2,
+    borderWidth: 1.5,
     borderColor: COLORS.gray[400],
   },
   current: {
     borderColor: COLORS.primary,
-    borderWidth: 2,
+    borderWidth: 1,
   },
   completed: {
     opacity: 0.8,
@@ -328,7 +335,7 @@ const styles = StyleSheet.create({
     marginBottom: SPACING.sm,
   },
   playerName: {
-    fontSize: FONTS.size.sm,
+    fontSize: FONTS.size.xs,
     fontWeight: FONTS.weight.semibold,
     textAlign: "center",
     color: COLORS.text.primary,

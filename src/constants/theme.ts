@@ -72,7 +72,7 @@ export const COLORS = {
   glass: {
     primary: "rgba(255, 255, 255, 0.25)",
     secondary: "rgba(255, 255, 255, 0.15)",
-    border: "rgba(255, 255, 255, 0.3)",
+    border: "rgba(107, 217, 85, 0.3)",
     backdrop: "rgba(0, 0, 0, 0.1)",
   },
 } as const;
