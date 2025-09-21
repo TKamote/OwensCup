@@ -54,6 +54,8 @@ const TourInputScreen: React.FC = () => {
     setTournamentInfo,
     resetAllScores,
     finalizeTournament,
+    unlockTournament,
+    saveTournament,
   } = useTournament();
   const { confirmedTeams, tournamentName, organizer, raceToScore } =
     tournamentState;
@@ -70,6 +72,9 @@ const TourInputScreen: React.FC = () => {
     icon: "trophy",
     isComplete: false,
   });
+
+  // Separate state for players input to prevent re-render issues
+  const [playersInputText, setPlayersInputText] = useState("");
 
   // Edit state
   const [isEditing, setIsEditing] = useState(false);
@@ -309,6 +314,7 @@ const TourInputScreen: React.FC = () => {
         ...team,
         isComplete: true,
       });
+      setPlayersInputText(getPlayersDisplayString(team.players));
       setIsEditing(true);
       setEditingTeamId(teamId);
     }
@@ -333,6 +339,7 @@ const TourInputScreen: React.FC = () => {
       icon: getNextAvailableIcon(),
       isComplete: false,
     });
+    setPlayersInputText("");
   };
 
   const deleteConfirmedTeam = (teamId: string) => {
@@ -458,6 +465,12 @@ const TourInputScreen: React.FC = () => {
           placeholder="Enter team name"
           value={currentTeam.name}
           onChangeText={(text) => updateCurrentTeam("name", text)}
+          contextMenuHidden={false}
+          autoCorrect={false}
+          spellCheck={false}
+          clearButtonMode="while-editing"
+          returnKeyType="done"
+          selectTextOnFocus={true}
         />
       </View>
 
@@ -468,6 +481,12 @@ const TourInputScreen: React.FC = () => {
           placeholder="Enter manager name"
           value={currentTeam.manager}
           onChangeText={(text) => updateCurrentTeam("manager", text)}
+          contextMenuHidden={false}
+          autoCorrect={false}
+          spellCheck={false}
+          clearButtonMode="while-editing"
+          returnKeyType="done"
+          selectTextOnFocus={true}
         />
       </View>
 
@@ -478,6 +497,12 @@ const TourInputScreen: React.FC = () => {
           placeholder="Enter captain name"
           value={currentTeam.captain}
           onChangeText={(text) => updateCurrentTeam("captain", text)}
+          contextMenuHidden={false}
+          autoCorrect={false}
+          spellCheck={false}
+          clearButtonMode="while-editing"
+          returnKeyType="done"
+          selectTextOnFocus={true}
         />
       </View>
 
@@ -486,23 +511,29 @@ const TourInputScreen: React.FC = () => {
         <TextInput
           style={[styles.inlineInput, styles.playersInput]}
           placeholder="Enter player names separated by commas"
-          value={getPlayersDisplayString(currentTeam.players)}
+          value={playersInputText}
           onChangeText={(text) => {
-            const playerNames = text.split(",").map((name) => name.trim());
-            const players: Player[] = [];
-            playerNames.forEach((name) => {
-              if (name) {
-                players.push({
-                  id: Date.now().toString(), // Simple unique ID for new players
-                  name: name,
-                  designation: "Player", // Default designation
-                });
-              }
-            });
+            setPlayersInputText(text);
+            // Parse players from the text input
+            const playerNames = text
+              .split(",")
+              .map((name) => name.trim())
+              .filter((name) => name.length > 0);
+            const players: Player[] = playerNames.map((name, index) => ({
+              id: `${Date.now()}_${index}`, // Unique ID for each player
+              name: name,
+              designation: "Player", // Default designation
+            }));
             setCurrentTeam((prev) => ({ ...prev, players }));
           }}
           multiline
           numberOfLines={3}
+          contextMenuHidden={false}
+          autoCorrect={false}
+          spellCheck={false}
+          clearButtonMode="while-editing"
+          returnKeyType="done"
+          selectTextOnFocus={true}
         />
       </View>
 
@@ -586,6 +617,12 @@ const TourInputScreen: React.FC = () => {
           onChangeText={(text) =>
             setTournamentInfo(text, organizer, raceToScore)
           }
+          contextMenuHidden={false}
+          autoCorrect={false}
+          spellCheck={false}
+          clearButtonMode="while-editing"
+          returnKeyType="done"
+          selectTextOnFocus={true}
         />
       </View>
 
@@ -598,6 +635,12 @@ const TourInputScreen: React.FC = () => {
           onChangeText={(text) =>
             setTournamentInfo(tournamentName, text, raceToScore)
           }
+          contextMenuHidden={false}
+          autoCorrect={false}
+          spellCheck={false}
+          clearButtonMode="while-editing"
+          returnKeyType="done"
+          selectTextOnFocus={true}
         />
       </View>
 
@@ -712,28 +755,26 @@ const TourInputScreen: React.FC = () => {
 
   return (
     <ScrollView style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.title}>Tour Input</Text>
-        <View style={styles.headerButtons}>
-          <TouchableOpacity
-            style={styles.resetButton}
-            onPress={resetTournament}
-          >
-            <MaterialCommunityIcons name="refresh" size={20} color="white" />
-            <Text style={styles.resetButtonText}>Reset All</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.rulesButton}
-            onPress={() => setShowRulesModal(true)}
-          >
-            <MaterialCommunityIcons
-              name="book-open-variant"
-              size={20}
-              color="white"
-            />
-            <Text style={styles.rulesButtonText}>Owen's Rules</Text>
-          </TouchableOpacity>
-        </View>
+      <View style={styles.headerButtons}>
+        <TouchableOpacity style={styles.saveButton} onPress={saveTournament}>
+          <MaterialCommunityIcons name="content-save" size={18} color="white" />
+          <Text style={styles.saveButtonText}>Save</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.resetButton} onPress={resetTournament}>
+          <MaterialCommunityIcons name="refresh" size={18} color="white" />
+          <Text style={styles.resetButtonText}>Reset All</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={styles.rulesButton}
+          onPress={() => setShowRulesModal(true)}
+        >
+          <MaterialCommunityIcons
+            name="book-open-variant"
+            size={18}
+            color="white"
+          />
+          <Text style={styles.rulesButtonText}>Owen's Rules</Text>
+        </TouchableOpacity>
       </View>
 
       {/* Tournament Info Card - Always at top */}
@@ -750,6 +791,30 @@ const TourInputScreen: React.FC = () => {
           <Text style={styles.lockText}>
             Tournament Locked - Team data cannot be modified
           </Text>
+          <TouchableOpacity
+            style={styles.unlockButton}
+            onPress={() => {
+              Alert.alert(
+                "Unlock Tournament",
+                "Are you sure you want to unlock the tournament? This will allow editing teams again.",
+                [
+                  { text: "Cancel", style: "cancel" },
+                  {
+                    text: "Unlock",
+                    style: "destructive",
+                    onPress: unlockTournament,
+                  },
+                ]
+              );
+            }}
+          >
+            <MaterialCommunityIcons
+              name="lock-open"
+              size={16}
+              color={COLORS.white}
+            />
+            <Text style={styles.unlockButtonText}>Unlock</Text>
+          </TouchableOpacity>
         </View>
       )}
 
@@ -937,18 +1002,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: COLORS.white,
-    padding: SPACING.lg,
-  },
-  header: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: SPACING.xl,
-  },
-  title: {
-    fontSize: FONTS.size.xl,
-    fontWeight: FONTS.weight.bold,
-    color: COLORS.text.primary,
+    padding: SPACING.md,
   },
   rulesButton: {
     flexDirection: "row",
@@ -956,13 +1010,14 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.warning,
     paddingVertical: SPACING.sm,
     paddingHorizontal: SPACING.md,
-    borderRadius: BORDER_RADIUS.md,
-    marginVertical: SPACING.sm,
+    borderRadius: BORDER_RADIUS.sm,
+    marginVertical: SPACING.xs,
   },
   rulesButtonText: {
     color: COLORS.white,
     fontWeight: FONTS.weight.medium,
     marginLeft: SPACING.xs,
+    fontSize: FONTS.size.sm,
   },
   section: {
     marginBottom: SPACING.xl,
@@ -1030,8 +1085,9 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.white,
   },
   playersInput: {
-    height: 60,
+    height: 80,
     textAlignVertical: "top",
+    minHeight: 80,
   },
   colorIconSection: {
     marginBottom: SPACING.md,
@@ -1190,15 +1246,18 @@ const styles = StyleSheet.create({
   },
   inlineInputRow: {
     flexDirection: "row",
-    alignItems: "center",
-    marginBottom: SPACING.sm,
+    alignItems: "flex-start",
+    marginBottom: SPACING.md,
+    minHeight: 45,
   },
   inlineLabel: {
     fontSize: FONTS.size.sm,
     fontWeight: FONTS.weight.bold,
     color: COLORS.text.primary,
-    width: 100,
-    marginRight: SPACING.sm,
+    width: 110,
+    marginRight: SPACING.md,
+    marginTop: SPACING.sm,
+    flexShrink: 0,
   },
   inlineInput: {
     flex: 1,
@@ -1208,6 +1267,7 @@ const styles = StyleSheet.create({
     padding: SPACING.sm,
     fontSize: FONTS.size.base,
     backgroundColor: COLORS.white,
+    minHeight: 45,
   },
   raceToSection: {
     marginTop: SPACING.md,
@@ -1340,14 +1400,49 @@ const styles = StyleSheet.create({
     borderColor: COLORS.warning,
   },
   lockText: {
+    flex: 1,
     marginLeft: SPACING.sm,
     color: COLORS.warning,
     fontWeight: FONTS.weight.medium,
     fontSize: FONTS.size.sm,
   },
+  unlockButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: COLORS.primary,
+    paddingVertical: SPACING.xs,
+    paddingHorizontal: SPACING.sm,
+    borderRadius: BORDER_RADIUS.sm,
+    marginLeft: SPACING.sm,
+  },
+  unlockButtonText: {
+    color: COLORS.white,
+    fontWeight: FONTS.weight.medium,
+    marginLeft: SPACING.xs,
+    fontSize: FONTS.size.xs,
+  },
   headerButtons: {
     flexDirection: "row",
     gap: SPACING.sm,
+    justifyContent: "center",
+    marginTop: SPACING.sm,
+    marginBottom: SPACING.md,
+    paddingHorizontal: SPACING.sm,
+  },
+  saveButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: COLORS.success,
+    paddingVertical: SPACING.sm,
+    paddingHorizontal: SPACING.md,
+    borderRadius: BORDER_RADIUS.sm,
+    marginVertical: SPACING.xs,
+  },
+  saveButtonText: {
+    color: COLORS.white,
+    fontWeight: FONTS.weight.medium,
+    marginLeft: SPACING.xs,
+    fontSize: FONTS.size.sm,
   },
   resetButton: {
     flexDirection: "row",
@@ -1355,13 +1450,14 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.error,
     paddingVertical: SPACING.sm,
     paddingHorizontal: SPACING.md,
-    borderRadius: BORDER_RADIUS.md,
-    marginVertical: SPACING.sm,
+    borderRadius: BORDER_RADIUS.sm,
+    marginVertical: SPACING.xs,
   },
   resetButtonText: {
     color: COLORS.white,
     fontWeight: FONTS.weight.medium,
     marginLeft: SPACING.xs,
+    fontSize: FONTS.size.sm,
   },
   teamInfo: {
     flexDirection: "row",

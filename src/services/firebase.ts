@@ -18,17 +18,13 @@ import {
   query,
   where,
 } from "firebase/firestore";
+import {
+  firebaseConfig,
+  validateFirebaseConfig,
+} from "../config/firebase.config";
 
-// Your Firebase configuration
-const firebaseConfig = {
-  apiKey: "AIzaSyAA_wfbF0ytUY3Qnd0YC9qHhkXO8QPC_iE",
-  authDomain: "owenscup.firebaseapp.com",
-  projectId: "owenscup",
-  storageBucket: "owenscup.firebasestorage.app",
-  messagingSenderId: "719761938656",
-  appId: "1:719761938656:android:af1796bfe8a9848d0a9885",
-  measurementId: "G-E11GSM385Z",
-};
+// Validate Firebase configuration on startup
+validateFirebaseConfig();
 
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
@@ -39,12 +35,31 @@ const db = getFirestore(app);
 // No need to manually configure persistence
 console.log("Firebase initialized successfully");
 
+// Security: Input validation helper
+const validateEmail = (email: string): boolean => {
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return emailRegex.test(email);
+};
+
+const validatePassword = (password: string): boolean => {
+  // Minimum 6 characters for Firebase
+  return password.length >= 6;
+};
+
 // Authentication functions
 export const signInWithEmailAndPasswordFirebase = async (
   email: string,
   password: string
 ) => {
   try {
+    // Security: Validate inputs
+    if (!validateEmail(email)) {
+      throw new Error("Invalid email format");
+    }
+    if (!validatePassword(password)) {
+      throw new Error("Password must be at least 6 characters");
+    }
+
     console.log("Attempting to sign in user:", email);
     const userCredential = await signInWithEmailAndPassword(
       auth,
@@ -118,8 +133,22 @@ export const createUserWithEmailAndPasswordFirebase = async (
   userOrPlayerName: string
 ) => {
   try {
+    // Security: Validate inputs
+    if (!validateEmail(email)) {
+      throw new Error("Invalid email format");
+    }
+    if (!validatePassword(password)) {
+      throw new Error("Password must be at least 6 characters");
+    }
+    if (!userOrPlayerName || userOrPlayerName.trim().length < 2) {
+      throw new Error("Name must be at least 2 characters");
+    }
+
+    // Security: Basic sanitization (allow copy/paste but remove dangerous characters)
+    const sanitizedName = userOrPlayerName.trim().replace(/[<>]/g, "");
+
     // Check if name is already taken
-    const nameTaken = await isNameTaken(userOrPlayerName);
+    const nameTaken = await isNameTaken(sanitizedName);
     if (nameTaken) {
       const error = new Error("Name already taken");
       (error as any).code = "name-already-taken";
@@ -137,7 +166,7 @@ export const createUserWithEmailAndPasswordFirebase = async (
 
     // Create user profile in Firestore
     await setDoc(doc(db, "users", userCredential.user.uid), {
-      userOrPlayerName,
+      userOrPlayerName: sanitizedName,
       username,
       email,
       createdAt: new Date(),
@@ -159,12 +188,50 @@ export const signOutFirebase = async () => {
   }
 };
 
+// Security: Validate tournament data
+const validateTournamentData = (data: any): boolean => {
+  if (!data || typeof data !== "object") {
+    return false;
+  }
+
+  // Check for required fields
+  const requiredFields = [
+    "tournamentId",
+    "tournamentName",
+    "organizer",
+    "raceToScore",
+  ];
+  for (const field of requiredFields) {
+    if (!data[field]) {
+      return false;
+    }
+  }
+
+  // Validate raceToScore is a valid number
+  const validScores = ["3", "5", "7", "9"];
+  if (!validScores.includes(data.raceToScore)) {
+    return false;
+  }
+
+  return true;
+};
+
 // Tournament data functions
 export const saveTournamentData = async (
   userId: string,
   tournamentData: any
 ) => {
   try {
+    // Security: Validate user ID
+    if (!userId || typeof userId !== "string" || userId.length < 10) {
+      throw new Error("Invalid user ID");
+    }
+
+    // Security: Validate tournament data
+    if (!validateTournamentData(tournamentData)) {
+      throw new Error("Invalid tournament data");
+    }
+
     console.log("Firebase: Saving tournament data for user:", userId);
     console.log("Firebase: Tournament data:", tournamentData);
 

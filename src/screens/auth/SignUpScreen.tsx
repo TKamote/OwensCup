@@ -10,6 +10,7 @@ import {
   Platform,
   ScrollView,
 } from "react-native";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useAuth } from "../../context/AuthContext";
 import {
   COLORS,
@@ -28,6 +29,7 @@ const SignUpScreen: React.FC<SignUpScreenProps> = ({ onSwitchToSignIn }) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [userOrPlayerName, setUserOrPlayerName] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const { signUp, loading } = useAuth();
 
   const handleSignUp = async () => {
@@ -66,7 +68,8 @@ const SignUpScreen: React.FC<SignUpScreenProps> = ({ onSwitchToSignIn }) => {
       } else if (error.code === "auth/network-request-failed") {
         errorMessage = "Network error. Please check your internet connection.";
       } else if (error.code === "name-already-taken") {
-        errorMessage = "This name is already taken. Please choose a different name.";
+        errorMessage =
+          "This name is already taken. Please choose a different name.";
       } else if (error.message) {
         errorMessage = error.message;
       }
@@ -76,67 +79,79 @@ const SignUpScreen: React.FC<SignUpScreenProps> = ({ onSwitchToSignIn }) => {
   };
 
   return (
-    <KeyboardAvoidingView
+    <ScrollView
       style={styles.container}
-      behavior={Platform.OS === "ios" ? "padding" : "height"}
+      contentContainerStyle={styles.scrollContent}
+      keyboardShouldPersistTaps="handled"
+      showsVerticalScrollIndicator={false}
     >
-      <ScrollView
-        contentContainerStyle={styles.scrollContent}
-        keyboardShouldPersistTaps="handled"
-      >
+      <View style={styles.header}>
         <Text style={styles.title}>Sign Up</Text>
         <Text style={styles.subtitle}>Join PBS Cup Tournament</Text>
+      </View>
 
-        <View style={styles.form}>
-          <TextInput
-            style={styles.input}
-            placeholder="User or Player Name"
-            value={userOrPlayerName}
-            onChangeText={setUserOrPlayerName}
-            autoCapitalize="words"
-            placeholderTextColor={COLORS.text.disabled}
-          />
+      <View style={styles.form}>
+        <TextInput
+          style={styles.input}
+          placeholder="User or Player Name"
+          value={userOrPlayerName}
+          onChangeText={setUserOrPlayerName}
+          autoCapitalize="words"
+          placeholderTextColor={COLORS.text.disabled}
+        />
 
-          <TextInput
-            style={styles.input}
-            placeholder="Email"
-            value={email}
-            onChangeText={setEmail}
-            keyboardType="email-address"
-            autoCapitalize="none"
-            placeholderTextColor={COLORS.text.disabled}
-          />
+        <TextInput
+          style={styles.input}
+          placeholder="Email"
+          value={email}
+          onChangeText={setEmail}
+          keyboardType="email-address"
+          autoCapitalize="none"
+          placeholderTextColor={COLORS.text.disabled}
+        />
 
+        <View style={styles.passwordContainer}>
           <TextInput
-            style={styles.input}
+            style={styles.passwordInput}
             placeholder="Password"
             value={password}
             onChangeText={setPassword}
-            secureTextEntry
+            secureTextEntry={!showPassword}
             placeholderTextColor={COLORS.text.disabled}
           />
-
           <TouchableOpacity
-            style={[styles.button, loading && styles.buttonDisabled]}
-            onPress={handleSignUp}
-            disabled={loading}
+            style={styles.eyeButton}
+            onPress={() => setShowPassword(!showPassword)}
           >
-            <Text style={styles.buttonText}>
-              {loading ? "Signing Up..." : "Sign Up"}
-            </Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={styles.switchButton}
-            onPress={onSwitchToSignIn}
-          >
-            <Text style={styles.switchText}>
-              Already have an account? Sign In
-            </Text>
+            <MaterialCommunityIcons
+              name={showPassword ? "eye-off" : "eye"}
+              size={20}
+              color={COLORS.text.secondary}
+            />
           </TouchableOpacity>
         </View>
-      </ScrollView>
-    </KeyboardAvoidingView>
+
+        <TouchableOpacity
+          style={[styles.button, loading && styles.buttonDisabled]}
+          onPress={handleSignUp}
+          disabled={loading}
+        >
+          <Text style={styles.buttonText}>
+            {loading ? "Signing Up..." : "Sign Up"}
+          </Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={styles.switchButton}
+          onPress={onSwitchToSignIn}
+        >
+          <Text style={styles.switchText}>
+            Already have an account?{" "}
+            <Text style={styles.switchTextBold}>Sign In</Text>
+          </Text>
+        </TouchableOpacity>
+      </View>
+    </ScrollView>
   );
 };
 
@@ -147,25 +162,28 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     flexGrow: 1,
-    padding: SPACING.lg,
-    justifyContent: "center",
+    padding: SPACING.md,
+    paddingTop: SPACING.xl,
+  },
+  header: {
+    marginBottom: SPACING.lg,
   },
   title: {
-    fontSize: FONTS.size["5xl"],
+    fontSize: FONTS.size["4xl"],
     fontWeight: FONTS.weight.bold,
     color: COLORS.text.primary,
     textAlign: "center",
-    marginBottom: SPACING.sm,
+    marginBottom: SPACING.xs,
   },
   subtitle: {
     fontSize: FONTS.size.base,
     color: COLORS.text.secondary,
     textAlign: "center",
-    marginBottom: SPACING["3xl"],
+    marginBottom: SPACING.sm,
   },
   form: {
     backgroundColor: COLORS.background.secondary,
-    padding: SPACING.lg,
+    padding: SPACING.md,
     borderRadius: BORDER_RADIUS.lg,
     ...SHADOWS.md,
   },
@@ -173,19 +191,42 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: COLORS.border.light,
     borderRadius: BORDER_RADIUS.md,
-    padding: SPACING.md,
-    marginBottom: SPACING.md,
+    paddingHorizontal: SPACING.md,
+    paddingVertical: SPACING.sm,
+    marginBottom: SPACING.sm,
     fontSize: FONTS.size.base,
     color: COLORS.text.primary,
     backgroundColor: COLORS.background.primary,
+    height: 44,
+  },
+  passwordContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    borderWidth: 1,
+    borderColor: COLORS.border.light,
+    borderRadius: BORDER_RADIUS.md,
+    backgroundColor: COLORS.background.primary,
+    marginBottom: SPACING.sm,
+    height: 44,
+  },
+  passwordInput: {
+    flex: 1,
+    paddingHorizontal: SPACING.md,
+    paddingVertical: SPACING.sm,
+    fontSize: FONTS.size.base,
+    color: COLORS.text.primary,
+  },
+  eyeButton: {
+    paddingHorizontal: SPACING.md,
+    paddingVertical: SPACING.sm,
   },
   button: {
     backgroundColor: COLORS.primary,
-    padding: SPACING.md,
     borderRadius: BORDER_RADIUS.md,
     alignItems: "center",
-    height: LAYOUT.buttonHeight.md,
+    height: 44,
     justifyContent: "center",
+    marginTop: SPACING.sm,
   },
   buttonDisabled: {
     backgroundColor: COLORS.gray[400],
@@ -196,13 +237,19 @@ const styles = StyleSheet.create({
     fontWeight: FONTS.weight.bold,
   },
   switchButton: {
-    marginTop: SPACING.md,
+    marginTop: SPACING.sm,
     alignItems: "center",
+    paddingVertical: SPACING.xs,
   },
   switchText: {
+    color: COLORS.text.primary,
+    fontSize: FONTS.size.sm,
+    fontWeight: FONTS.weight.medium,
+  },
+  switchTextBold: {
     color: COLORS.primary,
     fontSize: FONTS.size.sm,
-    textDecorationLine: "underline",
+    fontWeight: FONTS.weight.bold,
   },
 });
 

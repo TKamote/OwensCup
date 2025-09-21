@@ -271,14 +271,22 @@ const TabNavigator: React.FC = () => {
       {user ? (
         // Authenticated user tabs
         <>
-          <Tab.Screen name="Home" component={HomeScreen} />
+          <Tab.Screen
+            name="Home"
+            component={HomeScreen}
+            options={{
+              title: "Home",
+            }}
+          />
           <Tab.Screen
             name="Tour Input"
             component={TourInputScreen}
             options={({ navigation }) => ({
+              title: "Tour Setup",
+              headerShown: true,
               headerLeft: () => (
                 <TouchableOpacity
-                  onPress={() => navigation.goBack()}
+                  onPress={() => navigation.navigate("Home")}
                   style={{
                     flexDirection: "row",
                     alignItems: "center",
@@ -297,16 +305,45 @@ const TabNavigator: React.FC = () => {
           <Tab.Screen
             name="Admin"
             component={AdminDashboard}
-            options={{
+            options={({ navigation }) => ({
               title: "Admin Dashboard",
+              headerShown: true,
+              headerLeft: () => (
+                <TouchableOpacity
+                  onPress={() => navigation.navigate("Home")}
+                  style={{
+                    flexDirection: "row",
+                    alignItems: "center",
+                    paddingHorizontal: 16,
+                  }}
+                >
+                  <MaterialCommunityIcons
+                    name="home"
+                    size={24}
+                    color={COLORS.primary}
+                  />
+                </TouchableOpacity>
+              ),
+            })}
+          />
+          <Tab.Screen
+            name="Logout"
+            component={LogoutScreen}
+            options={{
+              title: "Logout",
             }}
           />
-          <Tab.Screen name="Logout" component={LogoutScreen} />
         </>
       ) : (
         // Non-authenticated user tabs
         <>
-          <Tab.Screen name="Auth" component={AuthWrapper} />
+          <Tab.Screen
+            name="Auth"
+            component={AuthWrapper}
+            options={{
+              title: "Sign In",
+            }}
+          />
         </>
       )}
     </Tab.Navigator>

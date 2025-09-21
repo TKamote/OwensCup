@@ -181,6 +181,7 @@ interface TournamentContextType {
   ) => void;
   loading: boolean;
   saveTournament: () => Promise<void>;
+  saveNow: () => Promise<void>;
   loadTournament: () => Promise<void>;
   resetMatch: (
     roundName: "semiFinal1" | "semiFinal2" | "final",
@@ -195,6 +196,7 @@ interface TournamentContextType {
     raceToScore: string
   ) => void;
   finalizeTournament: () => void;
+  unlockTournament: () => void;
   resetTournamentDataContext: () => void;
   updatePlayerParticipation: (
     roundName: "semiFinal1" | "semiFinal2" | "final",
@@ -619,13 +621,31 @@ export const TournamentProvider: React.FC<TournamentProviderProps> = ({
     try {
       setError(null);
 
-      // Check database connectivity before saving
-      const isDatabaseAccessible = await checkDatabaseConnectivity();
-      if (!isDatabaseAccessible) {
-        console.log("Database not accessible - skipping save");
-        setError("Cannot save data - database connection lost");
-        return;
+      // Skip connectivity check during auto-save to improve performance
+      // Only check connectivity when explicitly saving or if there's an error
+      if (error?.includes("Database connection lost")) {
+        const isDatabaseAccessible = await checkDatabaseConnectivity();
+        if (!isDatabaseAccessible) {
+          console.log("Database not accessible - skipping save");
+          setError("Cannot save data - database connection lost");
+          return;
+        }
       }
+
+      // Helper function to remove undefined values
+      const removeUndefinedValues = (obj: any): any => {
+        if (obj === null || obj === undefined) return null;
+        if (typeof obj !== "object") return obj;
+        if (Array.isArray(obj)) return obj.map(removeUndefinedValues);
+
+        const cleaned: any = {};
+        for (const [key, value] of Object.entries(obj)) {
+          if (value !== undefined) {
+            cleaned[key] = removeUndefinedValues(value);
+          }
+        }
+        return cleaned;
+      };
 
       // Flatten the data structure to avoid nested arrays
       const tournamentData = {
@@ -636,8 +656,12 @@ export const TournamentProvider: React.FC<TournamentProviderProps> = ({
         confirmedTeams: tournamentState.confirmedTeams,
         rounds: {
           semiFinal1: {
-            id: tournamentState.rounds.semiFinal1.id,
-            name: tournamentState.rounds.semiFinal1.name,
+            id:
+              tournamentState.rounds.semiFinal1.id ||
+              `round_semiFinal1_${Date.now()}_${Math.random()
+                .toString(36)
+                .substr(2, 4)}`,
+            name: tournamentState.rounds.semiFinal1.name || "semiFinal1",
             matches: tournamentState.rounds.semiFinal1.matches.map(
               (match, index) => ({
                 id: match.id,
@@ -658,8 +682,12 @@ export const TournamentProvider: React.FC<TournamentProviderProps> = ({
             isCompleted: tournamentState.rounds.semiFinal1.isCompleted,
           },
           semiFinal2: {
-            id: tournamentState.rounds.semiFinal2.id,
-            name: tournamentState.rounds.semiFinal2.name,
+            id:
+              tournamentState.rounds.semiFinal2.id ||
+              `round_semiFinal2_${Date.now()}_${Math.random()
+                .toString(36)
+                .substr(2, 4)}`,
+            name: tournamentState.rounds.semiFinal2.name || "semiFinal2",
             matches: tournamentState.rounds.semiFinal2.matches.map(
               (match, index) => ({
                 id: match.id,
@@ -680,8 +708,12 @@ export const TournamentProvider: React.FC<TournamentProviderProps> = ({
             isCompleted: tournamentState.rounds.semiFinal2.isCompleted,
           },
           final: {
-            id: tournamentState.rounds.final.id,
-            name: tournamentState.rounds.final.name,
+            id:
+              tournamentState.rounds.final.id ||
+              `round_final_${Date.now()}_${Math.random()
+                .toString(36)
+                .substr(2, 4)}`,
+            name: tournamentState.rounds.final.name || "final",
             matches: tournamentState.rounds.final.matches.map(
               (match, index) => ({
                 id: match.id,
@@ -707,11 +739,14 @@ export const TournamentProvider: React.FC<TournamentProviderProps> = ({
         updatedAt: tournamentState.updatedAt,
       };
 
+      // Remove any undefined values before saving
+      const cleanedTournamentData = removeUndefinedValues(tournamentData);
+
       console.log(
         "Flattened tournament data:",
-        JSON.stringify(tournamentData, null, 2)
+        JSON.stringify(cleanedTournamentData, null, 2)
       );
-      await saveTournamentData(user.uid, tournamentData);
+      await saveTournamentData(user.uid, cleanedTournamentData);
 
       setError(null);
     } catch (error) {
@@ -722,6 +757,11 @@ export const TournamentProvider: React.FC<TournamentProviderProps> = ({
         }`
       );
     }
+  };
+
+  // Manual save function for immediate saves (e.g., after important actions)
+  const saveNow = async () => {
+    await saveTournament();
   };
 
   const updateMatchScore = (
@@ -1177,6 +1217,14 @@ export const TournamentProvider: React.FC<TournamentProviderProps> = ({
     }));
   };
 
+  const unlockTournament = () => {
+    setTournamentState((prev) => ({
+      ...prev,
+      tournamentFinalized: false,
+      updatedAt: new Date(),
+    }));
+  };
+
   const resetTournamentDataContext = () => {
     setTournamentState({
       tournamentId: generateTournamentId(),
@@ -1305,49 +1353,28 @@ export const TournamentProvider: React.FC<TournamentProviderProps> = ({
     });
   };
 
-  // Auto-save tournament data when it changes
+  // Auto-save tournament data when it changes (with longer debouncing for better performance)
   useEffect(() => {
     if (user && !loading) {
-      saveTournament();
+      // Debounce the save operation to avoid excessive calls - increased to 30 seconds for better performance
+      const timeoutId = setTimeout(() => {
+        saveTournament();
+      }, 30000); // Wait 30 seconds before saving
+
+      return () => clearTimeout(timeoutId);
     }
   }, [
     tournamentState.tournamentId,
     tournamentState.tournamentName,
     tournamentState.organizer,
     tournamentState.raceToScore,
-    tournamentState.confirmedTeams,
+    tournamentState.confirmedTeams.length, // Only trigger on team count change, not team content changes
     tournamentState.tournamentFinalized,
-    tournamentState.rounds.semiFinal1.matches,
-    tournamentState.rounds.semiFinal1.winnerTeamId,
-    tournamentState.rounds.semiFinal1.isCompleted,
-    tournamentState.rounds.semiFinal2.matches,
-    tournamentState.rounds.semiFinal2.winnerTeamId,
-    tournamentState.rounds.semiFinal2.isCompleted,
-    tournamentState.rounds.final.matches,
-    tournamentState.rounds.final.winnerTeamId,
-    tournamentState.rounds.final.isCompleted,
     tournamentState.tournamentChampionTeamId,
-    tournamentState.createdAt,
-    tournamentState.updatedAt,
   ]);
 
-  // Periodic database connectivity check
-  useEffect(() => {
-    if (!user) return;
-
-    const checkConnectivity = async () => {
-      const isAccessible = await checkDatabaseConnectivity();
-      if (!isAccessible && !error?.includes("Database connection lost")) {
-        console.log("Database connectivity check failed - clearing data");
-        clearAllData();
-      }
-    };
-
-    // Check every 30 seconds
-    const interval = setInterval(checkConnectivity, 30000);
-
-    return () => clearInterval(interval);
-  }, [user, error]);
+  // Removed periodic database connectivity check to improve performance
+  // The app will only check connectivity when there's an actual error
 
   const value = {
     tournamentState,
@@ -1355,6 +1382,7 @@ export const TournamentProvider: React.FC<TournamentProviderProps> = ({
     setModalVisible,
     loading,
     saveTournament,
+    saveNow,
     loadTournament,
     resetMatch,
     resetAllScores,
@@ -1362,6 +1390,7 @@ export const TournamentProvider: React.FC<TournamentProviderProps> = ({
     setConfirmedTeams,
     setTournamentInfo,
     finalizeTournament,
+    unlockTournament,
     resetTournamentDataContext,
     updatePlayerParticipation,
     error,
