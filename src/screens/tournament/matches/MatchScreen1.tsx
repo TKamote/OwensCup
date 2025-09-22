@@ -10,6 +10,7 @@ import {
   Alert,
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useTournament } from "../../../context/TournamentContext";
 import {
   teams as teamData,
@@ -17,7 +18,6 @@ import {
 } from "../../../utils/tournamentData";
 import TeamHeader from "../../../components/tournament/TeamHeader";
 import MatchCard from "../../../components/tournament/MatchCard";
-import { MaterialCommunityIcons } from "@expo/vector-icons";
 import {
   COLORS,
   FONTS,
@@ -33,7 +33,7 @@ const MatchScreen1: React.FC = () => {
     useTournament();
 
   // Use semi-final 1 for this screen
-  const currentMatchup = tournamentState.rounds.semiFinal1;
+  const currentMatchup = tournamentState.rounds?.semiFinal1;
 
   const [selectedMatch, setSelectedMatch] = useState<number | null>(null);
   const [adjustModalVisible, setAdjustModalVisible] = useState(false);
@@ -42,9 +42,13 @@ const MatchScreen1: React.FC = () => {
 
   // Simple winner detection - check if any team has 5 wins
   useEffect(() => {
+    if (!currentMatchup?.matches || !Array.isArray(currentMatchup.matches)) {
+      return;
+    }
+
     const teamScores = [0, 0];
     currentMatchup.matches.forEach((match) => {
-      if (match.isCompleted) {
+      if (match && match.isCompleted) {
         if (match.team1Score > match.team2Score) {
           teamScores[0]++;
         } else {
@@ -56,12 +60,21 @@ const MatchScreen1: React.FC = () => {
     if (teamScores[0] >= 5 || teamScores[1] >= 5) {
       setWinnerModalVisible(true);
     }
-  }, [currentMatchup.matches]);
+  }, [currentMatchup?.matches]);
 
   // Get the teams for this matchup
-  const mainTeams = tournamentState.confirmedTeams.slice(0, 2);
+  const mainTeams = (tournamentState.confirmedTeams || []).slice(0, 2);
   const team1 = mainTeams[0];
   const team2 = mainTeams[1];
+
+  // Debug logging
+  console.log("MatchScreen1 Debug:", {
+    confirmedTeamsLength: tournamentState.confirmedTeams?.length || 0,
+    team1: team1?.name || "No team1",
+    team2: team2?.name || "No team2",
+    currentMatchup: currentMatchup?.matches?.length || 0,
+    tournamentFinalized: tournamentState.tournamentFinalized,
+  });
 
   // Parse players for each team - new Player[] structure only
   const getTeamPlayers = (team: any) => {
@@ -354,6 +367,17 @@ const MatchScreen1: React.FC = () => {
       </Modal>
 
       <View style={styles.header}>
+        <TouchableOpacity
+          style={styles.backButton}
+          onPress={() => navigation.goBack()}
+        >
+          <MaterialCommunityIcons
+            name="arrow-left"
+            size={24}
+            color={COLORS.primary}
+          />
+          <Text style={styles.backButtonText}>Back</Text>
+        </TouchableOpacity>
         <Text style={styles.headerTitle}>Semifinal 1</Text>
         <View style={styles.headerButtons}>
           <TouchableOpacity
@@ -400,39 +424,58 @@ const MatchScreen1: React.FC = () => {
           );
         })()}
 
-        <FlatList
-          data={matchData}
-          keyExtractor={(item) => item.number.toString()}
-          renderItem={({ item, index }) => {
-            const match = currentMatchup.matches[index];
-            const isCompleted = match.isCompleted;
+        {!team1 || !team2 ? (
+          <View style={styles.noTeamsMessage}>
+            <MaterialCommunityIcons
+              name="information"
+              size={48}
+              color={COLORS.primary}
+            />
+            <Text style={styles.noTeamsTitle}>Teams Not Set Up</Text>
+            <Text style={styles.noTeamsText}>
+              Go to "Tournament Setup" tab to add teams and players, then
+              finalize the tournament to see individual matches.
+            </Text>
+          </View>
+        ) : (
+          <FlatList
+            data={currentMatchup?.matches || []}
+            keyExtractor={(item, index) => `match-${index}`}
+            renderItem={({ item: match, index }) => {
+              const isCompleted = match?.isCompleted || false;
 
-            return (
-              <MatchCard
-                match={item}
-                matchIndex={index}
-                teamScores={[0, 0]} // TODO: Calculate from matches
-                matchScore={[match.team1Score, match.team2Score]}
-                onScoreChange={(teamIdx, delta) =>
-                  handleScoreChange(index, teamIdx, delta)
-                }
-                isCurrent={false} // TODO: Implement current match logic
-                isCompleted={isCompleted}
-                onReset={() => handleResetMatch(index)}
-                onAdjust={() => {
-                  setSelectedMatch(index);
-                  setScoreAdjustModalVisible(true);
-                }}
-                playerDisplay={getPlayerNamesForMatch(index, 0)}
-                matchType={getMatchType(index)}
-                teamStartIndex={0} // Use teams 1 & 2 (index 0 & 1)
-              />
-            );
-          }}
-          extraData={{
-            matches: currentMatchup.matches,
-          }}
-        />
+              return (
+                <MatchCard
+                  match={{
+                    number: index + 1,
+                    type: "team",
+                    raceTo: parseInt(tournamentState.raceToScore) || 5,
+                    players: "Team Match",
+                  }}
+                  matchIndex={index}
+                  teamScores={[0, 0]} // TODO: Calculate from matches
+                  matchScore={[match?.team1Score || 0, match?.team2Score || 0]}
+                  onScoreChange={(teamIdx, delta) =>
+                    handleScoreChange(index, teamIdx, delta)
+                  }
+                  isCurrent={false} // TODO: Implement current match logic
+                  isCompleted={isCompleted}
+                  onReset={() => handleResetMatch(index)}
+                  onAdjust={() => {
+                    setSelectedMatch(index);
+                    setScoreAdjustModalVisible(true);
+                  }}
+                  playerDisplay={getPlayerNamesForMatch(index, 0)}
+                  matchType={getMatchType(index)}
+                  teamStartIndex={0} // Use teams 1 & 2 (index 0 & 1)
+                />
+              );
+            }}
+            extraData={{
+              matches: currentMatchup.matches,
+            }}
+          />
+        )}
       </View>
     </SafeAreaView>
   );
@@ -479,6 +522,39 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.background.primary,
     borderBottomWidth: 1,
     borderBottomColor: COLORS.gray[200],
+  },
+  backButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingVertical: SPACING.xs,
+    paddingHorizontal: SPACING.sm,
+    borderRadius: BORDER_RADIUS.sm,
+    backgroundColor: COLORS.background.secondary,
+  },
+  backButtonText: {
+    fontSize: FONTS.size.sm,
+    fontWeight: FONTS.weight.medium,
+    color: COLORS.primary,
+    marginLeft: SPACING.xs,
+  },
+  noTeamsMessage: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    padding: SPACING.xl,
+  },
+  noTeamsTitle: {
+    fontSize: FONTS.size.xl,
+    fontWeight: FONTS.weight.bold,
+    color: COLORS.text.primary,
+    marginTop: SPACING.md,
+    marginBottom: SPACING.sm,
+  },
+  noTeamsText: {
+    fontSize: FONTS.size.base,
+    color: COLORS.text.secondary,
+    textAlign: "center",
+    lineHeight: 24,
   },
   headerTitle: {
     fontSize: FONTS.size["4xl"],

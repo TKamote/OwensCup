@@ -508,33 +508,39 @@ const TourInputScreen: React.FC = () => {
 
       <View style={styles.inlineInputRow}>
         <Text style={styles.inlineLabel}>Players:</Text>
-        <TextInput
-          style={[styles.inlineInput, styles.playersInput]}
-          placeholder="Enter player names separated by commas"
-          value={playersInputText}
-          onChangeText={(text) => {
-            setPlayersInputText(text);
-            // Parse players from the text input
-            const playerNames = text
-              .split(",")
-              .map((name) => name.trim())
-              .filter((name) => name.length > 0);
-            const players: Player[] = playerNames.map((name, index) => ({
-              id: `${Date.now()}_${index}`, // Unique ID for each player
-              name: name,
-              designation: "Player", // Default designation
-            }));
-            setCurrentTeam((prev) => ({ ...prev, players }));
-          }}
-          multiline
-          numberOfLines={3}
-          contextMenuHidden={false}
-          autoCorrect={false}
-          spellCheck={false}
-          clearButtonMode="while-editing"
-          returnKeyType="done"
-          selectTextOnFocus={true}
-        />
+        <View style={styles.playersInputContainer}>
+          <TextInput
+            style={[styles.inlineInput, styles.playersInput]}
+            placeholder="Enter player names separated by commas"
+            value={playersInputText}
+            onChangeText={(text) => {
+              setPlayersInputText(text);
+              // Parse players from the text input
+              const playerNames = text
+                .split(",")
+                .map((name) => name.trim())
+                .filter((name) => name.length > 0);
+              const players: Player[] = playerNames.map((name, index) => ({
+                id: `${Date.now()}_${index}`, // Unique ID for each player
+                name: name,
+                designation: "Player", // Default designation
+              }));
+              setCurrentTeam((prev) => ({ ...prev, players }));
+            }}
+            multiline
+            numberOfLines={3}
+            contextMenuHidden={false}
+            autoCorrect={false}
+            spellCheck={false}
+            clearButtonMode="while-editing"
+            returnKeyType="done"
+            selectTextOnFocus={true}
+          />
+          <Text style={styles.playersHelpText}>
+            💡 Tip: Separate player names with commas. You can edit names to fix
+            typos.
+          </Text>
+        </View>
       </View>
 
       <View style={styles.colorIconSection}>
@@ -674,7 +680,13 @@ const TourInputScreen: React.FC = () => {
   );
 
   const renderConfirmedTeamCard = (team: ConfirmedTeam) => (
-    <View key={team.id} style={styles.confirmedTeamCard}>
+    <View
+      key={team.id}
+      style={[
+        styles.confirmedTeamCard,
+        isEditing && editingTeamId === team.id && styles.editingTeamCard,
+      ]}
+    >
       <View style={styles.teamHeader}>
         <View style={styles.teamInfo}>
           <MaterialCommunityIcons
@@ -693,9 +705,10 @@ const TourInputScreen: React.FC = () => {
               >
                 <MaterialCommunityIcons
                   name="pencil"
-                  size={16}
+                  size={18}
                   color={COLORS.white}
                 />
+                <Text style={styles.editButtonText}>Edit</Text>
               </TouchableOpacity>
               <TouchableOpacity
                 style={styles.deleteButton}
@@ -703,9 +716,10 @@ const TourInputScreen: React.FC = () => {
               >
                 <MaterialCommunityIcons
                   name="delete"
-                  size={16}
+                  size={18}
                   color={COLORS.white}
                 />
+                <Text style={styles.deleteButtonText}>Delete</Text>
               </TouchableOpacity>
             </>
           )}
@@ -826,6 +840,19 @@ const TourInputScreen: React.FC = () => {
               ? `Edit Team ${editingTeamId}`
               : `Add Team ${confirmedTeams.length + 1}`}
           </Text>
+          {isEditing && (
+            <View style={styles.editingNotice}>
+              <MaterialCommunityIcons
+                name="information"
+                size={16}
+                color={COLORS.primary}
+              />
+              <Text style={styles.editingNoticeText}>
+                You are editing this team. Make your changes and click "Update
+                Team" to save.
+              </Text>
+            </View>
+          )}
           {renderCurrentTeamInput()}
         </View>
       )}
@@ -1084,10 +1111,19 @@ const styles = StyleSheet.create({
     fontSize: FONTS.size.base,
     backgroundColor: COLORS.white,
   },
+  playersInputContainer: {
+    flex: 1,
+  },
   playersInput: {
     height: 80,
     textAlignVertical: "top",
     minHeight: 80,
+  },
+  playersHelpText: {
+    fontSize: FONTS.size.xs,
+    color: COLORS.text.secondary,
+    marginTop: SPACING.xs,
+    fontStyle: "italic",
   },
   colorIconSection: {
     marginBottom: SPACING.md,
@@ -1168,6 +1204,28 @@ const styles = StyleSheet.create({
     borderColor: COLORS.gray[200],
     ...SHADOWS.sm,
   },
+  editingTeamCard: {
+    borderColor: COLORS.primary,
+    borderWidth: 2,
+    backgroundColor: COLORS.primary + "10", // Light blue background
+  },
+  editingNotice: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: COLORS.primary + "20",
+    padding: SPACING.sm,
+    borderRadius: BORDER_RADIUS.sm,
+    marginBottom: SPACING.md,
+    borderLeftWidth: 3,
+    borderLeftColor: COLORS.primary,
+  },
+  editingNoticeText: {
+    flex: 1,
+    marginLeft: SPACING.sm,
+    fontSize: FONTS.size.sm,
+    color: COLORS.primary,
+    fontWeight: FONTS.weight.medium,
+  },
   alternateTeamCard: {
     backgroundColor: COLORS.gray[50],
     padding: SPACING.md,
@@ -1209,7 +1267,19 @@ const styles = StyleSheet.create({
     color: COLORS.text.primary,
   },
   editButton: {
-    padding: SPACING.xs,
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: COLORS.primary,
+    paddingHorizontal: SPACING.sm,
+    paddingVertical: SPACING.xs,
+    borderRadius: BORDER_RADIUS.sm,
+    marginRight: SPACING.xs,
+  },
+  editButtonText: {
+    color: COLORS.white,
+    fontSize: FONTS.size.xs,
+    fontWeight: FONTS.weight.medium,
+    marginLeft: SPACING.xs,
   },
   cardDetails: {
     marginTop: SPACING.xs,
@@ -1475,7 +1545,18 @@ const styles = StyleSheet.create({
     marginLeft: "auto",
   },
   deleteButton: {
-    padding: SPACING.xs,
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: COLORS.error,
+    paddingHorizontal: SPACING.sm,
+    paddingVertical: SPACING.xs,
+    borderRadius: BORDER_RADIUS.sm,
+  },
+  deleteButtonText: {
+    color: COLORS.white,
+    fontSize: FONTS.size.xs,
+    fontWeight: FONTS.weight.medium,
+    marginLeft: SPACING.xs,
   },
   teamDetails: {
     marginTop: SPACING.xs,

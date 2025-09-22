@@ -1,188 +1,121 @@
 import React from "react";
-import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-  Alert,
-  Image,
-} from "react-native";
+import { View, Text, StyleSheet, Image } from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
-import {
-  COLORS,
-  FONTS,
-  SPACING,
-  BORDER_RADIUS,
-  SHADOWS,
-} from "../constants/theme";
+import { COLORS, FONTS, SPACING, BORDER_RADIUS } from "../constants/theme";
 import { useAuth } from "../context/AuthContext";
+import { useTournament } from "../context/TournamentContext";
 
-interface HomeScreenProps {
-  navigation: any;
-}
-
-const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
+const HomeScreen: React.FC = () => {
   const { user } = useAuth();
-
-  const handlePBSCupPress = () => {
-    if (user) {
-      // Navigate to Tournament Dashboard for tournament overview
-      navigation.navigate("Tournament Dashboard");
-    } else {
-      Alert.alert(
-        "Authentication Required",
-        "Please sign in to view tournaments.",
-        [
-          { text: "Cancel", style: "cancel" },
-          { text: "Sign In", onPress: () => navigation.navigate("Auth") },
-        ]
-      );
-    }
-  };
-
-  const handlePastTournamentsPress = () => {
-    if (user) {
-      // Navigate to Past Tournaments tab
-      navigation.navigate("Past Tournaments");
-    } else {
-      Alert.alert(
-        "Authentication Required",
-        "Please sign in to view past tournaments.",
-        [
-          { text: "Cancel", style: "cancel" },
-          { text: "Sign In", onPress: () => navigation.navigate("Auth") },
-        ]
-      );
-    }
-  };
-
-  const handleFavouriteTournamentsPress = () => {
-    if (user) {
-      // Navigate to Live Tournament for spectator view
-      navigation.navigate("Live Tournament");
-    } else {
-      Alert.alert(
-        "Authentication Required",
-        "Please sign in to view live tournament.",
-        [
-          { text: "Cancel", style: "cancel" },
-          { text: "Sign In", onPress: () => navigation.navigate("Auth") },
-        ]
-      );
-    }
-  };
-
-  const handleTeamOverviewPress = () => {
-    if (user) {
-      // Navigate to Team Overview
-      navigation.navigate("TeamOverview");
-    } else {
-      Alert.alert(
-        "Authentication Required",
-        "Please sign in to view team overview.",
-        [
-          { text: "Cancel", style: "cancel" },
-          { text: "Sign In", onPress: () => navigation.navigate("Auth") },
-        ]
-      );
-    }
-  };
+  const { tournamentState } = useTournament();
 
   return (
     <View style={styles.container}>
-      {/* Image Section - Replaces Welcome Message */}
-
+      {/* App Logo/Icon */}
       <Image
         source={require("../../assets/icon.png")}
-        style={styles.welcomeImage}
-        // resizeMode="contain"
+        style={styles.appIcon}
+        resizeMode="contain"
       />
 
-      {/* Navigation Buttons - Centered */}
-      <View style={styles.buttonSection}>
-        <TouchableOpacity style={styles.button} onPress={handlePBSCupPress}>
-          <MaterialCommunityIcons
-            name="trophy"
-            size={24}
-            color={COLORS.white}
-          />
-          <Text style={styles.buttonText}>Tournament Dashboard</Text>
-        </TouchableOpacity>
+      {/* Welcome Section */}
+      <View style={styles.welcomeSection}>
+        <Text style={styles.welcomeTitle}>Owen's Cup</Text>
 
-        <TouchableOpacity
-          style={styles.button}
-          onPress={handleFavouriteTournamentsPress}
-        >
-          <MaterialCommunityIcons name="heart" size={24} color={COLORS.white} />
-          <Text style={styles.buttonText}>Live Tournament</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={styles.button}
-          onPress={handlePastTournamentsPress}
-        >
-          <MaterialCommunityIcons
-            name="history"
-            size={24}
-            color={COLORS.white}
-          />
-          <Text style={styles.buttonText}>Past Tournaments</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={styles.button}
-          onPress={handleTeamOverviewPress}
-        >
-          <MaterialCommunityIcons
-            name="account-group"
-            size={24}
-            color={COLORS.white}
-          />
-          <Text style={styles.buttonText}>Team Overview</Text>
-        </TouchableOpacity>
+        {user && (
+          <Text style={styles.userGreeting}>
+            Welcome back, {user.displayName || user.email}!
+          </Text>
+        )}
       </View>
+
+      {/* Tournament Status Card */}
+      {user && tournamentState.tournamentName && (
+        <View style={styles.statusCard}>
+          <View style={styles.statusHeader}>
+            <MaterialCommunityIcons
+              name="trophy"
+              size={24}
+              color={COLORS.primary}
+            />
+            <Text style={styles.statusTitle}>Current Tournament</Text>
+          </View>
+
+          <Text style={styles.tournamentName}>
+            {tournamentState.tournamentName}
+          </Text>
+
+          <Text style={styles.tournamentDetails}>
+            Organizer: {tournamentState.organizer}
+          </Text>
+
+          <Text style={styles.tournamentDetails}>
+            Teams: {tournamentState.confirmedTeams.length}
+          </Text>
+        </View>
+      )}
     </View>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
-    display: "flex",
-    flexDirection: "column",
     flex: 1,
-    justifyContent: "flex-start",
-    alignItems: "center",
     backgroundColor: COLORS.white,
+    paddingHorizontal: SPACING.lg,
+    paddingBottom: SPACING.lg,
   },
-
-  welcomeImage: {
-    width: "100%",
-    height: "60%",
+  appIcon: {
+    width: 288,
+    height: 288,
+    alignSelf: "center",
+    marginTop: SPACING.sm,
+    marginBottom: SPACING.sm,
   },
-  buttonSection: {
-    justifyContent: "center",
+  welcomeSection: {
     alignItems: "center",
-    gap: SPACING.sm,
-    width: "100%",
+    marginBottom: SPACING.md,
   },
-  button: {
+  welcomeTitle: {
+    fontSize: FONTS.size["4xl"],
+    fontWeight: FONTS.weight.bold,
+    color: COLORS.text.primary,
+    marginBottom: SPACING.xs,
+  },
+  userGreeting: {
+    fontSize: FONTS.size.base,
+    color: COLORS.primary,
+    fontWeight: FONTS.weight.medium,
+  },
+  statusCard: {
+    backgroundColor: COLORS.background.primary,
+    borderRadius: BORDER_RADIUS.lg,
+    padding: SPACING.lg,
+    marginBottom: SPACING.xl,
+    borderWidth: 1,
+    borderColor: COLORS.border.light,
+  },
+  statusHeader: {
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: COLORS.primary,
-    paddingVertical: SPACING.md - 2,
-    paddingHorizontal: SPACING.sm,
-    borderRadius: BORDER_RADIUS.lg,
-    ...SHADOWS.md,
-    width: "80%",
-    minWidth: 250,
+    marginBottom: SPACING.md,
   },
-  buttonText: {
-    color: COLORS.white,
+  statusTitle: {
     fontSize: FONTS.size.lg,
     fontWeight: FONTS.weight.bold,
+    color: COLORS.text.primary,
     marginLeft: SPACING.sm,
-    textAlign: "center",
+  },
+  tournamentName: {
+    fontSize: FONTS.size.xl,
+    fontWeight: FONTS.weight.bold,
+    color: COLORS.primary,
+    marginBottom: SPACING.sm,
+  },
+  tournamentDetails: {
+    fontSize: FONTS.size.base,
+    color: COLORS.text.secondary,
+    marginBottom: SPACING.xs,
   },
 });
 

@@ -10,6 +10,7 @@ import {
   Alert,
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useTournament } from "../../../context/TournamentContext";
 import {
   teams as teamData,
@@ -17,7 +18,6 @@ import {
 } from "../../../utils/tournamentData";
 import TeamHeader from "../../../components/tournament/TeamHeader";
 import MatchCard from "../../../components/tournament/MatchCard";
-import { MaterialCommunityIcons } from "@expo/vector-icons";
 import {
   COLORS,
   FONTS,
@@ -33,7 +33,7 @@ const MatchScreen3: React.FC = () => {
     useTournament();
 
   // Use final matchup for this screen
-  const currentMatchup = tournamentState.rounds.final;
+  const currentMatchup = tournamentState.rounds?.final;
 
   const [selectedMatch, setSelectedMatch] = useState<number | null>(null);
   const [adjustModalVisible, setAdjustModalVisible] = useState(false);
@@ -295,7 +295,17 @@ const MatchScreen3: React.FC = () => {
       </Modal>
 
       <View style={styles.header}>
-        <View style={styles.headerSpacer} />
+        <TouchableOpacity
+          style={styles.backButton}
+          onPress={() => navigation.goBack()}
+        >
+          <MaterialCommunityIcons
+            name="arrow-left"
+            size={24}
+            color={COLORS.primary}
+          />
+          <Text style={styles.backButtonText}>Back</Text>
+        </TouchableOpacity>
         <Text style={styles.headerTitle}>Final Match</Text>
         <View style={styles.headerButtons}>
           <TouchableOpacity
@@ -350,112 +360,131 @@ const MatchScreen3: React.FC = () => {
           );
         })()}
 
-        <FlatList
-          data={matchData}
-          keyExtractor={(item) => item.number.toString()}
-          renderItem={({ item, index }) => {
-            const match = currentMatchup.matches[index];
-            const isCompleted = match.isCompleted;
+        {!winner1 || !winner2 ? (
+          <View style={styles.noTeamsMessage}>
+            <MaterialCommunityIcons
+              name="information"
+              size={48}
+              color={COLORS.primary}
+            />
+            <Text style={styles.noTeamsTitle}>Semi-Finals Not Complete</Text>
+            <Text style={styles.noTeamsText}>
+              Complete the Semi-Final matches first to see the Final match
+              details.
+            </Text>
+          </View>
+        ) : (
+          <FlatList
+            data={currentMatchup?.matches || []}
+            keyExtractor={(item, index) => `match-${index}`}
+            renderItem={({ item: match, index }) => {
+              const isCompleted = match?.isCompleted || false;
 
-            // Get the correct teams for the Final round
-            const finalTeam1 = getWinnerTeamObject(
-              tournamentState.rounds.semiFinal1.winnerTeamId
-            );
-            const finalTeam2 = getWinnerTeamObject(
-              tournamentState.rounds.semiFinal2.winnerTeamId
-            );
+              // Get the correct teams for the Final round
+              const finalTeam1 = getWinnerTeamObject(
+                tournamentState.rounds.semiFinal1.winnerTeamId
+              );
+              const finalTeam2 = getWinnerTeamObject(
+                tournamentState.rounds.semiFinal2.winnerTeamId
+              );
 
-            // Get player names for this specific match
-            const getPlayerNamesForMatch = (
-              matchIndex: number,
-              teamIndex: number
-            ) => {
-              const team = teamIndex === 0 ? finalTeam1 : finalTeam2;
-              if (!team || !team.players) return "Unknown";
+              // Get player names for this specific match
+              const getPlayerNamesForMatch = (
+                matchIndex: number,
+                teamIndex: number
+              ) => {
+                const team = teamIndex === 0 ? finalTeam1 : finalTeam2;
+                if (!team || !team.players) return "Unknown";
 
-              const players = team.players;
-              switch (matchIndex) {
-                case 0: // Match 1: All 5 players - show all player names
-                  return players.map((p) => p.name).join(", ");
-                case 1: // Match 2: Players 2 & 3 (1st Doubles)
-                  return `${players[1]?.name || "P2"}, ${
-                    players[2]?.name || "P3"
-                  }`;
-                case 2: // Match 3: Player 1 (1st Singles)
-                  return players[0]?.name || "P1";
-                case 3: // Match 4: Players 4 & 5 (2nd Doubles)
-                  return `${players[3]?.name || "P4"}, ${
-                    players[4]?.name || "P5"
-                  }`;
-                case 4: // Match 5: Player 2 (2nd Singles)
-                  return players[1]?.name || "P2";
-                case 5: // Match 6: All 5 players (2nd Team Match) - show all player names
-                  return players.map((p) => p.name).join(", ");
-                case 6: // Match 7: 3rd Doubles (P1 & P3)
-                  return `${players[0]?.name || "P1"}, ${
-                    players[2]?.name || "P3"
-                  }`;
-                case 7: // Match 8: Player 3 (3rd Singles) - Captain's pick
-                  return players[2]?.name || "P3";
-                case 8: // Match 9: 4th Singles - Captain's pick
-                  return players[3]?.name || "P4";
-                default:
-                  return "Players TBD";
-              }
-            };
-
-            const getMatchType = (matchIndex: number) => {
-              switch (matchIndex) {
-                case 0:
-                  return "1st Team Match";
-                case 1:
-                  return "1st Doubles";
-                case 2:
-                  return "1st Singles";
-                case 3:
-                  return "2nd Doubles";
-                case 4:
-                  return "2nd Singles";
-                case 5:
-                  return "2nd Team Match";
-                case 6:
-                  return "3rd Doubles";
-                case 7:
-                  return "3rd Singles";
-                case 8:
-                  return "4th Singles";
-                default:
-                  return "Match";
-              }
-            };
-
-            return (
-              <MatchCard
-                match={item}
-                matchIndex={index}
-                teamScores={[0, 0]} // TODO: Calculate from matches
-                matchScore={[match.team1Score, match.team2Score]}
-                onScoreChange={(teamIdx, delta) =>
-                  handleScoreChange(index, teamIdx, delta)
+                const players = team.players;
+                switch (matchIndex) {
+                  case 0: // Match 1: All 5 players - show all player names
+                    return players.map((p) => p.name).join(", ");
+                  case 1: // Match 2: Players 2 & 3 (1st Doubles)
+                    return `${players[1]?.name || "P2"}, ${
+                      players[2]?.name || "P3"
+                    }`;
+                  case 2: // Match 3: Player 1 (1st Singles)
+                    return players[0]?.name || "P1";
+                  case 3: // Match 4: Players 4 & 5 (2nd Doubles)
+                    return `${players[3]?.name || "P4"}, ${
+                      players[4]?.name || "P5"
+                    }`;
+                  case 4: // Match 5: Player 2 (2nd Singles)
+                    return players[1]?.name || "P2";
+                  case 5: // Match 6: All 5 players (2nd Team Match) - show all player names
+                    return players.map((p) => p.name).join(", ");
+                  case 6: // Match 7: 3rd Doubles (P1 & P3)
+                    return `${players[0]?.name || "P1"}, ${
+                      players[2]?.name || "P3"
+                    }`;
+                  case 7: // Match 8: Player 3 (3rd Singles) - Captain's pick
+                    return players[2]?.name || "P3";
+                  case 8: // Match 9: 4th Singles - Captain's pick
+                    return players[3]?.name || "P4";
+                  default:
+                    return "Players TBD";
                 }
-                isCurrent={false} // TODO: Implement current match logic
-                isCompleted={isCompleted}
-                onReset={() => handleResetMatch(index)}
-                onAdjust={() => {
-                  setSelectedMatch(index);
-                  setScoreAdjustModalVisible(true);
-                }}
-                playerDisplay={getPlayerNamesForMatch(index, 0)}
-                matchType={getMatchType(index)}
-                // Pass the actual Final round teams instead of using teamStartIndex
-                teamStartIndex={-1} // Special value to indicate Final round
-              />
-            );
-          }}
-          extraData={{
-            matches: currentMatchup.matches,
-          }}
-        />
+              };
+
+              const getMatchType = (matchIndex: number) => {
+                switch (matchIndex) {
+                  case 0:
+                    return "1st Team Match";
+                  case 1:
+                    return "1st Doubles";
+                  case 2:
+                    return "1st Singles";
+                  case 3:
+                    return "2nd Doubles";
+                  case 4:
+                    return "2nd Singles";
+                  case 5:
+                    return "2nd Team Match";
+                  case 6:
+                    return "3rd Doubles";
+                  case 7:
+                    return "3rd Singles";
+                  case 8:
+                    return "4th Singles";
+                  default:
+                    return "Match";
+                }
+              };
+
+              return (
+                <MatchCard
+                  match={{
+                    number: index + 1,
+                    type: "team",
+                    raceTo: parseInt(tournamentState.raceToScore) || 5,
+                    players: "Team Match",
+                  }}
+                  matchIndex={index}
+                  teamScores={[0, 0]} // TODO: Calculate from matches
+                  matchScore={[match?.team1Score || 0, match?.team2Score || 0]}
+                  onScoreChange={(teamIdx, delta) =>
+                    handleScoreChange(index, teamIdx, delta)
+                  }
+                  isCurrent={false} // TODO: Implement current match logic
+                  isCompleted={isCompleted}
+                  onReset={() => handleResetMatch(index)}
+                  onAdjust={() => {
+                    setSelectedMatch(index);
+                    setScoreAdjustModalVisible(true);
+                  }}
+                  playerDisplay={getPlayerNamesForMatch(index, 0)}
+                  matchType={getMatchType(index)}
+                  // Pass the actual Final round teams instead of using teamStartIndex
+                  teamStartIndex={-1} // Special value to indicate Final round
+                />
+              );
+            }}
+            extraData={{
+              matches: currentMatchup.matches,
+            }}
+          />
+        )}
       </View>
     </SafeAreaView>
   );
@@ -479,7 +508,37 @@ const styles = StyleSheet.create({
     width: SPACING.md, // Adjust as needed for spacing
   },
   backButton: {
-    padding: SPACING.xs,
+    flexDirection: "row",
+    alignItems: "center",
+    paddingVertical: SPACING.xs,
+    paddingHorizontal: SPACING.sm,
+    borderRadius: BORDER_RADIUS.sm,
+    backgroundColor: COLORS.background.secondary,
+  },
+  backButtonText: {
+    fontSize: FONTS.size.sm,
+    fontWeight: FONTS.weight.medium,
+    color: COLORS.primary,
+    marginLeft: SPACING.xs,
+  },
+  noTeamsMessage: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    padding: SPACING.xl,
+  },
+  noTeamsTitle: {
+    fontSize: FONTS.size.xl,
+    fontWeight: FONTS.weight.bold,
+    color: COLORS.text.primary,
+    marginTop: SPACING.md,
+    marginBottom: SPACING.sm,
+  },
+  noTeamsText: {
+    fontSize: FONTS.size.base,
+    color: COLORS.text.secondary,
+    textAlign: "center",
+    lineHeight: 24,
   },
   headerTitle: {
     fontSize: FONTS.size["3xl"],

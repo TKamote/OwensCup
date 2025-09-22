@@ -1,5 +1,14 @@
 import React from "react";
-import { View, Text, StyleSheet, SafeAreaView, ScrollView } from "react-native";
+import {
+  View,
+  Text,
+  StyleSheet,
+  SafeAreaView,
+  ScrollView,
+  TouchableOpacity,
+} from "react-native";
+import { useNavigation } from "@react-navigation/native";
+import { StackNavigationProp } from "@react-navigation/stack";
 import { useTournament } from "../../context/TournamentContext";
 import { teams as teamData } from "../../utils/tournamentData";
 import {
@@ -10,17 +19,27 @@ import {
   SHADOWS,
 } from "../../constants/theme";
 
+type RootStackParamList = {
+  "Match 1": undefined;
+  "Match 2": undefined;
+  "Match 3": undefined;
+};
+
 const LiveTournamentScreen: React.FC = () => {
   const { tournamentState } = useTournament();
+  const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
 
   // Get the first 4 teams (main teams) from confirmed teams
-  const mainTeams = tournamentState.confirmedTeams.slice(0, 4);
+  const mainTeams = (tournamentState.confirmedTeams || []).slice(0, 4);
 
   // Helper function to calculate team scores from matches
   const calculateTeamScores = (matches: any[]) => {
     const scores = [0, 0];
+    if (!matches || !Array.isArray(matches)) {
+      return scores;
+    }
     matches.forEach((match) => {
-      if (match.isCompleted) {
+      if (match && match.isCompleted) {
         if (match.team1Score > match.team2Score) {
           scores[0]++;
         } else {
@@ -39,18 +58,20 @@ const LiveTournamentScreen: React.FC = () => {
 
   // Calculate scores for each round
   const semiFinal1Scores = calculateTeamScores(
-    tournamentState.rounds.semiFinal1.matches
+    tournamentState.rounds?.semiFinal1?.matches || []
   );
   const semiFinal2Scores = calculateTeamScores(
-    tournamentState.rounds.semiFinal2.matches
+    tournamentState.rounds?.semiFinal2?.matches || []
   );
-  const finalScores = calculateTeamScores(tournamentState.rounds.final.matches);
+  const finalScores = calculateTeamScores(
+    tournamentState.rounds?.final?.matches || []
+  );
 
   // Get winner team names
-  const semiFinal1Winner = tournamentState.rounds.semiFinal1.winnerTeamId
+  const semiFinal1Winner = tournamentState.rounds?.semiFinal1?.winnerTeamId
     ? getTeamNameById(tournamentState.rounds.semiFinal1.winnerTeamId)
     : "Winner SF1";
-  const semiFinal2Winner = tournamentState.rounds.semiFinal2.winnerTeamId
+  const semiFinal2Winner = tournamentState.rounds?.semiFinal2?.winnerTeamId
     ? getTeamNameById(tournamentState.rounds.semiFinal2.winnerTeamId)
     : "Winner SF2";
   const tournamentChampion = tournamentState.tournamentChampionTeamId
@@ -70,7 +91,16 @@ const LiveTournamentScreen: React.FC = () => {
         <View style={styles.semiFinalsSection}>
           <Text style={styles.sectionTitle}>Semi-Finals</Text>
 
-          <View style={styles.matchupContainer}>
+          <TouchableOpacity
+            style={styles.matchupContainer}
+            onPress={() => {
+              try {
+                navigation.navigate("Match 1");
+              } catch (error) {
+                console.error("Navigation error to Match 1:", error);
+              }
+            }}
+          >
             <Text style={styles.matchupTitle}>Semi-Final 1</Text>
             <View style={styles.teamRow}>
               <View style={styles.teamCard}>
@@ -87,9 +117,12 @@ const LiveTournamentScreen: React.FC = () => {
                 <Text style={styles.teamScore}>{semiFinal1Scores[1]}</Text>
               </View>
             </View>
-          </View>
+          </TouchableOpacity>
 
-          <View style={styles.matchupContainer}>
+          <TouchableOpacity
+            style={styles.matchupContainer}
+            onPress={() => navigation.navigate("Match 2")}
+          >
             <Text style={styles.matchupTitle}>Semi-Final 2</Text>
             <View style={styles.teamRow}>
               <View style={styles.teamCard}>
@@ -106,12 +139,15 @@ const LiveTournamentScreen: React.FC = () => {
                 <Text style={styles.teamScore}>{semiFinal2Scores[1]}</Text>
               </View>
             </View>
-          </View>
+          </TouchableOpacity>
         </View>
 
         <View style={styles.finalSection}>
           <Text style={styles.sectionTitle}>Championship</Text>
-          <View style={styles.matchupContainer}>
+          <TouchableOpacity
+            style={styles.matchupContainer}
+            onPress={() => navigation.navigate("Match 3")}
+          >
             <Text style={styles.matchupTitle}>Final</Text>
             <View style={styles.teamRow}>
               <View style={styles.teamCard}>
@@ -124,7 +160,7 @@ const LiveTournamentScreen: React.FC = () => {
                 <Text style={styles.teamScore}>{finalScores[1]}</Text>
               </View>
             </View>
-          </View>
+          </TouchableOpacity>
         </View>
 
         {tournamentChampion && (

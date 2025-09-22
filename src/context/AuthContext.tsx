@@ -6,6 +6,7 @@ import {
   auth,
 } from "../services/firebase";
 import { User as FirebaseUser } from "firebase/auth";
+import { getFirestore, doc, getDoc } from "firebase/firestore";
 
 interface User {
   uid: string;
@@ -46,12 +47,52 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged(
-      (firebaseUser: FirebaseUser | null) => {
+      async (firebaseUser: FirebaseUser | null) => {
         if (firebaseUser) {
+          // Try to get display name from Firestore
+          let displayName = firebaseUser.displayName;
+          try {
+            const db = getFirestore();
+            const userDoc = await getDoc(doc(db, "users", firebaseUser.uid));
+            if (userDoc.exists()) {
+              const userData = userDoc.data();
+              console.log("User data from Firestore:", userData);
+              displayName =
+                userData.userOrPlayerName || firebaseUser.displayName;
+              console.log("Display name set to:", displayName);
+            } else {
+              console.log(
+                "User document does not exist in Firestore - creating one"
+              );
+              // Create user document if it doesn't exist
+              const { setDoc } = await import("firebase/firestore");
+              await setDoc(doc(db, "users", firebaseUser.uid), {
+                userOrPlayerName:
+                  firebaseUser.displayName ||
+                  firebaseUser.email?.split("@")[0] ||
+                  "User",
+                email: firebaseUser.email,
+                createdAt: new Date(),
+                tournaments: [],
+                isAdmin: false,
+              });
+              displayName =
+                firebaseUser.displayName ||
+                firebaseUser.email?.split("@")[0] ||
+                "User";
+              console.log(
+                "Created user document with display name:",
+                displayName
+              );
+            }
+          } catch (error) {
+            console.error("Error loading user display name:", error);
+          }
+
           setUser({
             uid: firebaseUser.uid,
             email: firebaseUser.email,
-            displayName: firebaseUser.displayName,
+            displayName: displayName,
           });
         } else {
           setUser(null);
@@ -67,6 +108,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     setLoading(true);
     try {
       await signInWithEmailAndPasswordFirebase(email, password);
+      // Don't set loading to false here - let onAuthStateChanged handle it
     } catch (error) {
       setLoading(false);
       throw error;
@@ -85,6 +127,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         password,
         userOrPlayerName
       );
+      // Don't set loading to false here - let onAuthStateChanged handle it
     } catch (error) {
       setLoading(false);
       throw error;

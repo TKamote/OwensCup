@@ -223,6 +223,97 @@ interface TournamentProviderProps {
   children: React.ReactNode;
 }
 
+// Helper function to ensure tournament data integrity
+const ensureTournamentDataIntegrity = (data: any): TournamentState => {
+  if (!data || typeof data !== "object") {
+    return getDefaultTournamentState();
+  }
+
+  // Ensure rounds exist and have proper structure
+  const rounds = data.rounds || {};
+  const defaultRounds = getDefaultTournamentState().rounds;
+
+  return {
+    ...data,
+    rounds: {
+      semiFinal1: {
+        ...defaultRounds.semiFinal1,
+        ...rounds.semiFinal1,
+        matches: (rounds.semiFinal1?.matches &&
+        rounds.semiFinal1.matches.length > 0
+          ? rounds.semiFinal1.matches
+          : matchData.map((_, index) => createMatch("semiFinal1", index))
+        ).map((match: any, index: number) => ({
+          ...createMatch("semiFinal1", index),
+          ...match,
+        })),
+      },
+      semiFinal2: {
+        ...defaultRounds.semiFinal2,
+        ...rounds.semiFinal2,
+        matches: (rounds.semiFinal2?.matches &&
+        rounds.semiFinal2.matches.length > 0
+          ? rounds.semiFinal2.matches
+          : matchData.map((_, index) => createMatch("semiFinal2", index))
+        ).map((match: any, index: number) => ({
+          ...createMatch("semiFinal2", index),
+          ...match,
+        })),
+      },
+      final: {
+        ...defaultRounds.final,
+        ...rounds.final,
+        matches: (rounds.final?.matches && rounds.final.matches.length > 0
+          ? rounds.final.matches
+          : matchData.map((_, index) => createMatch("final", index))
+        ).map((match: any, index: number) => ({
+          ...createMatch("final", index),
+          ...match,
+        })),
+      },
+    },
+  };
+};
+
+const getDefaultTournamentState = (): TournamentState => ({
+  tournamentId: generateTournamentId(),
+  tournamentName: "",
+  organizer: "",
+  raceToScore: "5",
+  confirmedTeams: [],
+  rounds: {
+    semiFinal1: {
+      id: generateRoundId("semiFinal1"),
+      name: "semiFinal1",
+      matches: matchData.map((match, index) =>
+        createMatch("semiFinal1", index)
+      ),
+      winnerTeamId: null,
+      isCompleted: false,
+    },
+    semiFinal2: {
+      id: generateRoundId("semiFinal2"),
+      name: "semiFinal2",
+      matches: matchData.map((match, index) =>
+        createMatch("semiFinal2", index)
+      ),
+      winnerTeamId: null,
+      isCompleted: false,
+    },
+    final: {
+      id: generateRoundId("final"),
+      name: "final",
+      matches: matchData.map((match, index) => createMatch("final", index)),
+      winnerTeamId: null,
+      isCompleted: false,
+    },
+  },
+  tournamentChampionTeamId: null,
+  tournamentFinalized: false,
+  createdAt: new Date(),
+  updatedAt: new Date(),
+});
+
 export const TournamentProvider: React.FC<TournamentProviderProps> = ({
   children,
 }) => {
@@ -230,68 +321,9 @@ export const TournamentProvider: React.FC<TournamentProviderProps> = ({
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [actionHistory, setActionHistory] = useState<ActionHistory[]>([]);
-  const [tournamentState, setTournamentState] = useState<TournamentState>({
-    tournamentId: generateTournamentId(),
-    tournamentName: "",
-    organizer: "",
-    raceToScore: "5",
-    confirmedTeams: [],
-    rounds: {
-      semiFinal1: {
-        id: generateRoundId("semiFinal1"),
-        name: "semiFinal1",
-        matches: matchData.map((match, index) =>
-          createMatch("semiFinal1", index)
-        ),
-        winnerTeamId: null,
-        isCompleted: false,
-      },
-      semiFinal2: {
-        id: generateRoundId("semiFinal2"),
-        name: "semiFinal2",
-        matches: matchData.map((match, index) => ({
-          id: generateMatchId("semiFinal2", index),
-          roundId: generateRoundId("semiFinal2"),
-          matchNumber: index,
-          matchType: "team", // Default to team match
-          team1Id: `team_${generateUniqueId()}`, // Placeholder, will be updated
-          team2Id: `team_${generateUniqueId()}`, // Placeholder, will be updated
-          team1Score: 0,
-          team2Score: 0,
-          winnerId: null,
-          isCompleted: false,
-          playersPlayed: [],
-          createdAt: new Date(),
-        })),
-        winnerTeamId: null,
-        isCompleted: false,
-      },
-      final: {
-        id: generateRoundId("final"),
-        name: "final",
-        matches: matchData.map((match, index) => ({
-          id: generateMatchId("final", index),
-          roundId: generateRoundId("final"),
-          matchNumber: index,
-          matchType: "team", // Default to team match
-          team1Id: `team_${generateUniqueId()}`, // Placeholder, will be updated
-          team2Id: `team_${generateUniqueId()}`, // Placeholder, will be updated
-          team1Score: 0,
-          team2Score: 0,
-          winnerId: null,
-          isCompleted: false,
-          playersPlayed: [],
-          createdAt: new Date(),
-        })),
-        winnerTeamId: null,
-        isCompleted: false,
-      },
-    },
-    tournamentChampionTeamId: null,
-    tournamentFinalized: false,
-    createdAt: new Date(),
-    updatedAt: new Date(),
-  });
+  const [tournamentState, setTournamentState] = useState<TournamentState>(
+    getDefaultTournamentState()
+  );
 
   // Initialize tournament data
   useEffect(() => {
@@ -375,11 +407,9 @@ export const TournamentProvider: React.FC<TournamentProviderProps> = ({
       setError(null);
 
       // First, check if database is accessible
-      console.log("Checking database connectivity...");
       const isDatabaseAccessible = await checkDatabaseConnectivity();
 
       if (!isDatabaseAccessible) {
-        console.log("Database not accessible - clearing local data");
         // Reset to default state if database is not accessible
         setTournamentState({
           tournamentId: generateTournamentId(),
@@ -515,89 +545,15 @@ export const TournamentProvider: React.FC<TournamentProviderProps> = ({
           })
           .filter(Boolean);
 
-        setTournamentState({
-          tournamentId: savedData.tournamentId || generateTournamentId(),
-          tournamentName: savedData.tournamentName || "",
-          organizer: savedData.organizer || "",
-          raceToScore: savedData.raceToScore || "5",
-          confirmedTeams: validatedTeams,
-          rounds: savedData.rounds || {
-            semiFinal1: {
-              id: generateRoundId("semiFinal1"),
-              name: "semiFinal1",
-              matches: matchData.map((match, index) =>
-                createMatch("semiFinal1", index)
-              ),
-              winnerTeamId: null,
-              isCompleted: false,
-            },
-            semiFinal2: {
-              id: generateRoundId("semiFinal2"),
-              name: "semiFinal2",
-              matches: matchData.map((match, index) =>
-                createMatch("semiFinal2", index)
-              ),
-              winnerTeamId: null,
-              isCompleted: false,
-            },
-            final: {
-              id: generateRoundId("final"),
-              name: "final",
-              matches: matchData.map((match, index) =>
-                createMatch("final", index)
-              ),
-              winnerTeamId: null,
-              isCompleted: false,
-            },
-          },
-          tournamentChampionTeamId: savedData.tournamentChampionTeamId || null,
-          tournamentFinalized: savedData.tournamentFinalized || false,
-          createdAt: savedData.createdAt || new Date(),
-          updatedAt: savedData.updatedAt || new Date(),
-        });
+        setTournamentState(
+          ensureTournamentDataIntegrity({
+            ...savedData,
+            confirmedTeams: validatedTeams,
+          })
+        );
       } else {
         // No saved data, use defaults
-
-        setTournamentState({
-          tournamentId: generateTournamentId(),
-          tournamentName: "",
-          organizer: "",
-          raceToScore: "5",
-          confirmedTeams: [],
-          rounds: {
-            semiFinal1: {
-              id: generateRoundId("semiFinal1"),
-              name: "semiFinal1",
-              matches: matchData.map((match, index) =>
-                createMatch("semiFinal1", index)
-              ),
-              winnerTeamId: null,
-              isCompleted: false,
-            },
-            semiFinal2: {
-              id: generateRoundId("semiFinal2"),
-              name: "semiFinal2",
-              matches: matchData.map((match, index) =>
-                createMatch("semiFinal2", index)
-              ),
-              winnerTeamId: null,
-              isCompleted: false,
-            },
-            final: {
-              id: generateRoundId("final"),
-              name: "final",
-              matches: matchData.map((match, index) =>
-                createMatch("final", index)
-              ),
-              winnerTeamId: null,
-              isCompleted: false,
-            },
-          },
-          tournamentChampionTeamId: null,
-          tournamentFinalized: false,
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        });
+        setTournamentState(getDefaultTournamentState());
       }
       setError(null);
     } catch (error) {
@@ -614,7 +570,6 @@ export const TournamentProvider: React.FC<TournamentProviderProps> = ({
 
   const saveTournament = async () => {
     if (!user) {
-      console.log("No user authenticated, skipping save");
       return;
     }
 
@@ -626,7 +581,6 @@ export const TournamentProvider: React.FC<TournamentProviderProps> = ({
       if (error?.includes("Database connection lost")) {
         const isDatabaseAccessible = await checkDatabaseConnectivity();
         if (!isDatabaseAccessible) {
-          console.log("Database not accessible - skipping save");
           setError("Cannot save data - database connection lost");
           return;
         }
@@ -673,13 +627,14 @@ export const TournamentProvider: React.FC<TournamentProviderProps> = ({
                 team1Score: match.team1Score,
                 team2Score: match.team2Score,
                 winnerId: match.winnerId,
-                isCompleted: match.isCompleted,
+                isCompleted: match?.isCompleted || false,
                 playersPlayed: match.playersPlayed,
                 createdAt: match.createdAt,
               })
             ),
             winnerTeamId: tournamentState.rounds.semiFinal1.winnerTeamId,
-            isCompleted: tournamentState.rounds.semiFinal1.isCompleted,
+            isCompleted:
+              tournamentState.rounds?.semiFinal1?.isCompleted || false,
           },
           semiFinal2: {
             id:
@@ -699,13 +654,14 @@ export const TournamentProvider: React.FC<TournamentProviderProps> = ({
                 team1Score: match.team1Score,
                 team2Score: match.team2Score,
                 winnerId: match.winnerId,
-                isCompleted: match.isCompleted,
+                isCompleted: match?.isCompleted || false,
                 playersPlayed: match.playersPlayed,
                 createdAt: match.createdAt,
               })
             ),
             winnerTeamId: tournamentState.rounds.semiFinal2.winnerTeamId,
-            isCompleted: tournamentState.rounds.semiFinal2.isCompleted,
+            isCompleted:
+              tournamentState.rounds?.semiFinal2?.isCompleted || false,
           },
           final: {
             id:
@@ -725,13 +681,13 @@ export const TournamentProvider: React.FC<TournamentProviderProps> = ({
                 team1Score: match.team1Score,
                 team2Score: match.team2Score,
                 winnerId: match.winnerId,
-                isCompleted: match.isCompleted,
+                isCompleted: match?.isCompleted || false,
                 playersPlayed: match.playersPlayed,
                 createdAt: match.createdAt,
               })
             ),
             winnerTeamId: tournamentState.rounds.final.winnerTeamId,
-            isCompleted: tournamentState.rounds.final.isCompleted,
+            isCompleted: tournamentState.rounds?.final?.isCompleted || false,
           },
         },
         tournamentChampionTeamId: tournamentState.tournamentChampionTeamId,
@@ -742,10 +698,6 @@ export const TournamentProvider: React.FC<TournamentProviderProps> = ({
       // Remove any undefined values before saving
       const cleanedTournamentData = removeUndefinedValues(tournamentData);
 
-      console.log(
-        "Flattened tournament data:",
-        JSON.stringify(cleanedTournamentData, null, 2)
-      );
       await saveTournamentData(user.uid, cleanedTournamentData);
 
       setError(null);
@@ -771,13 +723,15 @@ export const TournamentProvider: React.FC<TournamentProviderProps> = ({
     delta: number
   ) => {
     setTournamentState((prevState) => {
-      const round = prevState.rounds[roundName];
+      const round = prevState.rounds?.[roundName];
+      if (!round || !round.matches || !Array.isArray(round.matches)) {
+        return prevState;
+      }
       const match = round.matches[matchIndex];
       const raceToScore = parseInt(prevState.raceToScore);
 
       // Don't allow scoring if match is already completed
-      if (match.isCompleted) {
-        console.log("Match already completed, cannot update score");
+      if (!match || match.isCompleted) {
         return prevState;
       }
 
@@ -798,24 +752,12 @@ export const TournamentProvider: React.FC<TournamentProviderProps> = ({
         updatedMatch.team1Score >= raceToScore ||
         updatedMatch.team2Score >= raceToScore;
 
-      console.log(
-        `Match ${matchIndex + 1} - Scores: [${updatedMatch.team1Score}, ${
-          updatedMatch.team2Score
-        }], Race to: ${raceToScore}, Completed: ${isMatchCompleted}`
-      );
-
       if (isMatchCompleted) {
         // Determine match winner
         const matchWinner = updatedMatch.team1Score >= raceToScore ? 0 : 1;
         updatedMatch.winnerId =
           matchWinner === 0 ? match.team1Id : match.team2Id;
         updatedMatch.isCompleted = true;
-
-        console.log(
-          `🎯 Match ${matchIndex + 1} completed! Winner: Team ${
-            matchWinner + 1
-          } (${updatedMatch.winnerId})`
-        );
       } else {
         // If match is no longer completed (e.g., race-to-score was increased), reset completion
         updatedMatch.winnerId = null;
@@ -827,7 +769,7 @@ export const TournamentProvider: React.FC<TournamentProviderProps> = ({
       updatedMatches[matchIndex] = updatedMatch;
 
       // Calculate round progress
-      const completedMatches = updatedMatches.filter((m) => m.isCompleted);
+      const completedMatches = updatedMatches.filter((m) => m && m.isCompleted);
       const team1Wins = completedMatches.filter(
         (m) => m.winnerId === match.team1Id
       ).length;
@@ -843,22 +785,13 @@ export const TournamentProvider: React.FC<TournamentProviderProps> = ({
       if (team1Wins >= winsNeeded) {
         roundWinnerId = match.team1Id;
         isRoundCompleted = true;
-        console.log(
-          `🏆 Round ${roundName} completed! Winner: Team 1 (${roundWinnerId})`
-        );
       } else if (team2Wins >= winsNeeded) {
         roundWinnerId = match.team2Id;
         isRoundCompleted = true;
-        console.log(
-          `🏆 Round ${roundName} completed! Winner: Team 2 (${roundWinnerId})`
-        );
       } else {
         // If no team has enough wins, round is not completed
         roundWinnerId = null;
         isRoundCompleted = false;
-        console.log(
-          `Round ${roundName} - No winner yet. Need ${winsNeeded} wins.`
-        );
       }
 
       // Add to history
@@ -883,7 +816,6 @@ export const TournamentProvider: React.FC<TournamentProviderProps> = ({
       let tournamentChampionTeamId = prevState.tournamentChampionTeamId;
       if (roundName === "final" && isRoundCompleted) {
         tournamentChampionTeamId = roundWinnerId;
-        console.log(`🏆 TOURNAMENT CHAMPION: ${roundWinnerId}`);
       }
 
       return {
@@ -902,8 +834,14 @@ export const TournamentProvider: React.FC<TournamentProviderProps> = ({
     matchIndex: number
   ) => {
     setTournamentState((prevState) => {
-      const round = prevState.rounds[roundName];
+      const round = prevState.rounds?.[roundName];
+      if (!round || !round.matches || !Array.isArray(round.matches)) {
+        return prevState;
+      }
       const match = round.matches[matchIndex];
+      if (!match) {
+        return prevState;
+      }
       const newMatchScores = [...round.matches] as Match[];
       const oldScores = [match.team1Score, match.team2Score];
 
@@ -1132,10 +1070,6 @@ export const TournamentProvider: React.FC<TournamentProviderProps> = ({
       // If race-to-score changed, we need to re-evaluate all matches
       let updatedRounds = prev.rounds;
       if (newRaceToScore !== oldRaceToScore) {
-        console.log(
-          `Race-to-score changed from ${oldRaceToScore} to ${newRaceToScore}`
-        );
-
         // Re-evaluate all rounds
         const roundNames: ("semiFinal1" | "semiFinal2" | "final")[] = [
           "semiFinal1",
@@ -1168,12 +1102,23 @@ export const TournamentProvider: React.FC<TournamentProviderProps> = ({
           });
 
           // Recalculate round completion
-          const completedMatches = updatedMatches.filter((m) => m.isCompleted);
+          const completedMatches = updatedMatches.filter(
+            (m) => m && m.isCompleted
+          );
+          const firstMatch = round.matches[0];
+          if (!firstMatch) {
+            return {
+              ...round,
+              matches: updatedMatches,
+              winnerTeamId: null,
+              isCompleted: false,
+            };
+          }
           const team1Wins = completedMatches.filter(
-            (m) => m.winnerId === round.matches[0].team1Id
+            (m) => m.winnerId === firstMatch.team1Id
           ).length;
           const team2Wins = completedMatches.filter(
-            (m) => m.winnerId === round.matches[0].team2Id
+            (m) => m.winnerId === firstMatch.team2Id
           ).length;
           const winsNeeded = Math.ceil(9 / 2);
 
@@ -1181,10 +1126,10 @@ export const TournamentProvider: React.FC<TournamentProviderProps> = ({
           let isRoundCompleted = false;
 
           if (team1Wins >= winsNeeded) {
-            roundWinnerId = round.matches[0].team1Id;
+            roundWinnerId = firstMatch.team1Id;
             isRoundCompleted = true;
           } else if (team2Wins >= winsNeeded) {
-            roundWinnerId = round.matches[0].team2Id;
+            roundWinnerId = firstMatch.team2Id;
             isRoundCompleted = true;
           }
 
@@ -1291,8 +1236,14 @@ export const TournamentProvider: React.FC<TournamentProviderProps> = ({
     played: boolean
   ) => {
     setTournamentState((prevState) => {
-      const round = prevState.rounds[roundName];
+      const round = prevState.rounds?.[roundName];
+      if (!round || !round.matches || !Array.isArray(round.matches)) {
+        return prevState;
+      }
       const match = round.matches[matchIndex];
+      if (!match) {
+        return prevState;
+      }
       const newMatches = [...round.matches] as Match[];
       const playerParticipation = match.playersPlayed.find(
         (p) => p.playerId === playerId
