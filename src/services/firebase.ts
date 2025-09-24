@@ -1,14 +1,11 @@
 import { initializeApp } from "firebase/app";
 import {
   getAuth,
-  initializeAuth,
-  getReactNativePersistence,
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
   signOut as firebaseSignOut,
   User as FirebaseUser,
 } from "firebase/auth";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import {
   getFirestore,
   doc,
@@ -32,10 +29,8 @@ validateFirebaseConfig();
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
 
-// Initialize Auth with AsyncStorage persistence for React Native
-const auth = initializeAuth(app, {
-  persistence: getReactNativePersistence(AsyncStorage),
-});
+// Initialize Auth (web SDK - persistence warning is OK for now)
+const auth = getAuth(app);
 
 const db = getFirestore(app);
 

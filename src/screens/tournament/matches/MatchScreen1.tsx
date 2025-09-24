@@ -18,6 +18,7 @@ import {
 } from "../../../utils/tournamentData";
 import TeamHeader from "../../../components/tournament/TeamHeader";
 import MatchCard from "../../../components/tournament/MatchCard";
+import FloatingStreamingButton from "../../../components/streaming/FloatingStreamingButton";
 import {
   COLORS,
   FONTS,
@@ -67,14 +68,7 @@ const MatchScreen1: React.FC = () => {
   const team1 = mainTeams[0];
   const team2 = mainTeams[1];
 
-  // Debug logging
-  console.log("MatchScreen1 Debug:", {
-    confirmedTeamsLength: tournamentState.confirmedTeams?.length || 0,
-    team1: team1?.name || "No team1",
-    team2: team2?.name || "No team2",
-    currentMatchup: currentMatchup?.matches?.length || 0,
-    tournamentFinalized: tournamentState.tournamentFinalized,
-  });
+  // Debug logging removed for cleaner console
 
   // Parse players for each team - new Player[] structure only
   const getTeamPlayers = (team: any) => {
@@ -477,6 +471,9 @@ const MatchScreen1: React.FC = () => {
           />
         )}
       </View>
+
+      {/* Floating Streaming Button */}
+      <FloatingStreamingButton />
     </SafeAreaView>
   );
 };

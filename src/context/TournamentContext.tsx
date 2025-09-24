@@ -10,6 +10,11 @@ import {
   updateTournamentScore,
   checkDatabaseConnectivity,
 } from "../services/firebase";
+import {
+  saveTournamentToStreaming,
+  StreamingMode,
+  transformToWebFormat,
+} from "../services/streamingAPI";
 
 // Unique ID generation functions
 const generateUniqueId = () => {
@@ -204,6 +209,11 @@ interface TournamentContextType {
     playerId: string,
     played: boolean
   ) => void;
+  // Streaming API functions
+  streamingMode: StreamingMode;
+  setStreamingMode: (mode: StreamingMode) => void;
+  pushToStreaming: (forceUpdate?: boolean) => Promise<void>;
+  getWebData: () => any;
   error: string | null;
 }
 
@@ -321,6 +331,7 @@ export const TournamentProvider: React.FC<TournamentProviderProps> = ({
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [actionHistory, setActionHistory] = useState<ActionHistory[]>([]);
+  const [streamingMode, setStreamingMode] = useState<StreamingMode>("normal");
   const [tournamentState, setTournamentState] = useState<TournamentState>(
     getDefaultTournamentState()
   );
@@ -698,7 +709,8 @@ export const TournamentProvider: React.FC<TournamentProviderProps> = ({
       // Remove any undefined values before saving
       const cleanedTournamentData = removeUndefinedValues(tournamentData);
 
-      await saveTournamentData(user.uid, cleanedTournamentData);
+      // Use the new streaming API for smart saving
+      await saveTournamentToStreaming(user.uid, tournamentState, streamingMode);
 
       setError(null);
     } catch (error) {
@@ -714,6 +726,31 @@ export const TournamentProvider: React.FC<TournamentProviderProps> = ({
   // Manual save function for immediate saves (e.g., after important actions)
   const saveNow = async () => {
     await saveTournament();
+  };
+
+  // Streaming API functions
+  const pushToStreaming = async (forceUpdate: boolean = false) => {
+    if (!user) return;
+
+    try {
+      await saveTournamentToStreaming(
+        user.uid,
+        tournamentState,
+        streamingMode,
+        forceUpdate
+      );
+    } catch (error) {
+      console.error("Failed to push to streaming:", error);
+      setError(
+        `Failed to push to streaming: ${
+          error instanceof Error ? error.message : "Unknown error"
+        }`
+      );
+    }
+  };
+
+  const getWebData = () => {
+    return transformToWebFormat(tournamentState, streamingMode);
   };
 
   const updateMatchScore = (
@@ -1344,6 +1381,11 @@ export const TournamentProvider: React.FC<TournamentProviderProps> = ({
     unlockTournament,
     resetTournamentDataContext,
     updatePlayerParticipation,
+    // Streaming API functions
+    streamingMode,
+    setStreamingMode,
+    pushToStreaming,
+    getWebData,
     error,
   };
 

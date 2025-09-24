@@ -18,6 +18,7 @@ import {
 } from "../../../utils/tournamentData";
 import TeamHeader from "../../../components/tournament/TeamHeader";
 import MatchCard from "../../../components/tournament/MatchCard";
+import FloatingStreamingButton from "../../../components/streaming/FloatingStreamingButton";
 import {
   COLORS,
   FONTS,
@@ -486,6 +487,9 @@ const MatchScreen3: React.FC = () => {
           />
         )}
       </View>
+
+      {/* Floating Streaming Button */}
+      <FloatingStreamingButton />
     </SafeAreaView>
   );
 };
