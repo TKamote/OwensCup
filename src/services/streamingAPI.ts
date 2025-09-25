@@ -134,6 +134,38 @@ const getTeamById = (teams: Team[], teamId: string): Team | null => {
   return teams.find((team) => team.id === teamId) || null;
 };
 
+// Helper function to get player names for specific matches (copied from MatchCard)
+const getPlayerNamesForMatch = (
+  matchIndex: number,
+  teamIndex: number,
+  team: Team
+): string => {
+  const players = team.players || [];
+
+  switch (matchIndex) {
+    case 0: // Match 1: All 5 players - show all player names
+      return players.map((p) => p.name).join(", ");
+    case 1: // Match 2: Players 2 & 3 (1st Doubles)
+      return `${players[1]?.name || "P2"}, ${players[2]?.name || "P3"}`;
+    case 2: // Match 3: Player 1 (1st Singles)
+      return players[0]?.name || "P1";
+    case 3: // Match 4: Players 4 & 5 (2nd Doubles)
+      return `${players[3]?.name || "P4"}, ${players[4]?.name || "P5"}`;
+    case 4: // Match 5: Player 2 (2nd Singles)
+      return players[1]?.name || "P2";
+    case 5: // Match 6: All 5 players (2nd Team Match) - show all player names
+      return players.map((p) => p.name).join(", ");
+    case 6: // Match 7: 3rd Doubles (P1 & P3)
+      return `${players[0]?.name || "P1"}, ${players[2]?.name || "P3"}`;
+    case 7: // Match 8: Player 3 (3rd Singles) - Captain's pick
+      return players[2]?.name || "P3";
+    case 8: // Match 9: 4th Singles - Captain's pick
+      return players[3]?.name || "P4";
+    default:
+      return "Players TBD";
+  }
+};
+
 // Transform tournament state to web-optimized format
 export const transformToWebFormat = (
   tournamentState: TournamentState,
@@ -182,9 +214,17 @@ export const transformToWebFormat = (
       roundName,
       isCompleted: round.isCompleted,
       winnerTeamId: round.winnerTeamId,
-      matches: round.matches.map((match: Match) => {
+      matches: round.matches.map((match: Match, matchIndex: number) => {
         const matchTeam1 = getTeamById(confirmedTeams, match.team1Id);
         const matchTeam2 = getTeamById(confirmedTeams, match.team2Id);
+
+        // Get player names for this specific match
+        const team1PlayerNames = matchTeam1
+          ? getPlayerNamesForMatch(matchIndex, 0, matchTeam1)
+          : "Players TBD";
+        const team2PlayerNames = matchTeam2
+          ? getPlayerNamesForMatch(matchIndex, 1, matchTeam2)
+          : "Players TBD";
 
         return {
           matchId: match.id,
@@ -196,6 +236,7 @@ export const transformToWebFormat = (
             score: match.team1Score,
             color: matchTeam1?.color || "#000000",
             icon: matchTeam1?.icon || "🏆",
+            playerNames: team1PlayerNames,
           },
           team2: {
             id: match.team2Id,
@@ -203,6 +244,7 @@ export const transformToWebFormat = (
             score: match.team2Score,
             color: matchTeam2?.color || "#000000",
             icon: matchTeam2?.icon || "🏆",
+            playerNames: team2PlayerNames,
           },
           isCompleted: match.isCompleted,
           winnerId: match.winnerId,
