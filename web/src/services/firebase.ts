@@ -51,6 +51,7 @@ export interface WebTeam {
   id: string;
   name: string;
   players: WebPlayer[];
+  playerNames?: string; // For mobile app compatibility
 }
 
 export interface WebMatch {
@@ -80,6 +81,9 @@ export interface WebRound {
   matches: WebMatch[];
   isActive?: boolean;
   isCompleted?: boolean;
+  team1Wins?: number;
+  team2Wins?: number;
+  winsNeeded?: number;
 }
 
 export interface WebTournamentData {
@@ -147,7 +151,12 @@ export const listenToStreamingData = (
                 (order[keyB as keyof typeof order] || 999)
               );
             })
-            .map(([, round]) => round) as WebRound[],
+            .map(([, round]) => ({
+              ...(round as WebRound),
+              team1Wins: (round as WebRound).team1Wins || 0,
+              team2Wins: (round as WebRound).team2Wins || 0,
+              winsNeeded: (round as WebRound).winsNeeded || 5,
+            })) as WebRound[],
           streamingMode:
             (raw.streamingMode as "normal" | "streaming" | "manual") ||
             "normal",
@@ -200,7 +209,12 @@ export const getCurrentStreamingData =
                 (order[keyB as keyof typeof order] || 999)
               );
             })
-            .map(([, round]) => round) as WebRound[],
+            .map(([, round]) => ({
+              ...(round as WebRound),
+              team1Wins: (round as WebRound).team1Wins || 0,
+              team2Wins: (round as WebRound).team2Wins || 0,
+              winsNeeded: (round as WebRound).winsNeeded || 5,
+            })) as WebRound[],
           streamingMode:
             (raw.streamingMode as "normal" | "streaming" | "manual") ||
             "normal",
