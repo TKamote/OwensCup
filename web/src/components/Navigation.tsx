@@ -8,16 +8,9 @@ import styles from "./Navigation.module.css";
 const Navigation: React.FC = () => {
   const pathname = usePathname();
 
-  // Hide navigation on the main display page (TV display)
-  if (pathname === "/") {
-    return null;
-  }
-
   const navItems = [
-    { href: "/", label: "Tournament Display", icon: "📺" },
-    { href: "/streaming", label: "Streaming Controls", icon: "📡" },
-    { href: "/admin", label: "Admin", icon: "⚙️" },
-    { href: "/explore", label: "Explore", icon: "🔍" },
+    { href: "/", label: "TV Display", icon: "📺" },
+    { href: "/stream", label: "Streaming", icon: "📡" },
   ];
 
   return (

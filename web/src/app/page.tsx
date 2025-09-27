@@ -1,9 +1,9 @@
-import StreamingOverlay from "@/components/StreamingOverlay";
+import TVDisplay from "@/components/TVDisplay";
 
 export default function Home() {
   return (
     <main className="min-h-screen">
-      <StreamingOverlay />
+      <TVDisplay />
     </main>
   );
 }

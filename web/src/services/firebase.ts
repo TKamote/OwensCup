@@ -7,6 +7,7 @@ import {
   collection,
   getDocs,
   DocumentData,
+  setDoc,
 } from "firebase/firestore";
 // Removed auth imports - using direct access approach
 
@@ -99,6 +100,12 @@ export interface WebTournamentData {
   pushedBy: string;
 }
 
+// Types for the new Stream Control document
+export interface StreamControlData {
+  streamMatches: string[];
+  hiddenSections: string[];
+}
+
 // Helper: convert Firestore Timestamp | Date | string to Date
 const toSafeDate = (
   value: FirestoreTimestamp | Date | string | null | undefined
@@ -174,6 +181,48 @@ export const listenToStreamingData = (
       callback(null);
     }
   );
+};
+
+// Listen to the stream control document in real-time
+export const listenToStreamControl = (
+  callback: (data: StreamControlData) => void
+) => {
+  const streamControlRef = doc(db, "streaming", "current_stream_control");
+  console.log("FIREBASE: Listening to stream control document...");
+
+  return onSnapshot(
+    streamControlRef,
+    (doc) => {
+      if (doc.exists()) {
+        console.log("FIREBASE: Stream control data received:", doc.data());
+        callback(doc.data() as StreamControlData);
+      } else {
+        console.log(
+          "FIREBASE: Stream control document does not exist, providing default."
+        );
+        // If the document doesn't exist, provide a default state
+        callback({ streamMatches: [], hiddenSections: [] });
+      }
+    },
+    (error) => {
+      console.error("FIREBASE: Error listening to stream control:", error);
+      // Provide a default state on error as well
+      callback({ streamMatches: [], hiddenSections: [] });
+    }
+  );
+};
+
+// Update the stream control document
+export const updateStreamControl = async (data: Partial<StreamControlData>) => {
+  try {
+    const streamControlRef = doc(db, "streaming", "current_stream_control");
+    console.log("FIREBASE: Updating stream control with data:", data);
+    // Use setDoc with merge: true to create the doc if it doesn't exist or update it if it does
+    await setDoc(streamControlRef, data, { merge: true });
+    console.log("FIREBASE: Stream control update successful.");
+  } catch (error) {
+    console.error("FIREBASE: Error updating stream control:", error);
+  }
 };
 
 // Get current streaming data (one-time read)
