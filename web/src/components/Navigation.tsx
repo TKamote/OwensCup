@@ -11,6 +11,7 @@ const Navigation: React.FC = () => {
   const navItems = [
     { href: "/", label: "TV Display", icon: "📺" },
     { href: "/stream", label: "Streaming", icon: "📡" },
+    { href: "/streaming-controls", label: "Stream Controls", icon: "🎮" },
   ];
 
   return (

@@ -118,14 +118,19 @@ const StreamOverlay: React.FC<StreamOverlayProps> = ({ className = "" }) => {
 
   return (
     <div
-      className={`fixed top-16 right-0 bottom-0 w-1/4 bg-black overflow-y-auto ${className} p-4`}
+      className={`fixed top-16 right-0 bottom-0 w-1/5 bg-black overflow-y-auto ${className} p-4`}
     >
       {/* LIVE Indicator */}
       <div className="absolute top-4 right-4 bg-red-600 text-white text-sm font-bold px-2 py-1 rounded">
         LIVE
       </div>
 
-      <div className="space-y-8 pt-10">
+      {/* Tournament Title */}
+      <div className="text-center mb-6 pt-4">
+        <h1 className="text-white text-3xl font-bold">OwensCup Tournament</h1>
+      </div>
+
+      <div className="space-y-8">
         {/* Semifinal 1 Section */}
         {semifinal1 && !hiddenSections.includes("semifinal1") && (
           <div className="bg-gray-800 rounded-lg p-6">

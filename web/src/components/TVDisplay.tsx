@@ -106,7 +106,7 @@ const TVDisplay: React.FC<TVDisplayProps> = ({ className = "" }) => {
   };
 
   return (
-    <div className={`fixed inset-0 bg-gray-900 ${className}`}>
+    <div className={`min-h-screen bg-gray-900 ${className}`}>
       <Navigation />
 
       <div
@@ -118,6 +118,11 @@ const TVDisplay: React.FC<TVDisplayProps> = ({ className = "" }) => {
         }}
         className="overflow-y-auto h-full"
       >
+        {/* Tournament Title */}
+        <div className="text-center mb-6">
+          <h1 className="text-white text-6xl font-bold">OwensCup Tournament</h1>
+        </div>
+
         {/* Live Match Display */}
         <div className="bg-gray-800 rounded-lg mb-4" style={{ height: "60px" }}>
           <div className="flex items-center justify-between h-full px-6">
