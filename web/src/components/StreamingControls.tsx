@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import OBSWebSocket from "obs-websocket-js";
 
 interface StreamingControlsProps {
   className?: string;
@@ -13,6 +14,32 @@ const StreamingControls: React.FC<StreamingControlsProps> = ({
   const [currentScene, setCurrentScene] = useState("TV Display");
   const [cameraConnected, setCameraConnected] = useState(false);
   const [streamingPlatform, setStreamingPlatform] = useState("YouTube");
+  const [obsConnected, setObsConnected] = useState(false);
+  const [obs, setObs] = useState<OBSWebSocket | null>(null);
+
+  // Connect to OBS WebSocket
+  useEffect(() => {
+    const connectToOBS = async () => {
+      try {
+        const obsInstance = new OBSWebSocket();
+        await obsInstance.connect("ws://localhost:4455");
+        setObs(obsInstance);
+        setObsConnected(true);
+        console.log("Connected to OBS WebSocket");
+      } catch (error) {
+        console.error("Failed to connect to OBS:", error);
+        setObsConnected(false);
+      }
+    };
+
+    connectToOBS();
+
+    return () => {
+      if (obs) {
+        obs.disconnect();
+      }
+    };
+  }, []);
 
   // Check if camera is connected (Samsung S21)
   useEffect(() => {
@@ -57,10 +84,28 @@ const StreamingControls: React.FC<StreamingControlsProps> = ({
     console.log("Stopping stream");
   };
 
-  const handleSceneChange = (sceneId: string) => {
+  const handleSceneChange = async (sceneId: string) => {
     setCurrentScene(sceneId);
-    // Here you would send commands to OBS
-    console.log("Switching to scene:", sceneId);
+
+    if (obs && obsConnected) {
+      try {
+        // Map scene IDs to actual OBS scene names
+        const sceneMap: { [key: string]: string } = {
+          "tv-display": "TV Display",
+          "stream-overlay": "Stream Overlay",
+          "camera-feed": "Camera Feed",
+          "picture-in-picture": "Picture-in-Picture",
+        };
+
+        const obsSceneName = sceneMap[sceneId] || sceneId;
+        await obs.call("SetCurrentProgramScene", { sceneName: obsSceneName });
+        console.log("Successfully switched to scene:", obsSceneName);
+      } catch (error) {
+        console.error("Failed to switch scene:", error);
+      }
+    } else {
+      console.log("OBS not connected. Scene would be:", sceneId);
+    }
   };
 
   return (
@@ -69,23 +114,49 @@ const StreamingControls: React.FC<StreamingControlsProps> = ({
         Streaming Controls
       </h2>
 
-      {/* Camera Status */}
+      {/* Connection Status */}
       <div className="mb-12">
-        <div className="flex items-center justify-between mb-4">
-          <span className="text-white text-4xl font-bold">Camera Status</span>
-          <div
-            className={`px-6 py-3 rounded-full text-2xl font-bold ${
-              cameraConnected
-                ? "bg-green-600 text-white"
-                : "bg-red-600 text-white"
-            }`}
-          >
-            {cameraConnected ? "Connected" : "Disconnected"}
+        <div className="grid grid-cols-2 gap-6">
+          {/* Camera Status */}
+          <div>
+            <div className="flex items-center justify-between mb-4">
+              <span className="text-white text-4xl font-bold">
+                Camera Status
+              </span>
+              <div
+                className={`px-6 py-3 rounded-full text-2xl font-bold ${
+                  cameraConnected
+                    ? "bg-green-600 text-white"
+                    : "bg-red-600 text-white"
+                }`}
+              >
+                {cameraConnected ? "Connected" : "Disconnected"}
+              </div>
+            </div>
+            <p className="text-gray-400 text-2xl">
+              Samsung S21 {cameraConnected ? "detected" : "not detected"}
+            </p>
+          </div>
+
+          {/* OBS Status */}
+          <div>
+            <div className="flex items-center justify-between mb-4">
+              <span className="text-white text-4xl font-bold">OBS Status</span>
+              <div
+                className={`px-6 py-3 rounded-full text-2xl font-bold ${
+                  obsConnected
+                    ? "bg-green-600 text-white"
+                    : "bg-red-600 text-white"
+                }`}
+              >
+                {obsConnected ? "Connected" : "Disconnected"}
+              </div>
+            </div>
+            <p className="text-gray-400 text-2xl">
+              OBS Studio {obsConnected ? "connected" : "not connected"}
+            </p>
           </div>
         </div>
-        <p className="text-gray-400 text-2xl">
-          Samsung S21 {cameraConnected ? "detected" : "not detected"}
-        </p>
       </div>
 
       {/* Platform Selection */}
