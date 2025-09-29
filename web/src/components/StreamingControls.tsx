@@ -22,7 +22,7 @@ const StreamingControls: React.FC<StreamingControlsProps> = ({
     const connectToOBS = async () => {
       try {
         const obsInstance = new OBSWebSocket();
-        await obsInstance.connect("ws://localhost:4455");
+        await obsInstance.connect("ws://localhost:3001");
         setObs(obsInstance);
         setObsConnected(true);
         console.log("Connected to OBS WebSocket");
@@ -39,7 +39,7 @@ const StreamingControls: React.FC<StreamingControlsProps> = ({
         obs.disconnect();
       }
     };
-  }, []);
+  }, [obs]);
 
   // Check if camera is connected (Samsung S21)
   useEffect(() => {
@@ -61,8 +61,13 @@ const StreamingControls: React.FC<StreamingControlsProps> = ({
     },
     {
       id: "camera-feed",
-      name: "Camera Feed",
-      description: "Samsung S21 camera",
+      name: "Single Camera",
+      description: "Main camera view",
+    },
+    {
+      id: "dual-camera",
+      name: "Dual Camera",
+      description: "Mobile + FaceTime",
     },
     {
       id: "picture-in-picture",
@@ -93,7 +98,8 @@ const StreamingControls: React.FC<StreamingControlsProps> = ({
         const sceneMap: { [key: string]: string } = {
           "tv-display": "TV Display",
           "stream-overlay": "Stream Overlay",
-          "camera-feed": "Camera Feed",
+          "camera-feed": "Single Camera",
+          "dual-camera": "Dual Camera",
           "picture-in-picture": "Picture-in-Picture",
         };
 
