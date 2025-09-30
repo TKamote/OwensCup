@@ -106,27 +106,25 @@ const TVDisplay: React.FC<TVDisplayProps> = ({ className = "" }) => {
   };
 
   return (
-    <div className={`min-h-screen bg-gray-900 ${className}`}>
+    <div
+      className={`min-h-screen w-full bg-gray-900 ${className}`}
+      style={{ minHeight: "1080px", minWidth: "1920px" }}
+    >
       <Navigation />
 
       <div
         style={{
-          paddingTop: "20px",
-          paddingBottom: "20px",
-          paddingLeft: "80px",
-          paddingRight: "80px",
+          paddingTop: "10px",
+          paddingBottom: "10px",
+          paddingLeft: "60px",
+          paddingRight: "60px",
         }}
         className="overflow-y-auto h-full"
       >
-        {/* Tournament Title */}
-        <div className="text-center mb-6">
-          <h1 className="text-white text-6xl font-bold">OwensCup Tournament</h1>
-        </div>
-
         {/* Live Match Display */}
-        <div className="bg-gray-800 rounded-lg mb-4" style={{ height: "60px" }}>
+        <div className="bg-gray-800 rounded-lg mb-1" style={{ height: "45px" }}>
           <div className="flex items-center justify-between h-full px-6">
-            <div className="text-white text-3xl font-bold bg-red-500 px-4 py-2 rounded">
+            <div className="text-white text-xl font-bold bg-red-500 px-6 py-1 rounded">
               LIVE MATCH
             </div>
             <div className="text-white text-xl">
@@ -136,8 +134,8 @@ const TVDisplay: React.FC<TVDisplayProps> = ({ className = "" }) => {
         </div>
 
         {/* Tournament Bracket */}
-        <div className="bg-gray-800 rounded-lg p-6">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div className="bg-gray-800 rounded-lg px-6 py-1">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {tournamentData.rounds
               .filter((round) => round.matches && round.matches.length > 0)
               .map((round, index) => {
@@ -156,7 +154,7 @@ const TVDisplay: React.FC<TVDisplayProps> = ({ className = "" }) => {
                 return (
                   <div
                     key={round.roundName || round.name || `round-${index}`}
-                    className={`p-6 rounded-lg ${
+                    className={`px-8 relative rounded-lg ${
                       round.isActive
                         ? "bg-gray-700 border-2 border-green-500"
                         : "bg-gray-700"
@@ -173,36 +171,61 @@ const TVDisplay: React.FC<TVDisplayProps> = ({ className = "" }) => {
                       (!round.matches?.[0]?.team1Id &&
                         !round.matches?.[0]?.team1?.name)) ? (
                       <div className="flex items-center justify-center mb-4">
-                        <div className="text-white text-4xl font-bold">TBD</div>
-                        <div className="text-yellow-300 text-8xl font-bold mx-4">
+                        <div
+                          className="text-white font-bold"
+                          style={{ fontSize: "24px" }}
+                        >
+                          TBD
+                        </div>
+                        <div
+                          className="text-yellow-300 font-bold mx-4"
+                          style={{ fontSize: "54px" }}
+                        >
                           0 - 0
                         </div>
-                        <div className="text-white text-4xl font-bold">TBD</div>
+                        <div
+                          className="text-white font-bold"
+                          style={{ fontSize: "24px" }}
+                        >
+                          TBD
+                        </div>
                       </div>
                     ) : (
-                      <div className="flex items-center justify-center mb-4">
-                        <div className="text-white text-4xl font-bold">
+                      <div className="flex items-center justify-center">
+                        <div
+                          className="text-white font-bold"
+                          style={{ fontSize: "24px" }}
+                        >
                           {roundTeam1Name}
                         </div>
-                        <div className="text-yellow-300 text-8xl font-bold mx-4">
+                        <div
+                          className="text-yellow-300 font-bold mx-6"
+                          style={{ fontSize: "54px" }}
+                        >
                           {roundScores[0]} - {roundScores[1]}
                         </div>
-                        <div className="text-white text-4xl font-bold">
+                        <div
+                          className="text-white font-bold"
+                          style={{ fontSize: "24px" }}
+                        >
                           {roundTeam2Name}
                         </div>
                       </div>
                     )}
 
-                    <h4 className="text-white text-6xl font-bold mb-4">
+                    <h4
+                      className="text-white  bg-blue-600 px-3 font-bold absolute top-4 left-6"
+                      style={{ fontSize: "24px" }}
+                    >
                       {round.roundName === "semiFinal1"
-                        ? "Semifinal 1"
+                        ? "SF1"
                         : round.roundName === "semiFinal2"
-                        ? "Semifinal 2"
+                        ? "SF2"
                         : round.roundName === "final"
                         ? "Final"
-                        : round.roundName || round.name || `Round ${index + 1}`}
+                        : round.roundName || round.name || `R${index + 1}`}
                     </h4>
-                    <div className="space-y-4">
+                    <div className="space-y-1">
                       {round.matches.map((match, matchIndex) => {
                         return (
                           <div
@@ -232,7 +255,7 @@ const TVDisplay: React.FC<TVDisplayProps> = ({ className = "" }) => {
                             {/* Content */}
                             <div className="relative z-10">
                               {/* Match Type */}
-                              <div className="text-white text-3xl font-bold mb-2 text-center">
+                              <div className="text-white text-2xl font-bold mb-2 text-center">
                                 Match {matchIndex + 1}:{" "}
                                 {getMatchType(matchIndex)}
                               </div>
@@ -241,7 +264,7 @@ const TVDisplay: React.FC<TVDisplayProps> = ({ className = "" }) => {
                               <div className="flex items-center justify-center">
                                 {/* Team 1 */}
                                 <div className="flex items-center justify-end flex-1 pr-4">
-                                  <div className="text-white text-3xl font-bold mr-4">
+                                  <div className="text-white text-2xl font-bold mr-4">
                                     {round.roundName === "final" &&
                                     (tournamentData.rounds.find(
                                       (r) => r.roundName === "semiFinal1"
@@ -255,7 +278,7 @@ const TVDisplay: React.FC<TVDisplayProps> = ({ className = "" }) => {
                                         getTeamNameById(match.team1Id || "") ||
                                         "Team 1"}
                                   </div>
-                                  <div className="text-yellow-300 text-4xl font-bold">
+                                  <div className="text-yellow-300 text-2xl font-bold">
                                     {match.team1Score ||
                                       match.team1?.score ||
                                       0}
@@ -268,12 +291,12 @@ const TVDisplay: React.FC<TVDisplayProps> = ({ className = "" }) => {
 
                                 {/* Team 2 */}
                                 <div className="flex items-center justify-start flex-1 pl-4">
-                                  <div className="text-yellow-300 text-4xl font-bold">
+                                  <div className="text-yellow-300 text-2xl font-bold">
                                     {match.team2Score ||
                                       match.team2?.score ||
                                       0}
                                   </div>
-                                  <div className="text-white text-3xl font-bold ml-4">
+                                  <div className="text-white text-2xl font-bold ml-4">
                                     {round.roundName === "final" &&
                                     (tournamentData.rounds.find(
                                       (r) => r.roundName === "semiFinal1"
