@@ -24,3 +24,29 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+/* Hide development overlays */
+[data-nextjs-scroll-focus-boundary],
+[data-nextjs-toast],
+[data-nextjs-dialog-overlay],
+.nextjs-container-build-error,
+.nextjs-container-errors,
+[data-nextjs-portal],
+[data-nextjs-dialog],
+[data-nextjs-dialog-backdrop],
+.__nextjs_original-stack-frame,
+[data-nextjs-toast-root],
+[data-nextjs-toast],
+[data-nextjs-toast-viewport],
+[class*="nextjs"],
+[class*="turbopack"],
+[class*="development"],
+[class*="dev-tools"],
+[data-turbopack],
+[data-nextjs],
+[data-development] {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
