@@ -1,0 +1,33 @@
+{
+  "cli": {
+    "version": ">= 16.12.0",
+    "appVersionSource": "remote"
+  },
+  "build": {
+    "development": {
+      "developmentClient": true,
+      "distribution": "internal"
+    },
+    "preview": {
+      "distribution": "internal"
+    },
+    "demo-apk": {
+      "android": {
+        "buildType": "apk"
+      },
+      "developmentClient": false,
+      "distribution": "internal"
+    },
+    "production": {
+      "android": {
+        "buildType": "apk"
+      },
+      "developmentClient": false,
+      "distribution": "internal",
+      "autoIncrement": true
+    }
+  },
+  "submit": {
+    "production": {}
+  }
+}
