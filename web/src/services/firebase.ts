@@ -139,6 +139,140 @@ export const listenToStreamingData = (
         const overview = raw.overview || {};
         const roundsData = raw.rounds || {};
 
+        // Debug: Log the raw data structure
+        console.log("🔍 Raw Firebase data:", raw);
+        console.log("🔍 Overview data:", overview);
+        console.log("🔍 Raw teams:", raw.teams);
+        console.log("🔍 Overview teams:", overview.teams);
+        console.log("🔍 Rounds data:", roundsData);
+        console.log("🔍 Champion data:", raw.champion);
+
+        // Check for other possible team data locations
+        console.log("🔍 All raw data keys:", Object.keys(raw));
+        console.log("🔍 All overview keys:", Object.keys(overview));
+
+        // Look for teams in other possible locations
+        if (raw.teamsData) console.log("🔍 teamsData:", raw.teamsData);
+        if (raw.teamList) console.log("🔍 teamList:", raw.teamList);
+        if (raw.participants) console.log("🔍 participants:", raw.participants);
+        if (overview.teamsData)
+          console.log("🔍 overview.teamsData:", overview.teamsData);
+        if (overview.teamList)
+          console.log("🔍 overview.teamList:", overview.teamList);
+        if (overview.participants)
+          console.log("🔍 overview.participants:", overview.participants);
+
+        // Debug: Log detailed rounds structure
+        Object.entries(roundsData).forEach(
+          ([roundKey, roundData]: [string, any]) => {
+            console.log(`🔍 Round ${roundKey}:`, roundData);
+            if (roundData && roundData.matches) {
+              roundData.matches.forEach((match: any, matchIndex: number) => {
+                console.log(`🔍 Match ${matchIndex} in ${roundKey}:`, match);
+                if (match.team1) console.log(`🔍 Team1 details:`, match.team1);
+                if (match.team2) console.log(`🔍 Team2 details:`, match.team2);
+              });
+            }
+          }
+        );
+
+        // Extract teams from rounds data if teams array is empty
+        let teams: WebTeam[] = [];
+
+        if (Array.isArray(raw.teams) && raw.teams.length > 0) {
+          teams = raw.teams;
+        } else if (Array.isArray(overview.teams) && overview.teams.length > 0) {
+          teams = overview.teams;
+        } else {
+          // Extract teams from rounds data
+          const teamMap = new Map<string, WebTeam>();
+
+          Object.values(roundsData).forEach((round: any) => {
+            if (round && typeof round === "object") {
+              // Check for team1 and team2 in matches
+              if (round.matches && Array.isArray(round.matches)) {
+                round.matches.forEach((match: any) => {
+                  if (match.team1 && match.team1.id && match.team1.name) {
+                    if (!teamMap.has(match.team1.id)) {
+                      // Parse playerNames string into individual players
+                      const players: WebPlayer[] = [];
+                      if (
+                        match.team1.playerNames &&
+                        typeof match.team1.playerNames === "string"
+                      ) {
+                        const playerNames = match.team1.playerNames
+                          .split(",")
+                          .map((name) => name.trim())
+                          .filter((name) => name);
+                        playerNames.forEach((playerName, index) => {
+                          players.push({
+                            id: `${match.team1.id}_player_${index}`,
+                            name: playerName,
+                            captain: false, // All players are regular players for ranking
+                          });
+                        });
+                      }
+
+                      teamMap.set(match.team1.id, {
+                        id: match.team1.id,
+                        name: match.team1.name,
+                        players: players,
+                      });
+                    }
+                  }
+                  if (match.team2 && match.team2.id && match.team2.name) {
+                    if (!teamMap.has(match.team2.id)) {
+                      // Parse playerNames string into individual players
+                      const players: WebPlayer[] = [];
+                      if (
+                        match.team2.playerNames &&
+                        typeof match.team2.playerNames === "string"
+                      ) {
+                        const playerNames = match.team2.playerNames
+                          .split(",")
+                          .map((name) => name.trim())
+                          .filter((name) => name);
+                        playerNames.forEach((playerName, index) => {
+                          players.push({
+                            id: `${match.team2.id}_player_${index}`,
+                            name: playerName,
+                            captain: false, // All players are regular players for ranking
+                          });
+                        });
+                      }
+
+                      teamMap.set(match.team2.id, {
+                        id: match.team2.id,
+                        name: match.team2.name,
+                        players: players,
+                      });
+                    }
+                  }
+                });
+              }
+            }
+          });
+
+          teams = Array.from(teamMap.values());
+          console.log("🔍 Extracted teams from rounds:", teams);
+
+          // Debug: Log each team's players
+          teams.forEach((team, index) => {
+            console.log(`🔍 Team ${index + 1} (${team.name}):`, team.players);
+            if (team.players && team.players.length > 0) {
+              team.players.forEach((player, playerIndex) => {
+                console.log(
+                  `  - Player ${playerIndex + 1}: ${player.name} (Captain: ${
+                    player.captain
+                  })`
+                );
+              });
+            } else {
+              console.log(`  - No players found for ${team.name}`);
+            }
+          });
+        }
+
         const data: WebTournamentData = {
           id: raw.id || overview.tournamentId || "current",
           name: overview.tournamentName || raw.name || "Tournament",
@@ -147,7 +281,7 @@ export const listenToStreamingData = (
             (raw.status as "setup" | "live" | "completed") ||
             "setup",
           currentRound: overview.currentRound || raw.currentRound || "",
-          teams: Array.isArray(raw.teams) ? raw.teams : [],
+          teams: teams,
           rounds: Object.entries(roundsData)
             .filter(([, round]) => round && typeof round === "object")
             .sort(([keyA], [keyB]) => {

@@ -1,12 +1,15 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  output: 'export',
-  trailingSlash: true,
-  basePath: '/OwensCup',
-  images: {
-    unoptimized: true
-  }
+  // Only use export settings for production builds
+  ...(process.env.NODE_ENV === "production" && {
+    output: "export",
+    trailingSlash: true,
+    basePath: "/OwensCup",
+    images: {
+      unoptimized: true,
+    },
+  }),
 };
 
 export default nextConfig;

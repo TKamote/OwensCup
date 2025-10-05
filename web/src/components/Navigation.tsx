@@ -12,7 +12,8 @@ const Navigation: React.FC = () => {
     { href: "/", label: "TV Display", icon: "📺" },
     { href: "/stream", label: "Streaming", icon: "📡" },
     { href: "/stream-experimental", label: "Stream Experimental", icon: "🧪" },
-    { href: "/teams", label: "Teams & Players", icon: "👥" },
+    { href: "/team", label: "Teams", icon: "👥" },
+    { href: "/players", label: "Players", icon: "🏃" },
   ];
 
   return (
