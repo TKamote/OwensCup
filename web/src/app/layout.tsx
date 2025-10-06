@@ -13,8 +13,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Tournament Stream",
-  description: "Real-time tournament streaming overlay",
+  title: "Owen's Cup Tournament",
+  description: "Real-time tournament streaming and management platform",
 };
 
 export default function RootLayout({

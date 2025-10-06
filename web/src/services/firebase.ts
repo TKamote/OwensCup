@@ -164,13 +164,27 @@ export const listenToStreamingData = (
 
         // Debug: Log detailed rounds structure
         Object.entries(roundsData).forEach(
-          ([roundKey, roundData]: [string, any]) => {
+          ([roundKey, roundData]: [string, unknown]) => {
             console.log(`🔍 Round ${roundKey}:`, roundData);
-            if (roundData && roundData.matches) {
-              roundData.matches.forEach((match: any, matchIndex: number) => {
+            if (
+              roundData &&
+              typeof roundData === "object" &&
+              roundData !== null &&
+              "matches" in roundData
+            ) {
+              const round = roundData as { matches: unknown[] };
+              round.matches.forEach((match: unknown, matchIndex: number) => {
                 console.log(`🔍 Match ${matchIndex} in ${roundKey}:`, match);
-                if (match.team1) console.log(`🔍 Team1 details:`, match.team1);
-                if (match.team2) console.log(`🔍 Team2 details:`, match.team2);
+                if (match && typeof match === "object" && match !== null) {
+                  const matchObj = match as {
+                    team1?: unknown;
+                    team2?: unknown;
+                  };
+                  if (matchObj.team1)
+                    console.log(`🔍 Team1 details:`, matchObj.team1);
+                  if (matchObj.team2)
+                    console.log(`🔍 Team2 details:`, matchObj.team2);
+                }
               });
             }
           }
@@ -187,65 +201,103 @@ export const listenToStreamingData = (
           // Extract teams from rounds data
           const teamMap = new Map<string, WebTeam>();
 
-          Object.values(roundsData).forEach((round: any) => {
-            if (round && typeof round === "object") {
+          Object.values(roundsData).forEach((round: unknown) => {
+            if (
+              round &&
+              typeof round === "object" &&
+              round !== null &&
+              "matches" in round
+            ) {
               // Check for team1 and team2 in matches
-              if (round.matches && Array.isArray(round.matches)) {
-                round.matches.forEach((match: any) => {
-                  if (match.team1 && match.team1.id && match.team1.name) {
-                    if (!teamMap.has(match.team1.id)) {
-                      // Parse playerNames string into individual players
-                      const players: WebPlayer[] = [];
-                      if (
-                        match.team1.playerNames &&
-                        typeof match.team1.playerNames === "string"
-                      ) {
-                        const playerNames = match.team1.playerNames
-                          .split(",")
-                          .map((name) => name.trim())
-                          .filter((name) => name);
-                        playerNames.forEach((playerName, index) => {
-                          players.push({
-                            id: `${match.team1.id}_player_${index}`,
-                            name: playerName,
-                            captain: false, // All players are regular players for ranking
-                          });
+              const roundData = round as { matches: unknown[] };
+              if (roundData.matches && Array.isArray(roundData.matches)) {
+                roundData.matches.forEach((match: unknown) => {
+                  if (
+                    match &&
+                    typeof match === "object" &&
+                    match !== null &&
+                    "team1" in match &&
+                    "team2" in match
+                  ) {
+                    const matchData = match as {
+                      team1?: {
+                        id?: string;
+                        name?: string;
+                        playerNames?: string;
+                      };
+                      team2?: {
+                        id?: string;
+                        name?: string;
+                        playerNames?: string;
+                      };
+                    };
+                    if (
+                      matchData.team1 &&
+                      matchData.team1.id &&
+                      matchData.team1.name
+                    ) {
+                      if (!teamMap.has(matchData.team1.id)) {
+                        // Parse playerNames string into individual players
+                        const players: WebPlayer[] = [];
+                        if (
+                          matchData.team1.playerNames &&
+                          typeof matchData.team1.playerNames === "string"
+                        ) {
+                          const playerNames = matchData.team1.playerNames
+                            .split(",")
+                            .map((name: string) => name.trim())
+                            .filter((name: string) => name);
+                          playerNames.forEach(
+                            (playerName: string, index: number) => {
+                              players.push({
+                                id: `${matchData.team1!.id}_player_${index}`,
+                                name: playerName,
+                                captain: false, // All players are regular players for ranking
+                              });
+                            }
+                          );
+                        }
+
+                        teamMap.set(matchData.team1.id, {
+                          id: matchData.team1.id,
+                          name: matchData.team1.name,
+                          players: players,
                         });
                       }
-
-                      teamMap.set(match.team1.id, {
-                        id: match.team1.id,
-                        name: match.team1.name,
-                        players: players,
-                      });
                     }
-                  }
-                  if (match.team2 && match.team2.id && match.team2.name) {
-                    if (!teamMap.has(match.team2.id)) {
-                      // Parse playerNames string into individual players
-                      const players: WebPlayer[] = [];
-                      if (
-                        match.team2.playerNames &&
-                        typeof match.team2.playerNames === "string"
-                      ) {
-                        const playerNames = match.team2.playerNames
-                          .split(",")
-                          .map((name) => name.trim())
-                          .filter((name) => name);
-                        playerNames.forEach((playerName, index) => {
-                          players.push({
-                            id: `${match.team2.id}_player_${index}`,
-                            name: playerName,
-                            captain: false, // All players are regular players for ranking
-                          });
+                    if (
+                      matchData.team2 &&
+                      matchData.team2.id &&
+                      matchData.team2.name
+                    ) {
+                      if (!teamMap.has(matchData.team2.id)) {
+                        // Parse playerNames string into individual players
+                        const players: WebPlayer[] = [];
+                        if (
+                          matchData.team2.playerNames &&
+                          typeof matchData.team2.playerNames === "string"
+                        ) {
+                          const playerNames = matchData.team2.playerNames
+                            .split(",")
+                            .map((name: string) => name.trim())
+                            .filter((name: string) => name);
+                          playerNames.forEach(
+                            (playerName: string, index: number) => {
+                              players.push({
+                                id: `${matchData.team2!.id}_player_${index}`,
+                                name: playerName,
+                                captain: false, // All players are regular players for ranking
+                              });
+                            }
+                          );
+                        }
+
+                        teamMap.set(matchData.team2.id, {
+                          id: matchData.team2.id,
+                          name: matchData.team2.name,
+                          players: players,
                         });
                       }
-
-                      teamMap.set(match.team2.id, {
-                        id: match.team2.id,
-                        name: match.team2.name,
-                        players: players,
-                      });
                     }
                   }
                 });
