@@ -122,7 +122,7 @@ const StreamOverlayExperimental: React.FC<StreamOverlayExperimentalProps> = ({
 
   return (
     <div
-      className={`fixed top-0 left-0 w-72 h-full overflow-hidden ${className} p-3`}
+      className={`fixed top-0 left-0 w-72 h-auto overflow-hidden border-4 border-yellow-500 ${className} p-3`}
       style={{ backgroundColor: "#ff00ff" }}
     >
       {/* LIVE Indicator with Animation */}

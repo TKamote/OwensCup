@@ -118,7 +118,7 @@ const StreamOverlay: React.FC<StreamOverlayProps> = ({ className = "" }) => {
 
   return (
     <div
-      className={`fixed top-16 left-0 w-72 h-full bg-gradient-to-b from-gray-900 via-black to-gray-900 overflow-hidden ${className} p-3`}
+      className={`fixed top-16 left-0 w-72 h-auto bg-gradient-to-b from-gray-900 via-black to-gray-900 overflow-hidden border-4 border-yellow-500 ${className} p-3`}
     >
       {/* LIVE Indicator with Animation */}
       <div className="absolute top-2 right-2 bg-red-600 text-white text-xs font-bold px-2 py-1 rounded-full animate-pulse shadow-lg">

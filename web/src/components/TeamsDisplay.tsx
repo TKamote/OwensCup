@@ -1,6 +1,8 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faArrowLeft } from "@fortawesome/free-solid-svg-icons";
 import { listenToStreamingData, WebTournamentData } from "../services/firebase";
 
 interface TeamsDisplayProps {
@@ -68,19 +70,7 @@ const TeamsDisplay: React.FC<TeamsDisplayProps> = ({
           onClick={() => (window.location.href = "/")}
           className="bg-gray-800 bg-opacity-80 hover:bg-opacity-100 text-white px-4 py-2 rounded-lg border border-gray-600 transition-all duration-200 flex items-center gap-2"
         >
-          <svg
-            className="w-4 h-4"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M10 19l-7-7m0 0l7-7m-7 7h18"
-            />
-          </svg>
+          <FontAwesomeIcon icon={faArrowLeft} className="w-4 h-4" />
           Home
         </button>
       </div>
@@ -88,23 +78,23 @@ const TeamsDisplay: React.FC<TeamsDisplayProps> = ({
       {/* Tab Navigation - Only show if showTabs is true */}
       {showTabs && (
         <div className="flex justify-center mb-6">
-          <div className="flex bg-gray-800 rounded-lg p-1 border border-gray-600">
+          <div className="flex bg-gradient-to-r from-yellow-600/40 to-amber-600/40 backdrop-blur-md rounded-xl p-1 border border-yellow-500/50 shadow-2xl">
             <button
               onClick={() => setActiveTab("teams")}
-              className={`px-8 py-3 rounded-md font-semibold transition-colors ${
+              className={`px-8 py-3 rounded-lg font-semibold transition-all duration-300 ${
                 activeTab === "teams"
-                  ? "bg-gray-700 text-white"
-                  : "text-gray-400 hover:text-white"
+                  ? "bg-gradient-to-r from-yellow-500/20 to-amber-500/20 text-yellow-100 shadow-lg border border-yellow-400/40"
+                  : "text-yellow-200/70 hover:text-yellow-100 hover:bg-yellow-600/15"
               }`}
             >
               Teams
             </button>
             <button
               onClick={() => setActiveTab("players")}
-              className={`px-8 py-3 rounded-md font-semibold transition-colors ${
+              className={`px-8 py-3 rounded-lg font-semibold transition-all duration-300 ${
                 activeTab === "players"
-                  ? "bg-gray-700 text-white"
-                  : "text-gray-400 hover:text-white"
+                  ? "bg-gradient-to-r from-yellow-500/20 to-amber-500/20 text-yellow-100 shadow-lg border border-yellow-400/40"
+                  : "text-yellow-200/70 hover:text-yellow-100 hover:bg-yellow-600/15"
               }`}
             >
               Players
@@ -118,7 +108,7 @@ const TeamsDisplay: React.FC<TeamsDisplayProps> = ({
         {activeTab === "teams" ? (
           <div className="max-w-6xl mx-auto h-[1000px] bg-transparent">
             {/* Teams Content */}
-            <div className="bg-slate-900 bg-opacity-95 backdrop-blur-sm rounded-xl p-6 border border-yellow-400 border-opacity-40 shadow-xl h-full mt-15">
+            <div className="bg-gradient-to-br from-yellow-700/60 via-amber-600/50 to-yellow-600/55 backdrop-blur-xl rounded-2xl p-6 border border-yellow-500/70 shadow-2xl h-full mt-15">
               <div className="text-center mb-6">
                 <h2 className="text-5xl font-bold mb-2 text-yellow-400">
                   Teams
@@ -140,7 +130,7 @@ const TeamsDisplay: React.FC<TeamsDisplayProps> = ({
                   .map((team) => (
                     <div
                       key={team.id}
-                      className="bg-slate-800 bg-opacity-90 backdrop-blur-sm rounded-lg p-4 border border-cyan-300 border-opacity-40 shadow-lg"
+                      className="bg-gradient-to-br from-yellow-600/25 to-amber-500/20 backdrop-blur-lg rounded-xl p-4 border border-yellow-500/50 shadow-xl hover:shadow-2xl transition-all duration-300"
                     >
                       <div className="text-center mb-3">
                         <h3 className="text-3xl font-bold mb-2 text-yellow-300">
@@ -158,7 +148,7 @@ const TeamsDisplay: React.FC<TeamsDisplayProps> = ({
                           team.players.map((player) => (
                             <div
                               key={player.id}
-                              className="text-2xl p-2 rounded bg-slate-700 bg-opacity-80 border border-cyan-200 border-opacity-20 text-white"
+                              className="text-2xl p-2 m-2 rounded-lg bg-black/50 border border-yellow-400/10 text-white shadow-md hover:shadow-lg transition-all duration-200"
                             >
                               <div className="flex items-center justify-between">
                                 <span className="font-medium">
@@ -186,7 +176,7 @@ const TeamsDisplay: React.FC<TeamsDisplayProps> = ({
         ) : (
           <div className="max-w-6xl mx-auto h-full bg-transparent bg-opacity-50 mt-15">
             {/* Players Content */}
-            <div className="bg-slate-900 bg-opacity-95 backdrop-blur-sm rounded-xl p-6 border border-yellow-400 border-opacity-40 shadow-xl h-[1000px]">
+            <div className="bg-gradient-to-br from-yellow-700/60 via-amber-600/50 to-yellow-600/55 backdrop-blur-xl rounded-2xl p-6 border border-yellow-500/70 shadow-2xl h-[1000px]">
               <div className="text-center mb-6">
                 <h2 className="text-5xl font-bold mb-2 text-yellow-400">
                   Players
@@ -301,7 +291,7 @@ const TeamsDisplay: React.FC<TeamsDisplayProps> = ({
                             {leftColumnPlayers.map((player) => (
                               <div
                                 key={player.id}
-                                className="grid grid-cols-4 gap-1 items-center p-2 rounded-lg bg-slate-700 bg-opacity-80 border border-cyan-200 border-opacity-20"
+                                className="grid grid-cols-4 gap-1 items-center p-2 rounded-lg bg-gradient-to-r from-yellow-400/15 to-amber-400/10 backdrop-blur-sm border border-yellow-400/40 shadow-md hover:shadow-lg transition-all duration-200"
                               >
                                 <div className="text-center text-2xl font-bold text-yellow-400">
                                   {uniquePlayers.indexOf(player) + 1}
@@ -323,7 +313,7 @@ const TeamsDisplay: React.FC<TeamsDisplayProps> = ({
                             {rightColumnPlayers.map((player) => (
                               <div
                                 key={player.id}
-                                className="grid grid-cols-4 gap-1 items-center p-2 rounded-lg bg-slate-700 bg-opacity-80 border border-cyan-200 border-opacity-20"
+                                className="grid grid-cols-4 gap-1 items-center p-2 rounded-lg bg-gradient-to-r from-yellow-400/15 to-amber-400/10 backdrop-blur-sm border border-yellow-400/40 shadow-md hover:shadow-lg transition-all duration-200"
                               >
                                 <div className="text-center text-2xl font-bold text-yellow-400">
                                   {uniquePlayers.indexOf(player) + 1}
