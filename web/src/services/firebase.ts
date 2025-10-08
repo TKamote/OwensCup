@@ -127,7 +127,10 @@ const toSafeDate = (
 export const listenToStreamingData = (
   callback: (data: WebTournamentData | null) => void
 ) => {
-  const streamingRef = doc(db, "streaming", "current_tournament");
+  console.log(
+    "🔍 Web app listening to: streaming/qugtvydwkdhif7tnisk4obrjrg33"
+  );
+  const streamingRef = doc(db, "streaming", "qugtvydwkdhif7tnisk4obrjrg33");
 
   return onSnapshot(
     streamingRef,
@@ -415,7 +418,7 @@ export const updateStreamControl = async (data: Partial<StreamControlData>) => {
 export const getCurrentStreamingData =
   async (): Promise<WebTournamentData | null> => {
     try {
-      const streamingRef = doc(db, "streaming", "current_tournament");
+      const streamingRef = doc(db, "streaming", "qugtvydwkdhif7tnisk4obrjrg33");
       const docSnap = await getDoc(streamingRef);
 
       if (docSnap.exists()) {
@@ -474,7 +477,7 @@ export const exploreFirebaseData = async () => {
 
     // Try to check streaming collection first (most likely to be accessible)
     try {
-      const streamingRef = doc(db, "streaming", "current_tournament");
+      const streamingRef = doc(db, "streaming", "qugtvydwkdhif7tnisk4obrjrg33");
       const streamingDoc = await getDoc(streamingRef);
       if (streamingDoc.exists()) {
         console.log("✅ 📡 Streaming data found:", streamingDoc.data());
