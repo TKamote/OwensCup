@@ -290,6 +290,21 @@ export const transformToWebFormat = (
   };
 };
 
+// Helper function to convert email to safe Firebase document ID
+const emailToSafeId = (email: string): string => {
+  return email.replace(/[@.]/g, "").toLowerCase();
+};
+
+// Helper function to map UID to email for specific users
+const getUserEmailFromUid = (uid: string): string => {
+  if (uid.includes("support") || uid.includes("tournatracker")) {
+    return "support@tournatracker.com";
+  } else if (uid.includes("davidonquit") || uid.includes("yahoo")) {
+    return "davidonquit@yahoo.com";
+  }
+  return uid;
+};
+
 // Save tournament data to Firebase with streaming optimization
 export const saveTournamentToStreaming = async (
   userId: string,
@@ -311,7 +326,21 @@ export const saveTournamentToStreaming = async (
         const webData = transformToWebFormat(tournamentState, streamingMode);
         webData.lastWebUpdate = new Date();
 
-        const streamingRef = doc(db, "streaming", "current_tournament");
+        const userEmail = getUserEmailFromUid(userId);
+        const safeId = emailToSafeId(userEmail);
+        console.log(
+          "🔍 Mobile app pushing to collection:",
+          `streaming/${safeId}`
+        );
+        console.log(
+          "🔍 User ID:",
+          userId,
+          "→ Email:",
+          userEmail,
+          "→ Safe ID:",
+          safeId
+        );
+        const streamingRef = doc(db, "streaming", safeId);
         await setDoc(streamingRef, {
           ...webData,
           pushedAt: new Date(),
