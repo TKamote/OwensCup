@@ -291,13 +291,13 @@ export const listenToStreamingData = (
                                 const isValid =
                                   name && name.length > 0 && name !== "Player";
                                 console.log(
-                                  `🔍 Team1 ${matchData.team1.name} filtering "${name}": ${isValid}`
+                                  `🔍 Team1 ${matchData.team1?.name || 'Unknown'} filtering "${name}": ${isValid}`
                                 );
                                 return isValid;
                               }
                             );
                             console.log(
-                              `🔍 Team1 ${matchData.team1.name} parsed player names:`,
+                              `🔍 Team1 ${matchData.team1?.name || 'Unknown'} parsed player names:`,
                               playerNames
                             );
                             playerNames.forEach(
@@ -324,12 +324,12 @@ export const listenToStreamingData = (
                       if (
                         matchData.team2 &&
                         matchData.team2.id &&
-                        matchData.team2.name &&
+                        matchData.team2?.name &&
                         matchData.team2.name !== "Unknown Team" &&
                         matchData.team2.name.trim().length > 0
                       ) {
                         console.log(
-                          `🔍 Found team2: ${matchData.team2.name} (${matchData.team2.id})`
+                          `🔍 Found team2: ${matchData.team2?.name || 'Unknown'} (${matchData.team2.id})`
                         );
                         if (!teamMap.has(matchData.team2.id)) {
                           // Parse playerNames string into individual players
@@ -339,20 +339,20 @@ export const listenToStreamingData = (
                             typeof matchData.team2.playerNames === "string"
                           ) {
                             console.log(
-                              `🔍 Team2 ${matchData.team2.name} playerNames string:`,
+                              `🔍 Team2 ${matchData.team2?.name || 'Unknown'} playerNames string:`,
                               matchData.team2.playerNames
                             );
                             const rawPlayerNames =
                               matchData.team2.playerNames.split(",");
                             console.log(
-                              `🔍 Team2 ${matchData.team2.name} raw split:`,
+                              `🔍 Team2 ${matchData.team2?.name || 'Unknown'} raw split:`,
                               rawPlayerNames
                             );
                             const trimmedPlayerNames = rawPlayerNames.map(
                               (name: string) => name.trim()
                             );
                             console.log(
-                              `🔍 Team2 ${matchData.team2.name} after trim:`,
+                              `🔍 Team2 ${matchData.team2?.name || 'Unknown'} after trim:`,
                               trimmedPlayerNames
                             );
                             const playerNames = trimmedPlayerNames.filter(
@@ -360,13 +360,13 @@ export const listenToStreamingData = (
                                 const isValid =
                                   name && name.length > 0 && name !== "Player";
                                 console.log(
-                                  `🔍 Team2 ${matchData.team2.name} filtering "${name}": ${isValid}`
+                                  `🔍 Team2 ${matchData.team2?.name || 'Unknown'} filtering "${name}": ${isValid}`
                                 );
                                 return isValid;
                               }
                             );
                             console.log(
-                              `🔍 Team2 ${matchData.team2.name} parsed player names:`,
+                              `🔍 Team2 ${matchData.team2?.name || 'Unknown'} parsed player names:`,
                               playerNames
                             );
                             playerNames.forEach(
@@ -381,11 +381,11 @@ export const listenToStreamingData = (
                           }
 
                           console.log(
-                            `🔍 Creating team2: ${matchData.team2.name} with ${players.length} players`
+                            `🔍 Creating team2: ${matchData.team2?.name || 'Unknown'} with ${players.length} players`
                           );
                           teamMap.set(matchData.team2.id, {
                             id: matchData.team2.id,
-                            name: matchData.team2.name,
+                            name: matchData.team2?.name || 'Unknown',
                             players: players,
                           });
                         }
