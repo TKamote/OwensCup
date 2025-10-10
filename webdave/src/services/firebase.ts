@@ -260,7 +260,7 @@ export const listenToStreamingData = (
                         matchData.team1.name.trim().length > 0
                       ) {
                         console.log(
-                          `🔍 Found team1: ${matchData.team1.name} (${matchData.team1.id})`
+                          `🔍 Found team1: ${matchData.team1?.name || 'Unknown'} (${matchData.team1.id})`
                         );
                         if (!teamMap.has(matchData.team1.id)) {
                           // Parse playerNames string into individual players
@@ -270,20 +270,20 @@ export const listenToStreamingData = (
                             typeof matchData.team1.playerNames === "string"
                           ) {
                             console.log(
-                              `🔍 Team1 ${matchData.team1.name} playerNames string:`,
+                              `🔍 Team1 ${matchData.team1?.name || 'Unknown'} playerNames string:`,
                               matchData.team1.playerNames
                             );
                             const rawPlayerNames =
                               matchData.team1.playerNames.split(",");
                             console.log(
-                              `🔍 Team1 ${matchData.team1.name} raw split:`,
+                              `🔍 Team1 ${matchData.team1?.name || 'Unknown'} raw split:`,
                               rawPlayerNames
                             );
                             const trimmedPlayerNames = rawPlayerNames.map(
                               (name: string) => name.trim()
                             );
                             console.log(
-                              `🔍 Team1 ${matchData.team1.name} after trim:`,
+                              `🔍 Team1 ${matchData.team1?.name || 'Unknown'} after trim:`,
                               trimmedPlayerNames
                             );
                             const playerNames = trimmedPlayerNames.filter(
@@ -316,11 +316,11 @@ export const listenToStreamingData = (
                           }
 
                           console.log(
-                            `🔍 Creating team1: ${matchData.team1.name} with ${players.length} players`
+                            `🔍 Creating team1: ${matchData.team1?.name || 'Unknown'} with ${players.length} players`
                           );
                           teamMap.set(matchData.team1.id, {
                             id: matchData.team1.id,
-                            name: matchData.team1.name,
+                            name: matchData.team1?.name || 'Unknown',
                             manager: "",
                             captain: "",
                             players: players,
