@@ -3,5 +3,5 @@
 import TeamsDisplay from "@/components/TeamsDisplay";
 
 export default function TeamsPage() {
-  return <TeamsDisplay defaultTab="teams" showTabs={true} />;
+  return <TeamsDisplay defaultTab="teams" />;
 }
