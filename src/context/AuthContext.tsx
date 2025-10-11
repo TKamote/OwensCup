@@ -12,6 +12,7 @@ interface User {
   uid: string;
   email: string | null;
   displayName: string | null;
+  role: "viewer" | "tournamentManager" | "admin" | null; // Add role
 }
 
 interface AuthContextType {
@@ -49,24 +50,27 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     const unsubscribe = auth.onAuthStateChanged(
       async (firebaseUser: FirebaseUser | null) => {
         if (firebaseUser) {
-          // Try to get display name from Firestore
-          let displayName = firebaseUser.displayName;
+          // Fetch user profile from Firestore to get the role
+          let userProfile: User | null = null;
           try {
             const db = getFirestore();
             const userDoc = await getDoc(doc(db, "users", firebaseUser.uid));
             if (userDoc.exists()) {
               const userData = userDoc.data();
               console.log("User data from Firestore:", userData);
-              displayName =
-                userData.userOrPlayerName || firebaseUser.displayName;
-              console.log("Display name set to:", displayName);
+              userProfile = {
+                uid: firebaseUser.uid,
+                email: firebaseUser.email,
+                displayName:
+                  userData.userOrPlayerName || firebaseUser.displayName,
+                role: userData.role || "viewer", // Default to 'viewer' if role is not set
+              };
+              console.log("User profile set:", userProfile);
             } else {
-              console.log(
-                "User document does not exist in Firestore - creating one"
-              );
-              // Create user document if it doesn't exist
-              const { setDoc } = await import("firebase/firestore");
-              await setDoc(doc(db, "users", firebaseUser.uid), {
+              // This case is for users that existed before the 'users' collection was standard.
+              // We can create a default profile for them.
+              console.log("User document not found, creating default profile.");
+              const defaultProfile = {
                 userOrPlayerName:
                   firebaseUser.displayName ||
                   firebaseUser.email?.split("@")[0] ||
@@ -75,25 +79,28 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
                 createdAt: new Date(),
                 tournaments: [],
                 isAdmin: false,
-              });
-              displayName =
-                firebaseUser.displayName ||
-                firebaseUser.email?.split("@")[0] ||
-                "User";
-              console.log(
-                "Created user document with display name:",
-                displayName
-              );
+                role: "viewer",
+              };
+              const { setDoc } = await import("firebase/firestore");
+              await setDoc(doc(db, "users", firebaseUser.uid), defaultProfile);
+              userProfile = {
+                uid: firebaseUser.uid,
+                email: firebaseUser.email,
+                displayName: defaultProfile.userOrPlayerName,
+                role: "viewer",
+              };
             }
           } catch (error) {
-            console.error("Error loading user display name:", error);
+            console.error("Error loading user profile:", error);
+            // If fetching fails, create a fallback user object
+            userProfile = {
+              uid: firebaseUser.uid,
+              email: firebaseUser.email,
+              displayName: firebaseUser.displayName,
+              role: "viewer", // Fallback to viewer
+            };
           }
-
-          setUser({
-            uid: firebaseUser.uid,
-            email: firebaseUser.email,
-            displayName: displayName,
-          });
+          setUser(userProfile);
         } else {
           setUser(null);
         }

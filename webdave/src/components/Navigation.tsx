@@ -10,6 +10,7 @@ const Navigation: React.FC = () => {
   const navItems = [
     { href: "/", label: "TV Display", icon: "📺" },
     { href: "/stream", label: "Streaming", icon: "📡" },
+    { href: "/standby", label: "Standby", icon: "⏰" },
     { href: "/teams", label: "Teams", icon: "👥" },
     { href: "/players", label: "Players", icon: "🏃" },
   ];
@@ -19,7 +20,11 @@ const Navigation: React.FC = () => {
       <div className="max-w-7xl mx-auto px-4">
         <div className="flex justify-between items-center h-16">
           <div className="flex items-center">
-            <span className="text-2xl mr-2">🏆</span>
+            <img
+              src="/favicon.png"
+              alt="Tournament Icon"
+              className="w-8 h-8 mr-2"
+            />
             <span className="text-xl font-bold text-gray-800">
               Dave&apos;s Tournament Stream
             </span>

@@ -4,6 +4,7 @@ import {
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
   signOut as firebaseSignOut,
+  sendPasswordResetEmail,
   User as FirebaseUser,
 } from "firebase/auth";
 import {
@@ -79,16 +80,9 @@ export const getCurrentUser = () => {
 
 // Check if database is accessible
 export const checkDatabaseConnectivity = async (): Promise<boolean> => {
-  try {
-    // Try to read from a test document
-    const testDocRef = doc(db, "_test_connection", "test");
-    await getDoc(testDocRef);
-
-    return true;
-  } catch (error) {
-    console.error("Database connectivity test failed:", error);
-    return false;
-  }
+  // This check is problematic with security rules.
+  // We will assume connectivity and let the actual data load fail if there's an issue.
+  return true;
 };
 
 // Helper function to generate unique username
@@ -161,6 +155,7 @@ export const createUserWithEmailAndPasswordFirebase = async (
       createdAt: new Date(),
       tournaments: [],
       isAdmin: false, // Default to regular user
+      role: "viewer", // Assign default role
     });
 
     return userCredential.user;
@@ -511,6 +506,32 @@ export const completeFirebaseReset = async () => {
   } catch (error) {
     console.error("Firebase: Error during complete reset:", error);
     throw error;
+  }
+};
+
+// Send password reset email
+export const sendPasswordReset = async (email: string) => {
+  try {
+    // Basic email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      throw new Error("Invalid email format");
+    }
+
+    await sendPasswordResetEmail(auth, email);
+    return "Password reset email sent! Please check your inbox and follow the instructions.";
+  } catch (error: any) {
+    // Handle specific Firebase errors
+    if (error.code === "auth/user-not-found") {
+      throw new Error("No account found with this email address");
+    } else if (error.code === "auth/invalid-email") {
+      throw new Error("Invalid email address");
+    } else if (error.code === "auth/too-many-requests") {
+      throw new Error(
+        "Too many password reset attempts. Please try again later."
+      );
+    }
+    throw new Error(error.message || "Failed to send password reset email");
   }
 };
 

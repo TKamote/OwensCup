@@ -23,9 +23,13 @@ import {
 
 interface SignInScreenProps {
   onSwitchToSignUp: () => void;
+  onForgotPassword: () => void;
 }
 
-const SignInScreen: React.FC<SignInScreenProps> = ({ onSwitchToSignUp }) => {
+const SignInScreen: React.FC<SignInScreenProps> = ({
+  onSwitchToSignUp,
+  onForgotPassword,
+}) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -104,6 +108,13 @@ const SignInScreen: React.FC<SignInScreenProps> = ({ onSwitchToSignUp }) => {
             />
           </TouchableOpacity>
         </View>
+
+        <TouchableOpacity
+          style={styles.forgotPasswordButton}
+          onPress={onForgotPassword}
+        >
+          <Text style={styles.forgotPasswordText}>Forgot Password?</Text>
+        </TouchableOpacity>
 
         <TouchableOpacity
           style={[styles.button, loading && styles.buttonDisabled]}
@@ -193,6 +204,16 @@ const styles = StyleSheet.create({
   eyeButton: {
     paddingHorizontal: SPACING.md,
     paddingVertical: SPACING.sm,
+  },
+  forgotPasswordButton: {
+    alignSelf: "flex-end",
+    paddingVertical: SPACING.xs,
+    marginBottom: SPACING.sm,
+  },
+  forgotPasswordText: {
+    color: COLORS.primary,
+    fontSize: FONTS.size.sm,
+    fontWeight: FONTS.weight.medium,
   },
   button: {
     backgroundColor: COLORS.primary,

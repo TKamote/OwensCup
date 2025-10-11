@@ -417,108 +417,19 @@ export const TournamentProvider: React.FC<TournamentProviderProps> = ({
       setLoading(true);
       setError(null);
 
-      // First, check if database is accessible
-      const isDatabaseAccessible = await checkDatabaseConnectivity();
-
-      if (!isDatabaseAccessible) {
-        // Reset to default state if database is not accessible
-        setTournamentState({
-          tournamentId: generateTournamentId(),
-          tournamentName: "",
-          organizer: "",
-          raceToScore: "5",
-          confirmedTeams: [],
-          rounds: {
-            semiFinal1: {
-              id: generateRoundId("semiFinal1"),
-              name: "semiFinal1",
-              matches: matchData.map((match, index) =>
-                createMatch("semiFinal1", index)
-              ),
-              winnerTeamId: null,
-              isCompleted: false,
-            },
-            semiFinal2: {
-              id: generateRoundId("semiFinal2"),
-              name: "semiFinal2",
-              matches: matchData.map((match, index) =>
-                createMatch("semiFinal2", index)
-              ),
-              winnerTeamId: null,
-              isCompleted: false,
-            },
-            final: {
-              id: generateRoundId("final"),
-              name: "final",
-              matches: matchData.map((match, index) =>
-                createMatch("final", index)
-              ),
-              winnerTeamId: null,
-              isCompleted: false,
-            },
-          },
-          tournamentChampionTeamId: null,
-          tournamentFinalized: false,
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        });
-        setActionHistory([]);
-        setError("Database connection lost. Local data has been cleared.");
-        setLoading(false);
-        return;
-      }
-
       const savedData = await loadTournamentData(user.uid);
 
       if (savedData && Array.isArray(savedData)) {
         // Old array format - skip it and use defaults
-
-        setTournamentState({
-          tournamentId: generateTournamentId(),
-          tournamentName: "",
-          organizer: "",
-          raceToScore: "5",
-          confirmedTeams: [],
-          rounds: {
-            semiFinal1: {
-              id: generateRoundId("semiFinal1"),
-              name: "semiFinal1",
-              matches: matchData.map((match, index) =>
-                createMatch("semiFinal1", index)
-              ),
-              winnerTeamId: null,
-              isCompleted: false,
-            },
-            semiFinal2: {
-              id: generateRoundId("semiFinal2"),
-              name: "semiFinal2",
-              matches: matchData.map((match, index) =>
-                createMatch("semiFinal2", index)
-              ),
-              winnerTeamId: null,
-              isCompleted: false,
-            },
-            final: {
-              id: generateRoundId("final"),
-              name: "final",
-              matches: matchData.map((match, index) =>
-                createMatch("final", index)
-              ),
-              winnerTeamId: null,
-              isCompleted: false,
-            },
-          },
-          tournamentChampionTeamId: null,
-          tournamentFinalized: false,
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        });
+        console.log("Old data format found, resetting to default state.");
+        setTournamentState(getDefaultTournamentState());
       } else if (
         savedData &&
         savedData.confirmedTeams &&
         Array.isArray(savedData.confirmedTeams)
       ) {
         // Handle new flattened format with proper structure validation
+        console.log("Loading tournament data from Firestore.");
 
         // Validate and ensure all teams have proper structure
         const validatedTeams = savedData.confirmedTeams
@@ -564,6 +475,7 @@ export const TournamentProvider: React.FC<TournamentProviderProps> = ({
         );
       } else {
         // No saved data, use defaults
+        console.log("No saved tournament data found, using default state.");
         setTournamentState(getDefaultTournamentState());
       }
       setError(null);

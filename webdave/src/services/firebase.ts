@@ -8,7 +8,20 @@ import {
   getDocs,
   DocumentData,
   setDoc,
+  deleteDoc,
 } from "firebase/firestore";
+import {
+  getAuth,
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
+  signOut,
+  sendEmailVerification,
+  sendPasswordResetEmail,
+  deleteUser,
+  updatePassword,
+  reauthenticateWithCredential,
+  EmailAuthProvider,
+} from "firebase/auth";
 import {
   firebaseConfig,
   validateFirebaseConfig,
@@ -20,6 +33,7 @@ validateFirebaseConfig();
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
+const auth = getAuth(app);
 
 // Firestore document data interface
 interface FirestoreDocumentData extends DocumentData {
@@ -260,7 +274,9 @@ export const listenToStreamingData = (
                         matchData.team1.name.trim().length > 0
                       ) {
                         console.log(
-                          `🔍 Found team1: ${matchData.team1?.name || 'Unknown'} (${matchData.team1.id})`
+                          `🔍 Found team1: ${
+                            matchData.team1?.name || "Unknown"
+                          } (${matchData.team1.id})`
                         );
                         if (!teamMap.has(matchData.team1.id)) {
                           // Parse playerNames string into individual players
@@ -270,20 +286,26 @@ export const listenToStreamingData = (
                             typeof matchData.team1.playerNames === "string"
                           ) {
                             console.log(
-                              `🔍 Team1 ${matchData.team1?.name || 'Unknown'} playerNames string:`,
+                              `🔍 Team1 ${
+                                matchData.team1?.name || "Unknown"
+                              } playerNames string:`,
                               matchData.team1.playerNames
                             );
                             const rawPlayerNames =
                               matchData.team1.playerNames.split(",");
                             console.log(
-                              `🔍 Team1 ${matchData.team1?.name || 'Unknown'} raw split:`,
+                              `🔍 Team1 ${
+                                matchData.team1?.name || "Unknown"
+                              } raw split:`,
                               rawPlayerNames
                             );
                             const trimmedPlayerNames = rawPlayerNames.map(
                               (name: string) => name.trim()
                             );
                             console.log(
-                              `🔍 Team1 ${matchData.team1?.name || 'Unknown'} after trim:`,
+                              `🔍 Team1 ${
+                                matchData.team1?.name || "Unknown"
+                              } after trim:`,
                               trimmedPlayerNames
                             );
                             const playerNames = trimmedPlayerNames.filter(
@@ -316,11 +338,13 @@ export const listenToStreamingData = (
                           }
 
                           console.log(
-                            `🔍 Creating team1: ${matchData.team1?.name || 'Unknown'} with ${players.length} players`
+                            `🔍 Creating team1: ${
+                              matchData.team1?.name || "Unknown"
+                            } with ${players.length} players`
                           );
                           teamMap.set(matchData.team1.id, {
                             id: matchData.team1.id,
-                            name: matchData.team1?.name || 'Unknown',
+                            name: matchData.team1?.name || "Unknown",
                             manager: "",
                             captain: "",
                             players: players,
@@ -662,4 +686,220 @@ export const exploreFirebaseData = async () => {
   }
 };
 
-export { db };
+// ===== AUTHENTICATION FUNCTIONS =====
+
+// Email validation helper
+const validateEmail = (email: string): boolean => {
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return emailRegex.test(email);
+};
+
+// Password validation helper
+const validatePassword = (password: string): boolean => {
+  // Strong password: min 8 chars, uppercase, lowercase, number, special char
+  const passwordRegex =
+    /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+  return passwordRegex.test(password);
+};
+
+// Create user with email verification
+export const createUserWithEmailVerification = async (
+  email: string,
+  password: string,
+  displayName: string
+) => {
+  try {
+    // Validate inputs
+    if (!validateEmail(email)) {
+      throw new Error("Invalid email format");
+    }
+    if (!validatePassword(password)) {
+      throw new Error(
+        "Password must be at least 8 characters with uppercase, lowercase, number, and special character"
+      );
+    }
+    if (!displayName || displayName.trim().length < 2) {
+      throw new Error("Name must be at least 2 characters");
+    }
+
+    // Create user account
+    const userCredential = await createUserWithEmailAndPassword(
+      auth,
+      email,
+      password
+    );
+
+    // Send email verification
+    await sendEmailVerification(userCredential.user);
+
+    // Create user profile in Firestore
+    await setDoc(doc(db, "users", userCredential.user.uid), {
+      displayName: displayName.trim(),
+      email,
+      emailVerified: false,
+      createdAt: new Date(),
+      isAdmin: false,
+    });
+
+    return {
+      user: userCredential.user,
+      needsVerification: true,
+      message:
+        "Account created! Please check your email to verify your account.",
+    };
+  } catch (error: any) {
+    throw new Error(error.message || "Failed to create account");
+  }
+};
+
+// Sign in user
+export const signInUser = async (email: string, password: string) => {
+  try {
+    const userCredential = await signInWithEmailAndPassword(
+      auth,
+      email,
+      password
+    );
+
+    // Check if email is verified
+    if (!userCredential.user.emailVerified) {
+      await signOut(auth);
+      throw new Error(
+        "Please verify your email before signing in. Check your inbox for the verification link."
+      );
+    }
+
+    return userCredential.user;
+  } catch (error: any) {
+    throw new Error(error.message || "Failed to sign in");
+  }
+};
+
+// Sign out user
+export const signOutUser = async () => {
+  try {
+    await signOut(auth);
+  } catch (error: any) {
+    throw new Error(error.message || "Failed to sign out");
+  }
+};
+
+// Resend email verification
+export const resendEmailVerification = async () => {
+  try {
+    const user = auth.currentUser;
+    if (!user) {
+      throw new Error("No user logged in");
+    }
+
+    await sendEmailVerification(user);
+    return "Verification email sent! Please check your inbox.";
+  } catch (error: any) {
+    throw new Error(error.message || "Failed to send verification email");
+  }
+};
+
+// Delete user account
+export const deleteUserAccount = async (password: string) => {
+  try {
+    const user = auth.currentUser;
+    if (!user || !user.email) {
+      throw new Error("No user logged in");
+    }
+
+    // Re-authenticate user before deletion
+    const credential = EmailAuthProvider.credential(user.email, password);
+    await reauthenticateWithCredential(user, credential);
+
+    // Delete user data from Firestore
+    await deleteDoc(doc(db, "users", user.uid));
+
+    // Delete user account
+    await deleteUser(user);
+
+    return "Account deleted successfully";
+  } catch (error: any) {
+    throw new Error(error.message || "Failed to delete account");
+  }
+};
+
+// Get current user
+export const getCurrentUser = () => {
+  return auth.currentUser;
+};
+
+// Check if user is authenticated
+export const isUserAuthenticated = () => {
+  return !!auth.currentUser;
+};
+
+// Check if user email is verified
+export const isEmailVerified = () => {
+  return auth.currentUser?.emailVerified || false;
+};
+
+// Send password reset email
+export const sendPasswordReset = async (email: string) => {
+  try {
+    // Validate email format
+    if (!validateEmail(email)) {
+      throw new Error("Invalid email format");
+    }
+
+    await sendPasswordResetEmail(auth, email);
+    return "Password reset email sent! Please check your inbox and follow the instructions.";
+  } catch (error: any) {
+    // Handle specific Firebase errors
+    if (error.code === "auth/user-not-found") {
+      throw new Error("No account found with this email address");
+    } else if (error.code === "auth/invalid-email") {
+      throw new Error("Invalid email address");
+    } else if (error.code === "auth/too-many-requests") {
+      throw new Error(
+        "Too many password reset attempts. Please try again later."
+      );
+    }
+    throw new Error(error.message || "Failed to send password reset email");
+  }
+};
+
+// Update password (for logged-in users)
+export const updateUserPassword = async (
+  currentPassword: string,
+  newPassword: string
+) => {
+  try {
+    const user = auth.currentUser;
+    if (!user || !user.email) {
+      throw new Error("No user logged in");
+    }
+
+    // Validate new password
+    if (!validatePassword(newPassword)) {
+      throw new Error(
+        "New password must be at least 8 characters with uppercase, lowercase, number, and special character"
+      );
+    }
+
+    // Re-authenticate user
+    const credential = EmailAuthProvider.credential(
+      user.email,
+      currentPassword
+    );
+    await reauthenticateWithCredential(user, credential);
+
+    // Update password
+    await updatePassword(user, newPassword);
+
+    return "Password updated successfully";
+  } catch (error: any) {
+    if (error.code === "auth/wrong-password") {
+      throw new Error("Current password is incorrect");
+    } else if (error.code === "auth/weak-password") {
+      throw new Error("New password is too weak");
+    }
+    throw new Error(error.message || "Failed to update password");
+  }
+};
+
+export { db, auth };

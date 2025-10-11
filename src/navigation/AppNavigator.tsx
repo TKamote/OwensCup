@@ -3,7 +3,6 @@ import { NavigationContainer } from "@react-navigation/native";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { createStackNavigator } from "@react-navigation/stack";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
-import { TouchableOpacity, Text } from "react-native";
 import { useAuth } from "../context/AuthContext";
 import { COLORS } from "../constants/theme";
 
@@ -11,14 +10,13 @@ import { COLORS } from "../constants/theme";
 import HomeScreen from "../screens/HomeScreen";
 import SignInScreen from "../screens/auth/SignInScreen";
 import SignUpScreen from "../screens/auth/SignUpScreen";
+import ForgotPasswordScreen from "../screens/auth/ForgotPasswordScreen";
+import ViewerScreen from "../screens/viewer/ViewerScreen"; // Import the new screen
+import ViewerTournamentDetailScreen from "../screens/viewer/ViewerTournamentDetailScreen"; // Import detail screen
 import TourInputScreen from "../screens/tournament/TourInputScreen";
-import AdminDashboard from "../screens/admin/AdminDashboard";
-
-import TeamOverviewScreen from "../screens/tournament/TeamOverviewScreen";
-import FavouriteTournamentsScreen from "../screens/tournament/FavouriteTournamentsScreen";
-import PastTournamentsScreen from "../screens/tournament/PastTournamentsScreen";
 import LiveTournamentScreen from "../screens/tournament/LiveTournamentScreen";
 import TournamentDashboard from "../screens/tournament/TournamentDashboard";
+import TeamOverviewScreen from "../screens/tournament/TeamOverviewScreen";
 import MatchScreen1 from "../screens/tournament/matches/MatchScreen1";
 import MatchScreen2 from "../screens/tournament/matches/MatchScreen2";
 import MatchScreen3 from "../screens/tournament/matches/MatchScreen3";
@@ -28,48 +26,36 @@ const Stack = createStackNavigator();
 
 // Auth Wrapper Component
 const AuthWrapper: React.FC = () => {
-  const [isSignIn, setIsSignIn] = React.useState(true);
+  const [authMode, setAuthMode] = React.useState<
+    "signin" | "signup" | "forgot"
+  >("signin");
 
-  return isSignIn ? (
-    <SignInScreen onSwitchToSignUp={() => setIsSignIn(false)} />
-  ) : (
-    <SignUpScreen onSwitchToSignIn={() => setIsSignIn(true)} />
-  );
-};
+  const renderAuthScreen = () => {
+    switch (authMode) {
+      case "signin":
+        return (
+          <SignInScreen
+            onSwitchToSignUp={() => setAuthMode("signup")}
+            onForgotPassword={() => setAuthMode("forgot")}
+          />
+        );
+      case "signup":
+        return <SignUpScreen onSwitchToSignIn={() => setAuthMode("signin")} />;
+      case "forgot":
+        return (
+          <ForgotPasswordScreen onBackToSignIn={() => setAuthMode("signin")} />
+        );
+      default:
+        return (
+          <SignInScreen
+            onSwitchToSignUp={() => setAuthMode("signup")}
+            onForgotPassword={() => setAuthMode("forgot")}
+          />
+        );
+    }
+  };
 
-// Auth Stack Navigator with consistent headers
-const AuthStack: React.FC = () => {
-  return (
-    <Stack.Navigator
-      screenOptions={{
-        headerShown: false,
-        headerStyle: {
-          backgroundColor: COLORS.background.primary,
-          borderBottomWidth: 1,
-          borderBottomColor: COLORS.gray[200],
-          height: 60, // Compact but visible header height
-        },
-        headerTintColor: COLORS.primary,
-        headerTitleStyle: {
-          fontWeight: "bold",
-          fontSize: 16, // Smaller font size
-        },
-        headerBackTitle: "Back",
-        headerTitleContainerStyle: {
-          paddingHorizontal: 20, // Reduced horizontal padding
-        },
-      }}
-    >
-      <Stack.Screen
-        name="AuthMain"
-        component={AuthWrapper}
-        options={{
-          headerShown: false,
-          title: "Authentication",
-        }}
-      />
-    </Stack.Navigator>
-  );
+  return renderAuthScreen();
 };
 
 // Logout Screen Component
@@ -83,162 +69,63 @@ const LogoutScreen: React.FC = () => {
   return null;
 };
 
-// Home Stack Navigator with consistent headers
-const HomeStack: React.FC = () => {
-  return (
-    <Stack.Navigator
-      screenOptions={{
-        headerShown: false,
-        headerStyle: {
-          backgroundColor: COLORS.background.primary,
-          borderBottomWidth: 1,
-          borderBottomColor: COLORS.gray[200],
-          height: 60, // Compact but visible header height
-        },
-        headerTintColor: COLORS.primary,
-        headerTitleStyle: {
-          fontWeight: "bold",
-          fontSize: 16, // Smaller font size
-        },
-        headerBackTitle: "Back",
-        headerTitleContainerStyle: {
-          paddingHorizontal: 20, // Reduced horizontal padding
-        },
-      }}
-    >
-      <Stack.Screen
-        name="HomeMain"
-        component={HomeScreen}
-        options={{
-          headerShown: false,
-          title: "Home",
-        }}
-      />
-      <Stack.Screen
-        name="Live Tournament"
-        component={FavouriteTournamentsScreen}
-        options={{
-          title: "Live Tournament",
-          headerShown: true,
-        }}
-      />
-      <Stack.Screen
-        name="Past Tournaments"
-        component={PastTournamentsScreen}
-        options={{
-          title: "Past Tournaments",
-          headerShown: true,
-        }}
-      />
-    </Stack.Navigator>
-  );
-};
-
-// Tour Input Stack Navigator
-const TourInputStack: React.FC = () => {
-  return (
-    <Stack.Navigator
-      screenOptions={{
-        headerShown: false,
-        headerStyle: {
-          backgroundColor: COLORS.background.primary,
-          borderBottomWidth: 1,
-          borderBottomColor: COLORS.gray[200],
-          height: 105, // Compact but visible header height
-        },
-        headerTintColor: COLORS.primary,
-        headerTitleStyle: {
-          fontWeight: "bold",
-          fontSize: 16, // Smaller font size
-        },
-        headerBackTitle: "Back",
-        headerTitleContainerStyle: {
-          paddingHorizontal: 20, // Reduced horizontal padding
-        },
-      }}
-    >
-      <Stack.Screen
-        name="TourSettingsMain"
-        component={TourInputScreen}
-        options={{
-          headerShown: true,
-          title: "Tournament Setup",
-        }}
-      />
-
-      <Stack.Screen
-        name="TeamOverview"
-        component={TeamOverviewScreen}
-        options={{
-          headerShown: true,
-          title: "Team Overview",
-        }}
-      />
-    </Stack.Navigator>
-  );
-};
-
-// Past Tournaments Stack Navigator
-const PastTournamentsStack: React.FC = () => {
-  return (
-    <Stack.Navigator
-      screenOptions={{
-        headerShown: true,
-        headerStyle: {
-          backgroundColor: COLORS.background.primary,
-          borderBottomWidth: 0.5,
-          borderBottomColor: COLORS.gray[200],
-          height: 105,
-        },
-        headerTintColor: COLORS.primary,
-        headerTitleStyle: {
-          fontWeight: "600",
-          fontSize: 16,
-        },
-        headerBackTitle: "Back",
-      }}
-    >
-      <Stack.Screen
-        name="PastTournamentsMain"
-        component={PastTournamentsScreen}
-        options={{
-          title: "Past Tournaments",
-          headerBackTitle: "Back",
-        }}
-      />
-    </Stack.Navigator>
-  );
-};
-
-// Main Tab Navigator
-const TabNavigator: React.FC = () => {
+// Main Tab Navigator - Simplified for tournament management
+const MainTabNavigator: React.FC = () => {
   const { user } = useAuth();
 
+  // Render viewer-specific tabs
+  if (user?.role === "viewer") {
+    return (
+      <Tab.Navigator
+        screenOptions={({ route }) => ({
+          tabBarIcon: ({ color, size }) => {
+            let iconName: "home" | "view-list" | "logout";
+            if (route.name === "Home") {
+              iconName = "home";
+            } else if (route.name === "Tournaments") {
+              iconName = "view-list";
+            } else {
+              iconName = "logout";
+            }
+            return (
+              <MaterialCommunityIcons
+                name={iconName}
+                size={size}
+                color={color}
+              />
+            );
+          },
+          tabBarActiveTintColor: COLORS.primary,
+          tabBarInactiveTintColor: COLORS.gray[500],
+          headerShown: true,
+        })}
+      >
+        <Tab.Screen name="Home" component={HomeScreen} />
+        <Tab.Screen name="Tournaments" component={ViewerScreen} />
+        <Tab.Screen name="Logout" component={LogoutScreen} />
+      </Tab.Navigator>
+    );
+  }
+
+  // Render manager-specific tabs (default)
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
         tabBarIcon: ({ focused, color, size }) => {
-          let iconName:
-            | "home"
-            | "login"
-            | "cog"
-            | "trophy"
-            | "logout"
-            | "help"
-            | "shield-crown";
+          let iconName: keyof typeof MaterialCommunityIcons.glyphMap;
 
           switch (route.name) {
             case "Home":
               iconName = "home";
               break;
-            case "Auth":
-              iconName = "login";
+            case "Live Match":
+              iconName = "play-circle";
               break;
-            case "Tour Input":
+            case "Tournament Setup":
               iconName = "cog";
               break;
-            case "Admin":
-              iconName = "shield-crown";
+            case "History":
+              iconName = "history";
               break;
             case "Logout":
               iconName = "logout";
@@ -253,18 +140,17 @@ const TabNavigator: React.FC = () => {
         },
         tabBarActiveTintColor: COLORS.primary,
         tabBarInactiveTintColor: COLORS.gray[500],
-        // Consistent headers across all screens
         headerShown: true,
         headerStyle: {
           backgroundColor: COLORS.background.primary,
           borderBottomWidth: 0.5,
           borderBottomColor: COLORS.gray[300],
-          height: 105, // Increased height for better visibility
+          height: 100,
         },
-        headerTintColor: COLORS.primary, // Consistent color
+        headerTintColor: COLORS.primary,
         headerTitleStyle: {
           fontWeight: "600",
-          fontSize: 16, // Consistent font size
+          fontSize: 16,
         },
       })}
     >
@@ -274,115 +160,66 @@ const TabNavigator: React.FC = () => {
           <Tab.Screen
             name="Home"
             component={HomeScreen}
-            options={{
-              title: "Home",
-            }}
+            options={{ title: "Home" }}
           />
           <Tab.Screen
-            name="Tour Input"
+            name="Live Match"
+            component={LiveTournamentScreen}
+            options={{ title: "Live Match" }}
+          />
+          <Tab.Screen
+            name="Tournament Setup"
             component={TourInputScreen}
-            options={({ navigation }) => ({
-              title: "Tour Setup",
-              headerShown: true,
-              headerLeft: () => (
-                <TouchableOpacity
-                  onPress={() => navigation.navigate("Home")}
-                  style={{
-                    flexDirection: "row",
-                    alignItems: "center",
-                    paddingHorizontal: 16,
-                  }}
-                >
-                  <MaterialCommunityIcons
-                    name="home"
-                    size={24}
-                    color={COLORS.primary}
-                  />
-                </TouchableOpacity>
-              ),
-            })}
+            options={{ title: "Tournament Setup" }}
           />
           <Tab.Screen
-            name="Admin"
-            component={AdminDashboard}
-            options={({ navigation }) => ({
-              title: "Admin Dashboard",
-              headerShown: true,
-              headerLeft: () => (
-                <TouchableOpacity
-                  onPress={() => navigation.navigate("Home")}
-                  style={{
-                    flexDirection: "row",
-                    alignItems: "center",
-                    paddingHorizontal: 16,
-                  }}
-                >
-                  <MaterialCommunityIcons
-                    name="home"
-                    size={24}
-                    color={COLORS.primary}
-                  />
-                </TouchableOpacity>
-              ),
-            })}
+            name="History"
+            component={TournamentDashboard}
+            options={{ title: "Tournament Dashboard" }}
           />
           <Tab.Screen
             name="Logout"
             component={LogoutScreen}
-            options={{
-              title: "Logout",
-            }}
+            options={{ title: "Logout" }}
           />
         </>
       ) : (
         // Non-authenticated user tabs
-        <>
-          <Tab.Screen
-            name="Auth"
-            component={AuthWrapper}
-            options={{
-              title: "Sign In",
-            }}
-          />
-        </>
+        <Tab.Screen
+          name="Auth"
+          component={AuthWrapper}
+          options={{ title: "Sign In" }}
+        />
       )}
     </Tab.Navigator>
   );
 };
 
-// Main App Navigator
-const AppNavigator: React.FC = () => {
+// Main App Navigator - Simplified structure
+const SimplifiedNavigator: React.FC = () => {
   const { user } = useAuth();
 
   return (
     <NavigationContainer>
       <Stack.Navigator screenOptions={{ headerShown: false }}>
-        <Stack.Screen name="MainTabs" component={TabNavigator} />
+        <Stack.Screen name="MainTabs" component={MainTabNavigator} />
+
+        {/* Additional screens that need stack navigation */}
         {user && (
           <>
+            {/* Viewer-specific stack screens */}
             <Stack.Screen
-              name="Past Tournaments"
-              component={PastTournamentsStack}
-            />
-            <Stack.Screen
-              name="Live Tournament"
-              component={LiveTournamentScreen}
+              name="ViewerTournamentDetail"
+              component={ViewerTournamentDetailScreen}
               options={{
-                title: "Live Tournament",
+                title: "Tournament Details",
                 headerShown: true,
-                headerStyle: {
-                  backgroundColor: COLORS.background.primary,
-                  borderBottomWidth: 0.5,
-                  borderBottomColor: COLORS.gray[300],
-                  height: 105,
-                },
+                headerStyle: { backgroundColor: COLORS.background.primary },
                 headerTintColor: COLORS.primary,
-                headerTitleStyle: {
-                  fontWeight: "600",
-                  fontSize: 16,
-                },
               }}
             />
+
+            {/* Manager-specific stack screens */}
             <Stack.Screen
               name="Tournament Dashboard"
               component={TournamentDashboard}
@@ -393,7 +230,26 @@ const AppNavigator: React.FC = () => {
                   backgroundColor: COLORS.background.primary,
                   borderBottomWidth: 0.5,
                   borderBottomColor: COLORS.gray[300],
-                  height: 105,
+                  height: 60,
+                },
+                headerTintColor: COLORS.primary,
+                headerTitleStyle: {
+                  fontWeight: "600",
+                  fontSize: 16,
+                },
+              }}
+            />
+            <Stack.Screen
+              name="Team Overview"
+              component={TeamOverviewScreen}
+              options={{
+                title: "Team Overview",
+                headerShown: true,
+                headerStyle: {
+                  backgroundColor: COLORS.background.primary,
+                  borderBottomWidth: 0.5,
+                  borderBottomColor: COLORS.gray[300],
+                  height: 60,
                 },
                 headerTintColor: COLORS.primary,
                 headerTitleStyle: {
@@ -406,76 +262,21 @@ const AppNavigator: React.FC = () => {
               name="Match 1"
               component={MatchScreen1}
               options={{
-                title: "Match 1",
-                headerShown: true,
-                headerStyle: {
-                  backgroundColor: COLORS.background.primary,
-                  borderBottomWidth: 0.5,
-                  borderBottomColor: COLORS.gray[300],
-                  height: 105,
-                },
-                headerTintColor: COLORS.primary,
-                headerTitleStyle: {
-                  fontWeight: "600",
-                  fontSize: 16,
-                },
+                headerShown: false,
               }}
             />
             <Stack.Screen
               name="Match 2"
               component={MatchScreen2}
               options={{
-                title: "Match 2",
-                headerShown: true,
-                headerStyle: {
-                  backgroundColor: COLORS.background.primary,
-                  borderBottomWidth: 0.5,
-                  borderBottomColor: COLORS.gray[300],
-                  height: 105,
-                },
-                headerTintColor: COLORS.primary,
-                headerTitleStyle: {
-                  fontWeight: "600",
-                  fontSize: 16,
-                },
+                headerShown: false,
               }}
             />
             <Stack.Screen
               name="Match 3"
               component={MatchScreen3}
               options={{
-                title: "Final Match",
-                headerShown: true,
-                headerStyle: {
-                  backgroundColor: COLORS.background.primary,
-                  borderBottomWidth: 0.5,
-                  borderBottomColor: COLORS.gray[300],
-                  height: 105,
-                },
-                headerTintColor: COLORS.primary,
-                headerTitleStyle: {
-                  fontWeight: "600",
-                  fontSize: 16,
-                },
-              }}
-            />
-            <Stack.Screen
-              name="TeamOverview"
-              component={TeamOverviewScreen}
-              options={{
-                title: "Team Overview",
-                headerShown: true,
-                headerStyle: {
-                  backgroundColor: COLORS.background.primary,
-                  borderBottomWidth: 0.5,
-                  borderBottomColor: COLORS.gray[300],
-                  height: 105,
-                },
-                headerTintColor: COLORS.primary,
-                headerTitleStyle: {
-                  fontWeight: "600",
-                  fontSize: 16,
-                },
+                headerShown: false,
               }}
             />
           </>
@@ -485,4 +286,4 @@ const AppNavigator: React.FC = () => {
   );
 };
 
-export default AppNavigator;
+export default SimplifiedNavigator;

@@ -1,13 +1,13 @@
 import React from "react";
 import { AuthProvider } from "./src/context/AuthContext";
 import { TournamentProvider } from "./src/context/TournamentContext";
-import SimplifiedNavigator from "./src/navigation/SimplifiedNavigator";
+import AppNavigator from "./src/navigation/AppNavigator";
 
 export default function App() {
   return (
     <AuthProvider>
       <TournamentProvider>
-        <SimplifiedNavigator />
+        <AppNavigator />
       </TournamentProvider>
     </AuthProvider>
   );
