@@ -29,30 +29,55 @@ const HomeScreen: React.FC = () => {
         )}
       </View>
 
-      {/* Tournament Status Card */}
-      {user && tournamentState.tournamentName && (
-        <View style={styles.statusCard}>
-          <View style={styles.statusHeader}>
-            <MaterialCommunityIcons
-              name="trophy"
-              size={24}
-              color={COLORS.primary}
-            />
-            <Text style={styles.statusTitle}>Current Tournament</Text>
-          </View>
+      {/* Content based on user role */}
+      {user && (
+        <>
+          {/* Tournament Status Card for Managers */}
+          {user.role === "tournamentManager" &&
+            tournamentState.tournamentName && (
+              <View style={styles.statusCard}>
+                <View style={styles.statusHeader}>
+                  <MaterialCommunityIcons
+                    name="trophy"
+                    size={24}
+                    color={COLORS.primary}
+                  />
+                  <Text style={styles.statusTitle}>Current Tournament</Text>
+                </View>
 
-          <Text style={styles.tournamentName}>
-            {tournamentState.tournamentName}
-          </Text>
+                <Text style={styles.tournamentName}>
+                  {tournamentState.tournamentName}
+                </Text>
 
-          <Text style={styles.tournamentDetails}>
-            Organizer: {tournamentState.organizer}
-          </Text>
+                <Text style={styles.tournamentDetails}>
+                  Organizer: {tournamentState.organizer}
+                </Text>
 
-          <Text style={styles.tournamentDetails}>
-            Teams: {tournamentState.confirmedTeams.length}
-          </Text>
-        </View>
+                <Text style={styles.tournamentDetails}>
+                  Teams: {tournamentState.confirmedTeams.length}
+                </Text>
+              </View>
+            )}
+
+          {/* Community Message for Viewers */}
+          {user.role === "viewer" && (
+            <View style={styles.communityCard}>
+              <View style={styles.communityHeader}>
+                <MaterialCommunityIcons
+                  name="account-group"
+                  size={24}
+                  color={COLORS.primary}
+                />
+                <Text style={styles.communityTitle}>Join Our Community</Text>
+              </View>
+
+              <Text style={styles.communityMessage}>
+                The app for the coolest Filipino's in Singapore, finding
+                camarderie and fun playing billiards! 🎱🫶🤝💪 🎱
+              </Text>
+            </View>
+          )}
+        </>
       )}
     </View>
   );
@@ -116,6 +141,31 @@ const styles = StyleSheet.create({
     fontSize: FONTS.size.base,
     color: COLORS.text.secondary,
     marginBottom: SPACING.xs,
+  },
+  communityCard: {
+    backgroundColor: COLORS.background.primary,
+    borderRadius: BORDER_RADIUS.lg,
+    padding: SPACING.lg,
+    marginBottom: SPACING.xl,
+    borderWidth: 1,
+    borderColor: COLORS.border.light,
+  },
+  communityHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: SPACING.md,
+  },
+  communityTitle: {
+    fontSize: FONTS.size.lg,
+    fontWeight: FONTS.weight.bold,
+    color: COLORS.text.primary,
+    marginLeft: SPACING.sm,
+  },
+  communityMessage: {
+    fontSize: FONTS.size.base,
+    color: COLORS.text.secondary,
+    lineHeight: FONTS.lineHeight.relaxed * FONTS.size.base,
+    textAlign: "center",
   },
 });
 
