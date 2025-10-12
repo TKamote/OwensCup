@@ -614,6 +614,7 @@ export const TournamentProvider: React.FC<TournamentProviderProps> = ({
           },
         },
         tournamentChampionTeamId: tournamentState.tournamentChampionTeamId,
+        tournamentFinalized: tournamentState.tournamentFinalized, // Add this line
         createdAt: tournamentState.createdAt,
         updatedAt: tournamentState.updatedAt,
       };
@@ -622,7 +623,11 @@ export const TournamentProvider: React.FC<TournamentProviderProps> = ({
       const cleanedTournamentData = removeUndefinedValues(tournamentData);
 
       // Use the new streaming API for smart saving
-      await saveTournamentToStreaming(user.uid, tournamentState, streamingMode);
+      await saveTournamentToStreaming(
+        user.uid,
+        cleanedTournamentData as TournamentState,
+        streamingMode
+      );
 
       setError(null);
     } catch (error) {
