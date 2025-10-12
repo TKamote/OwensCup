@@ -18,6 +18,7 @@ import {
   deleteDoc,
   query,
   where,
+  onSnapshot,
 } from "firebase/firestore";
 import {
   firebaseConfig,
@@ -290,8 +291,8 @@ export const saveTournamentToGlobal = async (
 
 export const getAllTournaments = async () => {
   try {
-    const tournamentsRef = collection(db, "tournaments");
-    const querySnapshot = await getDocs(tournamentsRef);
+    const streamingRef = collection(db, "streaming");
+    const querySnapshot = await getDocs(streamingRef);
 
     const tournaments = querySnapshot.docs.map((doc) => ({
       id: doc.id,
@@ -303,6 +304,29 @@ export const getAllTournaments = async () => {
     console.error("Firebase: Error fetching all tournaments:", error);
     throw error;
   }
+};
+
+// Real-time listener for tournaments
+export const subscribeToTournaments = (
+  callback: (tournaments: any[]) => void
+) => {
+  const streamingRef = collection(db, "streaming");
+
+  const unsubscribe = onSnapshot(
+    streamingRef,
+    (querySnapshot) => {
+      const tournaments = querySnapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+      callback(tournaments);
+    },
+    (error) => {
+      console.error("Firebase: Error listening to tournaments:", error);
+    }
+  );
+
+  return unsubscribe;
 };
 
 export const deleteTournament = async (tournamentId: string) => {

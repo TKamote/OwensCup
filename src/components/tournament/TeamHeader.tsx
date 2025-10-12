@@ -95,7 +95,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   score: {
-    fontSize: FONTS.size["3xl"],
+    fontSize: 24,
     fontWeight: FONTS.weight.bold,
     color: COLORS.primary,
     marginHorizontal: SPACING.md,

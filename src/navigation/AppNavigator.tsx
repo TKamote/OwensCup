@@ -11,8 +11,6 @@ import HomeScreen from "../screens/HomeScreen";
 import SignInScreen from "../screens/auth/SignInScreen";
 import SignUpScreen from "../screens/auth/SignUpScreen";
 import ForgotPasswordScreen from "../screens/auth/ForgotPasswordScreen";
-import ViewerScreen from "../screens/viewer/ViewerScreen"; // Import the new screen
-import ViewerTournamentDetailScreen from "../screens/viewer/ViewerTournamentDetailScreen"; // Import detail screen
 import TourInputScreen from "../screens/tournament/TourInputScreen";
 import LiveTournamentScreen from "../screens/tournament/LiveTournamentScreen";
 import TournamentDashboard from "../screens/tournament/TournamentDashboard";
@@ -20,6 +18,7 @@ import TeamOverviewScreen from "../screens/tournament/TeamOverviewScreen";
 import MatchScreen1 from "../screens/tournament/matches/MatchScreen1";
 import MatchScreen2 from "../screens/tournament/matches/MatchScreen2";
 import MatchScreen3 from "../screens/tournament/matches/MatchScreen3";
+import TourFeedScreen from "../screens/tournament/TourFeedScreen"; // Import the new feed screen
 
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
@@ -82,7 +81,7 @@ const MainTabNavigator: React.FC = () => {
             let iconName: "home" | "view-list" | "logout";
             if (route.name === "Home") {
               iconName = "home";
-            } else if (route.name === "Tournaments") {
+            } else if (route.name === "Tour Feed") {
               iconName = "view-list";
             } else {
               iconName = "logout";
@@ -101,7 +100,7 @@ const MainTabNavigator: React.FC = () => {
         })}
       >
         <Tab.Screen name="Home" component={HomeScreen} />
-        <Tab.Screen name="Tournaments" component={ViewerScreen} />
+        <Tab.Screen name="Tour Feed" component={TourFeedScreen} />
         <Tab.Screen name="Logout" component={LogoutScreen} />
       </Tab.Navigator>
     );
@@ -121,11 +120,11 @@ const MainTabNavigator: React.FC = () => {
             case "Live Match":
               iconName = "play-circle";
               break;
-            case "Tournament Setup":
+            case "Tour Setup":
               iconName = "cog";
               break;
-            case "History":
-              iconName = "history";
+            case "Tour Feed":
+              iconName = "view-list";
               break;
             case "Logout":
               iconName = "logout";
@@ -168,14 +167,14 @@ const MainTabNavigator: React.FC = () => {
             options={{ title: "Live Match" }}
           />
           <Tab.Screen
-            name="Tournament Setup"
+            name="Tour Setup"
             component={TourInputScreen}
-            options={{ title: "Tournament Setup" }}
+            options={{ title: "Tour Setup" }}
           />
           <Tab.Screen
-            name="History"
-            component={TournamentDashboard}
-            options={{ title: "Tournament Dashboard" }}
+            name="Tour Feed"
+            component={TourFeedScreen}
+            options={{ title: "Tour Feed" }}
           />
           <Tab.Screen
             name="Logout"
@@ -207,18 +206,6 @@ const SimplifiedNavigator: React.FC = () => {
         {/* Additional screens that need stack navigation */}
         {user && (
           <>
-            {/* Viewer-specific stack screens */}
-            <Stack.Screen
-              name="ViewerTournamentDetail"
-              component={ViewerTournamentDetailScreen}
-              options={{
-                title: "Tournament Details",
-                headerShown: true,
-                headerStyle: { backgroundColor: COLORS.background.primary },
-                headerTintColor: COLORS.primary,
-              }}
-            />
-
             {/* Manager-specific stack screens */}
             <Stack.Screen
               name="Tournament Dashboard"

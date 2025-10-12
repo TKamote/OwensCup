@@ -542,7 +542,7 @@ const styles = StyleSheet.create({
     lineHeight: 24,
   },
   headerTitle: {
-    fontSize: FONTS.size["4xl"],
+    fontSize: FONTS.size["2xl"],
     fontWeight: FONTS.weight.bold,
     color: COLORS.text.primary,
     textAlign: "center",

@@ -500,7 +500,7 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.background.primary,
   },
   header: {
-    flexDirection: "row",
+    flexDirection: "column",
     justifyContent: "space-between",
     alignItems: "center",
     paddingHorizontal: SPACING.md,
@@ -545,7 +545,7 @@ const styles = StyleSheet.create({
     lineHeight: 24,
   },
   headerTitle: {
-    fontSize: FONTS.size["3xl"],
+    fontSize: FONTS.size["2xl"],
     fontWeight: FONTS.weight.bold,
     color: COLORS.text.primary,
     textAlign: "center",

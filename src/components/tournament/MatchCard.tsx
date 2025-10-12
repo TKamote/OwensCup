@@ -24,7 +24,7 @@ interface MatchCardProps {
   isCompleted: boolean;
   onReset?: () => void;
   onAdjust?: () => void;
-  readOnly?: boolean;
+  isReadOnly?: boolean; // Changed from readOnly to isReadOnly
   matchIndex: number;
   playerDisplay?: string;
   matchType?: string;
@@ -40,7 +40,7 @@ const MatchCard: React.FC<MatchCardProps> = ({
   isCompleted,
   onReset,
   onAdjust,
-  readOnly = false,
+  isReadOnly = false, // Changed from readOnly to isReadOnly
   matchIndex,
   playerDisplay,
   matchType,
@@ -147,7 +147,7 @@ const MatchCard: React.FC<MatchCardProps> = ({
         <Text style={styles.title}>
           Match {match.number}: {matchType || match.type}
         </Text>
-        {!readOnly && (
+        {!isReadOnly && ( // Changed from readOnly to isReadOnly
           <View style={styles.actionButtons}>
             {onAdjust && (
               <TouchableOpacity
@@ -182,7 +182,7 @@ const MatchCard: React.FC<MatchCardProps> = ({
       </View>
 
       <View style={styles.scoreRow}>
-        {!readOnly ? (
+        {!isReadOnly ? ( // Changed from readOnly to isReadOnly
           <>
             {/* Left Team/Player */}
             <TouchableOpacity
@@ -258,10 +258,10 @@ const MatchCard: React.FC<MatchCardProps> = ({
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: COLORS.glass.primary,
+    backgroundColor: COLORS.white,
     borderRadius: BORDER_RADIUS.lg,
-    padding: SPACING.sm,
-    margin: SPACING.sm,
+    padding: SPACING.xs,
+    margin: SPACING.xs,
     ...GLASS_SHADOWS.heavy,
     borderWidth: 1.5,
     borderColor: COLORS.gray[400],
@@ -277,13 +277,14 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    marginBottom: SPACING.sm,
+    marginBottom: SPACING.xs,
   },
   title: {
-    fontSize: FONTS.size.lg,
+    fontSize: FONTS.size.base - 2,
     fontWeight: FONTS.weight.bold,
     color: COLORS.text.primary,
     flex: 1,
+    textAlign: "center",
   },
   subtitle: {
     fontSize: FONTS.size.xs,
@@ -303,19 +304,19 @@ const styles = StyleSheet.create({
   actionButton: {
     padding: SPACING.sm,
     borderRadius: BORDER_RADIUS.md,
-    backgroundColor: COLORS.glass.secondary,
+    backgroundColor: COLORS.background.primary,
     borderWidth: 1,
     borderColor: COLORS.glass.border,
     ...GLASS_SHADOWS.light,
   },
   scoreRow: {
     flexDirection: "row",
-    marginTop: SPACING.sm,
+    marginTop: SPACING.xs,
   },
   scoreBtn: {
     flex: 1,
-    backgroundColor: COLORS.glass.secondary,
-    padding: SPACING.md,
+    backgroundColor: COLORS.background.primary,
+    padding: SPACING.sm,
     borderRadius: BORDER_RADIUS.lg,
     marginHorizontal: SPACING.xs,
     alignItems: "center",
@@ -332,7 +333,7 @@ const styles = StyleSheet.create({
   },
   teamInfo: {
     alignItems: "center",
-    marginBottom: SPACING.sm,
+    marginBottom: SPACING.xs,
   },
   playerName: {
     fontSize: FONTS.size.xs,
@@ -343,7 +344,7 @@ const styles = StyleSheet.create({
     maxWidth: "100%",
   },
   score: {
-    fontSize: FONTS.size["3xl"],
+    fontSize: FONTS.size.xl,
     fontWeight: FONTS.weight.bold,
     color: COLORS.primary,
     textAlign: "center",
@@ -354,7 +355,7 @@ const styles = StyleSheet.create({
     fontWeight: FONTS.weight.bold,
     color: COLORS.success,
     textAlign: "center",
-    marginTop: SPACING.sm,
+    marginTop: SPACING.xs,
     backgroundColor: COLORS.success + "20",
     paddingHorizontal: SPACING.xs,
     paddingVertical: SPACING.xs / 2,
