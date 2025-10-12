@@ -215,7 +215,7 @@ const styles = StyleSheet.create({
     color: COLORS.text.primary,
     marginBottom: SPACING.md,
     borderWidth: 1,
-    borderColor: COLORS.border.primary,
+    borderColor: COLORS.border.medium,
   },
   button: {
     backgroundColor: COLORS.primary,
