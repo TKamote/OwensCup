@@ -73,20 +73,58 @@
 /* Mobile responsive */
 @media (max-width: 768px) {
   .navContainer {
-    padding: 0 15px;
-    height: 50px;
+    padding: 0 10px;
+    height: auto;
+    flex-direction: column;
+    gap: 10px;
+    padding-top: 10px;
+    padding-bottom: 10px;
+  }
+
+  .logo {
+    justify-content: center;
   }
 
   .logoText {
-    display: none;
+    font-size: 14px;
   }
 
   .navLinks {
-    gap: 10px;
+    gap: 5px;
+    flex-wrap: wrap;
+    justify-content: center;
   }
 
   .navLink {
-    padding: 6px 12px;
+    padding: 4px 8px;
+    font-size: 12px;
+  }
+
+  .navLabel {
+    font-size: 10px;
+  }
+
+  .navIcon {
+    font-size: 14px;
+  }
+}
+
+/* Very small screens */
+@media (max-width: 480px) {
+  .navContainer {
+    padding: 0 5px;
+  }
+
+  .logoText {
+    font-size: 12px;
+  }
+
+  .navLinks {
+    gap: 3px;
+  }
+
+  .navLink {
+    padding: 3px 6px;
   }
 
   .navLabel {
@@ -94,6 +132,6 @@
   }
 
   .navIcon {
-    font-size: 18px;
+    font-size: 16px;
   }
 }
