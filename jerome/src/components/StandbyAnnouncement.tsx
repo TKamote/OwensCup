@@ -77,30 +77,30 @@ export default function StandbyAnnouncement() {
   }, [selectedTime]);
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-8">
+    <div className="min-h-screen bg-gradient-to-br from-emerald-100 to-teal-100 flex items-center justify-center p-2 md:p-8">
       <div className="text-center max-w-8xl mx-auto">
         {/* Tournament Title */}
-        <div className="mb-12">
-          <h1 className="text-8xl font-bold text-gray-800 mb-4">
+        <div className="mb-6 md:mb-12">
+          <h1 className="text-3xl md:text-6xl font-bold text-gray-800 mb-2 md:mb-4">
             🏆 TOURNAMENT STREAM 🏆
           </h1>
-          <h2 className="text-5xl font-semibold text-gray-700 mb-2">
-            Dave&apos;s Tournament
+          <h2 className="text-2xl md:text-5xl font-semibold text-gray-700 mb-1 md:mb-2">
+            Jerome&apos;s Tournament
           </h2>
-          <p className="text-3xl text-gray-600">{tournamentDate}</p>
+          <p className="text-lg md:text-3xl text-gray-600">{tournamentDate}</p>
         </div>
 
         {/* Time Selector */}
         {showTimeSelector && (
-          <div className="mb-12 bg-white bg-opacity-90 p-8 rounded-2xl shadow-2xl border-4 border-green-300">
-            <h3 className="text-4xl font-bold text-gray-800 mb-6">
+          <div className="mb-6 md:mb-12 bg-white bg-opacity-90 p-4 md:p-8 rounded-2xl shadow-2xl border-4 border-emerald-300">
+            <h3 className="text-2xl md:text-4xl font-bold text-gray-800 mb-3 md:mb-6">
               ⏰ Select Tournament Start Time
             </h3>
-            <div className="flex justify-center items-center space-x-4 mb-6">
+            <div className="flex justify-center items-center space-x-2 md:space-x-4 mb-3 md:mb-6">
               <select
                 value={selectedTime}
                 onChange={(e) => setSelectedTime(e.target.value)}
-                className="text-3xl font-semibold p-4 rounded-xl border-2 border-gray-300 bg-white text-gray-800 focus:border-blue-500 focus:outline-none"
+                className="text-lg md:text-3xl font-semibold p-2 md:p-4 rounded-xl border-2 border-gray-300 bg-white text-gray-800 focus:border-emerald-500 focus:outline-none"
               >
                 {timeOptions.map((option) => (
                   <option key={option.value} value={option.value}>
@@ -111,7 +111,7 @@ export default function StandbyAnnouncement() {
             </div>
             <button
               onClick={() => setShowTimeSelector(false)}
-              className="bg-blue-500 hover:bg-blue-600 text-white text-2xl font-bold py-4 px-8 rounded-xl transition-colors duration-200"
+              className="bg-emerald-500 hover:bg-emerald-600 text-white text-lg md:text-2xl font-bold py-2 md:py-4 px-4 md:px-8 rounded-xl transition-colors duration-200"
             >
               Start Countdown
             </button>
@@ -120,55 +120,55 @@ export default function StandbyAnnouncement() {
 
         {/* Countdown Section */}
         {!showTimeSelector && (
-          <div className="mb-12">
+          <div className="mb-6 md:mb-12">
             {isLive ? (
-              <div className="bg-red-500 text-white p-8 rounded-2xl shadow-2xl">
-                <h3 className="text-6xl font-bold mb-4">🔴 LIVE NOW!</h3>
-                <p className="text-3xl">Tournament is currently in progress</p>
+              <div className="bg-red-500 text-white p-4 md:p-8 rounded-2xl shadow-2xl">
+                <h3 className="text-3xl md:text-6xl font-bold mb-2 md:mb-4">🔴 LIVE NOW!</h3>
+                <p className="text-lg md:text-3xl">Tournament is currently in progress</p>
               </div>
             ) : (
-              <div className="bg-white bg-opacity-90 p-8 rounded-2xl shadow-2xl border-4 border-blue-300">
-                <h3 className="text-4xl font-bold text-gray-800 mb-6">
+              <div className="bg-white bg-opacity-90 p-4 md:p-8 rounded-2xl shadow-2xl border-4 border-emerald-300">
+                <h3 className="text-2xl md:text-4xl font-bold text-gray-800 mb-3 md:mb-6">
                   📅 Live Stream Starts In:
                 </h3>
 
                 {/* Countdown Timer */}
-                <div className="flex justify-center items-center space-x-8 mb-6">
+                <div className="flex flex-col md:flex-row justify-center items-center space-y-4 md:space-y-0 md:space-x-4 lg:space-x-8 mb-3 md:mb-6">
                   <div className="text-center">
-                    <div className="text-8xl font-bold text-blue-600 bg-blue-100 rounded-xl p-4 min-w-[120px]">
+                    <div className="text-4xl md:text-6xl lg:text-8xl font-bold text-emerald-600 bg-emerald-100 rounded-xl p-2 md:p-4 min-w-[80px] md:min-w-[120px]">
                       {timeLeft.hours.toString().padStart(2, "0")}
                     </div>
-                    <div className="text-2xl font-semibold text-gray-700 mt-2">
+                    <div className="text-sm md:text-xl lg:text-2xl font-semibold text-gray-700 mt-1 md:mt-2">
                       Hours
                     </div>
                   </div>
 
-                  <div className="text-6xl font-bold text-gray-400">:</div>
+                  <div className="text-3xl md:text-4xl lg:text-6xl font-bold text-gray-400">:</div>
 
                   <div className="text-center">
-                    <div className="text-8xl font-bold text-green-600 bg-green-100 rounded-xl p-4 min-w-[120px]">
+                    <div className="text-4xl md:text-6xl lg:text-8xl font-bold text-emerald-600 bg-emerald-100 rounded-xl p-2 md:p-4 min-w-[80px] md:min-w-[120px]">
                       {timeLeft.minutes.toString().padStart(2, "0")}
                     </div>
-                    <div className="text-2xl font-semibold text-gray-700 mt-2">
+                    <div className="text-sm md:text-xl lg:text-2xl font-semibold text-gray-700 mt-1 md:mt-2">
                       Minutes
                     </div>
                   </div>
 
-                  <div className="text-6xl font-bold text-gray-400">:</div>
+                  <div className="text-3xl md:text-4xl lg:text-6xl font-bold text-gray-400">:</div>
 
                   <div className="text-center">
-                    <div className="text-8xl font-bold text-purple-600 bg-purple-100 rounded-xl p-4 min-w-[120px]">
+                    <div className="text-4xl md:text-6xl lg:text-8xl font-bold text-emerald-600 bg-emerald-100 rounded-xl p-2 md:p-4 min-w-[80px] md:min-w-[120px]">
                       {timeLeft.seconds.toString().padStart(2, "0")}
                     </div>
-                    <div className="text-2xl font-semibold text-gray-700 mt-2">
+                    <div className="text-sm md:text-xl lg:text-2xl font-semibold text-gray-700 mt-1 md:mt-2">
                       Seconds
                     </div>
                   </div>
                 </div>
 
                 {/* Scheduled Time */}
-                <div className="bg-gray-100 p-4 rounded-xl">
-                  <p className="text-2xl font-semibold text-gray-800">
+                <div className="bg-emerald-100 p-2 md:p-4 rounded-xl">
+                  <p className="text-lg md:text-2xl font-semibold text-gray-800">
                     🕐 Scheduled Time:{" "}
                     {new Date(`2000-01-01T${selectedTime}`).toLocaleTimeString(
                       "en-US",
@@ -183,10 +183,10 @@ export default function StandbyAnnouncement() {
                 </div>
 
                 {/* Reset Button */}
-                <div className="mt-6">
+                <div className="mt-3 md:mt-6">
                   <button
                     onClick={() => setShowTimeSelector(true)}
-                    className="bg-gray-500 hover:bg-gray-600 text-white text-xl font-semibold py-2 px-6 rounded-lg transition-colors duration-200"
+                    className="bg-emerald-500 hover:bg-emerald-600 text-white text-lg md:text-xl font-semibold py-2 px-4 md:px-6 rounded-lg transition-colors duration-200"
                   >
                     Change Time
                   </button>
@@ -197,11 +197,11 @@ export default function StandbyAnnouncement() {
         )}
 
         {/* Bottom Message */}
-        <div className="bg-white bg-opacity-80 p-6 rounded-xl shadow-lg">
-          <p className="text-3xl font-semibold text-gray-800 mb-2">
+        <div className="bg-white bg-opacity-80 p-3 md:p-6 rounded-xl shadow-lg">
+          <p className="text-lg md:text-3xl font-semibold text-gray-800 mb-1 md:mb-2">
             📺 Stay tuned for live action!
           </p>
-          <p className="text-xl text-gray-600">
+          <p className="text-sm md:text-xl text-gray-600">
             Get ready for an exciting tournament!!!
           </p>
         </div>
