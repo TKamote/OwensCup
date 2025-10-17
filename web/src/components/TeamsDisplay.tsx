@@ -62,7 +62,7 @@ const TeamsDisplay: React.FC<TeamsDisplayProps> = ({
 
   return (
     <div
-      className={`bg-transparent text-white p-8 h-[1200px] overflow-hidden ${className}`}
+      className={`bg-transparent text-white p-2 md:p-8 h-auto md:h-[1200px] overflow-hidden ${className}`}
     >
       {/* Home Navigation Button */}
       <div className="absolute top-4 left-4">
@@ -106,17 +106,17 @@ const TeamsDisplay: React.FC<TeamsDisplayProps> = ({
       {/* Tab Content */}
       <div className="h-full">
         {activeTab === "teams" ? (
-          <div className="max-w-6xl mx-auto h-[1000px] bg-transparent">
+          <div className="max-w-6xl mx-auto h-auto md:h-[1000px] bg-transparent">
             {/* Teams Content */}
-            <div className="bg-gradient-to-br from-yellow-700/60 via-amber-600/50 to-yellow-600/55 backdrop-blur-xl rounded-2xl p-6 border border-yellow-500/70 shadow-2xl h-full mt-15">
-              <div className="text-center mb-6">
-                <h2 className="text-5xl font-bold mb-2 text-yellow-400">
+            <div className="bg-gradient-to-br from-yellow-700/60 via-amber-600/50 to-yellow-600/55 backdrop-blur-xl rounded-2xl p-3 md:p-6 border border-yellow-500/70 shadow-2xl h-full mt-4 md:mt-15">
+              <div className="text-center mb-3 md:mb-6">
+                <h2 className="text-2xl md:text-5xl font-bold mb-1 md:mb-2 text-yellow-400">
                   Teams
                 </h2>
-                <div className="w-20 h-1 mx-auto bg-cyan-400"></div>
+                <div className="w-10 md:w-20 h-1 mx-auto bg-cyan-400"></div>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-2 md:gap-4">
                 {(tournamentData.teams?.length > 0
                   ? tournamentData.teams
                   : [
@@ -130,14 +130,14 @@ const TeamsDisplay: React.FC<TeamsDisplayProps> = ({
                   .map((team) => (
                     <div
                       key={team.id}
-                      className="bg-gradient-to-br from-yellow-600/25 to-amber-500/20 backdrop-blur-lg rounded-xl p-4 border border-yellow-500/50 shadow-xl hover:shadow-2xl transition-all duration-300"
+                      className="bg-gradient-to-br from-yellow-600/25 to-amber-500/20 backdrop-blur-lg rounded-xl p-2 md:p-4 border border-yellow-500/50 shadow-xl hover:shadow-2xl transition-all duration-300"
                     >
-                      <div className="text-center mb-3">
-                        <h3 className="text-3xl font-bold mb-2 text-yellow-300">
+                      <div className="text-center mb-2 md:mb-3">
+                        <h3 className="text-lg md:text-3xl font-bold mb-1 md:mb-2 text-yellow-300">
                           {team.name}
                         </h3>
-                        <div className="w-16 h-1 mx-auto mb-3 bg-cyan-300"></div>
-                        <div className="text-gray-300 text-xl mb-3">
+                        <div className="w-8 md:w-16 h-1 mx-auto mb-2 md:mb-3 bg-cyan-300"></div>
+                        <div className="text-gray-300 text-sm md:text-xl mb-2 md:mb-3">
                           {team.players?.length || 0} Players
                         </div>
                       </div>
@@ -148,14 +148,14 @@ const TeamsDisplay: React.FC<TeamsDisplayProps> = ({
                           team.players.map((player) => (
                             <div
                               key={player.id}
-                              className="text-2xl p-2 m-2 rounded-lg bg-black/50 border border-yellow-400/10 text-white shadow-md hover:shadow-lg transition-all duration-200"
+                              className="text-sm md:text-2xl p-1 md:p-2 m-1 md:m-2 rounded-lg bg-black/50 border border-yellow-400/10 text-white shadow-md hover:shadow-lg transition-all duration-200"
                             >
                               <div className="flex items-center justify-between">
                                 <span className="font-medium">
                                   {player.name}
                                 </span>
                                 {player.captain && (
-                                  <span className="text-base bg-yellow-400 text-black px-2 py-1 rounded font-bold">
+                                  <span className="text-xs md:text-base bg-yellow-400 text-black px-1 md:px-2 py-0.5 md:py-1 rounded font-bold">
                                     C
                                   </span>
                                 )}
@@ -163,7 +163,7 @@ const TeamsDisplay: React.FC<TeamsDisplayProps> = ({
                             </div>
                           ))
                         ) : (
-                          <div className="text-gray-500 text-xl italic">
+                          <div className="text-gray-500 text-sm md:text-xl italic">
                             No players available
                           </div>
                         )}
@@ -174,15 +174,15 @@ const TeamsDisplay: React.FC<TeamsDisplayProps> = ({
             </div>
           </div>
         ) : (
-          <div className="max-w-6xl mx-auto h-full bg-transparent bg-opacity-50 mt-15">
+          <div className="max-w-6xl mx-auto h-full bg-transparent bg-opacity-50 mt-4 md:mt-15">
             {/* Players Content */}
-            <div className="bg-gradient-to-br from-yellow-700/60 via-amber-600/50 to-yellow-600/55 backdrop-blur-xl rounded-2xl p-6 border border-yellow-500/70 shadow-2xl h-[1000px]">
-              <div className="text-center mb-6">
-                <h2 className="text-5xl font-bold mb-2 text-yellow-400">
+            <div className="bg-gradient-to-br from-yellow-700/60 via-amber-600/50 to-yellow-600/55 backdrop-blur-xl rounded-2xl p-3 md:p-6 border border-yellow-500/70 shadow-2xl h-auto md:h-[1000px]">
+              <div className="text-center mb-3 md:mb-6">
+                <h2 className="text-2xl md:text-5xl font-bold mb-1 md:mb-2 text-yellow-400">
                   Players
                 </h2>
-                <div className="w-20 h-1 mx-auto bg-cyan-400"></div>
-                <p className="text-xl text-gray-400 mt-2">
+                <div className="w-10 md:w-20 h-1 mx-auto bg-cyan-400"></div>
+                <p className="text-sm md:text-xl text-gray-400 mt-1 md:mt-2">
                   All Players (for Ranking)
                 </p>
               </div>
@@ -271,21 +271,21 @@ const TeamsDisplay: React.FC<TeamsDisplayProps> = ({
                     return (
                       <>
                         {/* Column Headers */}
-                        <div className="grid grid-cols-2 gap-2 text-3xl font-bold text-gray-300 mb-2 pb-2 border-b border-gray-600">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-base md:text-3xl font-bold text-gray-300 mb-2 pb-2 border-b border-gray-600">
                           <div className="grid grid-cols-4 gap-1">
                             <div className="text-center">Rank</div>
                             <div>Name</div>
                             <div>Team</div>
                             <div className="text-right">Points</div>
                           </div>
-                          <div className="grid grid-cols-4 gap-1">
+                          <div className="hidden md:grid grid-cols-4 gap-1">
                             <div className="text-center">Rank</div>
                             <div>Name</div>
                             <div>Team</div>
                             <div className="text-right">Points</div>
                           </div>
                         </div>
-                        <div className="grid grid-cols-2 gap-2">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
                           {/* Left Column */}
                           <div className="space-y-1">
                             {leftColumnPlayers.map((player) => (
@@ -293,38 +293,38 @@ const TeamsDisplay: React.FC<TeamsDisplayProps> = ({
                                 key={player.id}
                                 className="grid grid-cols-4 gap-1 items-center p-2 rounded-lg bg-gradient-to-r from-yellow-400/15 to-amber-400/10 backdrop-blur-sm border border-yellow-400/40 shadow-md hover:shadow-lg transition-all duration-200"
                               >
-                                <div className="text-center text-2xl font-bold text-yellow-400">
+                                <div className="text-center text-base md:text-2xl font-bold text-yellow-400">
                                   {uniquePlayers.indexOf(player) + 1}
                                 </div>
-                                <div className="text-3xl font-medium text-white truncate">
+                                <div className="text-base md:text-3xl font-medium text-white truncate">
                                   {player.name}
                                 </div>
-                                <div className="text-2xl text-gray-400 truncate">
+                                <div className="text-base md:text-2xl text-gray-400 truncate">
                                   {player.teamName}
                                 </div>
-                                <div className="text-right text-3xl font-bold text-yellow-400">
+                                <div className="text-right text-base md:text-3xl font-bold text-yellow-400">
                                   {player.points}
                                 </div>
                               </div>
                             ))}
                           </div>
                           {/* Right Column */}
-                          <div className="space-y-1">
+                          <div className="space-y-1 hidden md:block">
                             {rightColumnPlayers.map((player) => (
                               <div
                                 key={player.id}
                                 className="grid grid-cols-4 gap-1 items-center p-2 rounded-lg bg-gradient-to-r from-yellow-400/15 to-amber-400/10 backdrop-blur-sm border border-yellow-400/40 shadow-md hover:shadow-lg transition-all duration-200"
                               >
-                                <div className="text-center text-2xl font-bold text-yellow-400">
+                                <div className="text-center text-base md:text-2xl font-bold text-yellow-400">
                                   {uniquePlayers.indexOf(player) + 1}
                                 </div>
-                                <div className="text-3xl font-medium text-white truncate">
+                                <div className="text-base md:text-3xl font-medium text-white truncate">
                                   {player.name}
                                 </div>
-                                <div className="text-2xl text-gray-400 truncate">
+                                <div className="text-base md:text-2xl text-gray-400 truncate">
                                   {player.teamName}
                                 </div>
-                                <div className="text-right text-3xl font-bold text-yellow-400">
+                                <div className="text-right text-base md:text-3xl font-bold text-yellow-400">
                                   {player.points}
                                 </div>
                               </div>
