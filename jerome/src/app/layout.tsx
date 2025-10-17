@@ -16,6 +16,7 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "Jerome's Tournament Stream",
   description: "Real-time tournament streaming for Jerome's tournaments",
+  viewport: "width=device-width, initial-scale=1",
   icons: {
     icon: "/favicon.png",
     shortcut: "/favicon.png",
