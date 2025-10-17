@@ -110,7 +110,7 @@ const StreamOverlay: React.FC<StreamOverlayProps> = ({ className = "" }) => {
       className={`fixed top-26 left-0 w-120 h-auto bg-gradient-to-b from-gray-900 via-black to-gray-900 overflow-hidden border-4 border-yellow-500 ${className} p-2 md:p-4`}
     >
       {/* LIVE Indicator with Animation */}
-      <div className="absolute top-2 md:top-3 left-1/2 transform -translate-x-1/2 bg-red-600 text-white text-lg md:text-3xl font-bold px-2 md:px-3 py-1 rounded-full animate-pulse shadow-lg">
+      <div className="absolute top-1 md:top-3 left-1/2 transform -translate-x-1/2 bg-red-600 text-white text-sm md:text-3xl font-bold px-1 md:px-3 py-0.5 md:py-1 rounded-full animate-pulse shadow-lg">
         🔴 LIVE
       </div>
 
@@ -118,33 +118,33 @@ const StreamOverlay: React.FC<StreamOverlayProps> = ({ className = "" }) => {
         {/* Semifinal 1 Section */}
         {semifinal1 && !hiddenSections.includes("semifinal1") && (
           <div className="bg-gradient-to-br from-gray-800 to-gray-900 rounded-lg p-2 md:p-3 border border-gray-700 shadow-lg mt-0.5 mb-0.5">
-            <div className="flex items-center justify-between mb-2 md:mb-3">
-              <h2 className="text-white text-2xl md:text-3xl font-bold bg-blue-600 px-2 md:px-3 py-1 md:py-2 rounded-lg">
+            <div className="flex items-center justify-between mb-1 md:mb-3">
+              <h2 className="text-white text-lg md:text-3xl font-bold bg-blue-600 px-1 md:px-3 py-0.5 md:py-2 rounded-lg">
                 🥉 SF1
               </h2>
               <button
                 onClick={() =>
                   setHiddenSections((prev) => [...prev, "semifinal1"])
                 }
-                className="bg-red-600 hover:bg-red-700 text-white px-2 py-2 font-bold text-lg md:text-xl transition-colors"
+                className="bg-red-600 hover:bg-red-700 text-white px-1 py-1 font-bold text-sm md:text-xl transition-colors"
               >
                 ✕
               </button>
             </div>
 
             {/* Overall Score with Enhanced Styling */}
-            <div className="bg-gray-700 rounded-lg p-2 md:p-2.5 mb-2 md:mb-3 border border-yellow-500">
+            <div className="bg-gray-700 rounded-lg p-1 md:p-2.5 mb-1 md:mb-3 border border-yellow-500">
               <div className="flex items-center justify-between">
-                <div className="text-white text-2xl md:text-3xl font-bold text-center flex-1">
+                <div className="text-white text-sm md:text-3xl font-bold text-center flex-1">
                   {semifinal1.matches?.[0]?.team1?.name ||
                     getTeamNameById(semifinal1.matches?.[0]?.team1?.id || "") ||
                     "Team 1"}
                 </div>
-                <div className="text-yellow-300 text-2xl md:text-3xl font-bold mx-1 bg-black px-2 md:px-3.5 py-0.5 rounded-lg border border-yellow-400">
+                <div className="text-yellow-300 text-sm md:text-3xl font-bold mx-1 bg-black px-1 md:px-3.5 py-0.5 rounded-lg border border-yellow-400">
                   {getOverallScore(semifinal1)[0]} -{" "}
                   {getOverallScore(semifinal1)[1]}
                 </div>
-                <div className="text-white text-2xl md:text-3xl font-bold text-center flex-1">
+                <div className="text-white text-sm md:text-3xl font-bold text-center flex-1">
                   {semifinal1.matches?.[0]?.team2?.name ||
                     getTeamNameById(semifinal1.matches?.[0]?.team2?.id || "") ||
                     "Team 2"}
@@ -153,7 +153,7 @@ const StreamOverlay: React.FC<StreamOverlayProps> = ({ className = "" }) => {
             </div>
 
             {/* Individual Matches */}
-            <div className="space-y-2 md:space-y-3">
+            <div className="space-y-1 md:space-y-3">
               {getLastTwoActiveMatches(semifinal1).map((match, index) => {
                 const matchIndex = semifinal1.matches?.indexOf(match) || 0;
                 const isLive =
@@ -162,26 +162,26 @@ const StreamOverlay: React.FC<StreamOverlayProps> = ({ className = "" }) => {
                 return (
                   <div
                     key={match.matchId || `sf1-match-${index}`}
-                    className={`bg-gradient-to-r from-gray-700 to-gray-800 rounded-lg p-1 md:p-0.5 border-l-2 ${
+                    className={`bg-gradient-to-r from-gray-700 to-gray-800 rounded-lg p-0.5 md:p-0.5 border-l-2 ${
                       isLive ? "border-red-500" : "border-gray-600"
                     } shadow-lg`}
                   >
-                    <div className="flex items-center justify-center mb-2 md:mb-3">
-                      <div className="text-white text-2xl md:text-3xl font-bold text-center">
+                    <div className="flex items-center justify-center mb-1 md:mb-3">
+                      <div className="text-white text-sm md:text-3xl font-bold text-center">
                         M{matchIndex + 1}: {getMatchType(matchIndex)}
                       </div>
                     </div>
                     <div className="flex items-center justify-between">
-                      <div className="text-white text-2xl md:text-3xl font-semibold text-center flex-1">
+                      <div className="text-white text-sm md:text-3xl font-semibold text-center flex-1">
                         {match.team1?.name ||
                           getTeamNameById(match.team1?.id || "") ||
                           "Team 1"}
                       </div>
-                      <div className="text-yellow-300 text-2xl md:text-3xl font-bold bg-gray-900 px-2 md:px-3.5 py-0.5 rounded-lg border border-yellow-400">
+                      <div className="text-yellow-300 text-sm md:text-3xl font-bold bg-gray-900 px-1 md:px-3.5 py-0.5 rounded-lg border border-yellow-400">
                         {match.team1?.score || match.team1?.score || 0} -{" "}
                         {match.team2?.score || match.team2?.score || 0}
                       </div>
-                      <div className="text-white text-2xl md:text-3xl font-semibold text-center flex-1">
+                      <div className="text-white text-sm md:text-3xl font-semibold text-center flex-1">
                         {match.team2?.name ||
                           getTeamNameById(match.team2?.id || "") ||
                           "Team 2"}
@@ -197,33 +197,33 @@ const StreamOverlay: React.FC<StreamOverlayProps> = ({ className = "" }) => {
         {/* Semifinal 2 Section */}
         {semifinal2 && !hiddenSections.includes("semifinal2") && (
           <div className="bg-gradient-to-br from-gray-800 to-gray-900 rounded-lg p-2 md:p-3 border border-gray-700 shadow-lg mt-0.5 mb-0.5">
-            <div className="flex items-center justify-between mb-2 md:mb-3">
-              <h2 className="text-white text-2xl md:text-3xl font-bold bg-blue-600 px-2 md:px-3 py-1 md:py-2 rounded-lg">
+            <div className="flex items-center justify-between mb-1 md:mb-3">
+              <h2 className="text-white text-lg md:text-3xl font-bold bg-blue-600 px-1 md:px-3 py-0.5 md:py-2 rounded-lg">
                 🥉 SF2
               </h2>
               <button
                 onClick={() =>
                   setHiddenSections((prev) => [...prev, "semifinal2"])
                 }
-                className="bg-red-600 hover:bg-red-700 text-white px-2 py-2 rounded font-bold text-lg md:text-xl"
+                className="bg-red-600 hover:bg-red-700 text-white px-1 py-1 rounded font-bold text-sm md:text-xl"
               >
                 ✕
               </button>
             </div>
 
             {/* Overall Score with Enhanced Styling */}
-            <div className="bg-gray-700 rounded-lg p-2 md:p-2.5 mb-2 md:mb-3 border border-yellow-500">
+            <div className="bg-gray-700 rounded-lg p-1 md:p-2.5 mb-1 md:mb-3 border border-yellow-500">
               <div className="flex items-center justify-between">
-                <div className="text-white text-2xl md:text-3xl font-bold text-center flex-1">
+                <div className="text-white text-sm md:text-3xl font-bold text-center flex-1">
                   {semifinal2.matches?.[0]?.team1?.name ||
                     getTeamNameById(semifinal2.matches?.[0]?.team1?.id || "") ||
                     "Team 1"}
                 </div>
-                <div className="text-yellow-300 text-2xl md:text-3xl font-bold mx-1 bg-black px-2 md:px-3.5 py-0.5 rounded-lg border border-yellow-400">
+                <div className="text-yellow-300 text-sm md:text-3xl font-bold mx-1 bg-black px-1 md:px-3.5 py-0.5 rounded-lg border border-yellow-400">
                   {getOverallScore(semifinal2)[0]} -{" "}
                   {getOverallScore(semifinal2)[1]}
                 </div>
-                <div className="text-white text-2xl md:text-3xl font-bold text-center flex-1">
+                <div className="text-white text-sm md:text-3xl font-bold text-center flex-1">
                   {semifinal2.matches?.[0]?.team2?.name ||
                     getTeamNameById(semifinal2.matches?.[0]?.team2?.id || "") ||
                     "Team 2"}
@@ -232,7 +232,7 @@ const StreamOverlay: React.FC<StreamOverlayProps> = ({ className = "" }) => {
             </div>
 
             {/* Individual Matches */}
-            <div className="space-y-2 md:space-y-3">
+            <div className="space-y-1 md:space-y-3">
               {getLastTwoActiveMatches(semifinal2).map((match, index) => {
                 const matchIndex = semifinal2.matches?.indexOf(match) || 0;
                 const isLive =
@@ -241,26 +241,26 @@ const StreamOverlay: React.FC<StreamOverlayProps> = ({ className = "" }) => {
                 return (
                   <div
                     key={match.matchId || `sf2-match-${index}`}
-                    className={`bg-gradient-to-r from-gray-700 to-gray-800 rounded-lg p-1 md:p-0.5 border-l-2 ${
+                    className={`bg-gradient-to-r from-gray-700 to-gray-800 rounded-lg p-0.5 md:p-0.5 border-l-2 ${
                       isLive ? "border-red-500" : "border-gray-600"
                     } shadow-lg`}
                   >
-                    <div className="flex items-center justify-center mb-2 md:mb-3">
-                      <div className="text-white text-2xl md:text-3xl font-bold text-center">
+                    <div className="flex items-center justify-center mb-1 md:mb-3">
+                      <div className="text-white text-sm md:text-3xl font-bold text-center">
                         M{matchIndex + 1}: {getMatchType(matchIndex)}
                       </div>
                     </div>
                     <div className="flex items-center justify-between">
-                      <div className="text-white text-2xl md:text-3xl font-semibold text-center flex-1">
+                      <div className="text-white text-sm md:text-3xl font-semibold text-center flex-1">
                         {match.team1?.name ||
                           getTeamNameById(match.team1?.id || "") ||
                           "Team 1"}
                       </div>
-                      <div className="text-yellow-300 text-2xl md:text-3xl font-bold mx-1">
+                      <div className="text-yellow-300 text-sm md:text-3xl font-bold mx-1">
                         {match.team1?.score || match.team1?.score || 0} -{" "}
                         {match.team2?.score || match.team2?.score || 0}
                       </div>
-                      <div className="text-white text-2xl md:text-3xl font-semibold text-center flex-1">
+                      <div className="text-white text-sm md:text-3xl font-semibold text-center flex-1">
                         {match.team2?.name ||
                           getTeamNameById(match.team2?.id || "") ||
                           "Team 2"}
@@ -275,25 +275,25 @@ const StreamOverlay: React.FC<StreamOverlayProps> = ({ className = "" }) => {
 
         {/* Final Section - Only show if semifinals are completed */}
         {final && semifinal1?.isCompleted && semifinal2?.isCompleted && (
-          <div className="bg-gradient-to-br from-yellow-900 via-yellow-800 to-yellow-900 rounded-lg p-2 md:p-3 border-2 border-yellow-500 shadow-2xl">
-            <div className="flex items-center justify-center mb-2 md:mb-3">
-              <h2 className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-yellow-400 to-yellow-600 text-black px-2 md:px-3 py-1 md:py-3 rounded-lg shadow-lg">
+          <div className="bg-gradient-to-br from-yellow-900 via-yellow-800 to-yellow-900 rounded-lg p-1 md:p-3 border-2 border-yellow-500 shadow-2xl">
+            <div className="flex items-center justify-center mb-1 md:mb-3">
+              <h2 className="text-lg md:text-3xl font-bold bg-gradient-to-r from-yellow-400 to-yellow-600 text-black px-1 md:px-3 py-0.5 md:py-3 rounded-lg shadow-lg">
                 🏆 FINAL
               </h2>
             </div>
 
             {/* Overall Score with Championship Styling */}
-            <div className="bg-black rounded-lg p-2 md:p-3 mb-2 md:mb-3 border-2 border-yellow-400 shadow-xl">
+            <div className="bg-black rounded-lg p-1 md:p-3 mb-1 md:mb-3 border-2 border-yellow-400 shadow-xl">
               <div className="flex items-center justify-between">
-                <div className="text-white text-2xl md:text-3xl font-bold text-center flex-1">
+                <div className="text-white text-sm md:text-3xl font-bold text-center flex-1">
                   {final.matches?.[0]?.team1?.name ||
                     getTeamNameById(final.matches?.[0]?.team1?.id || "") ||
                     "TBD"}
                 </div>
-                <div className="text-2xl md:text-3xl font-bold mx-2 bg-gradient-to-r from-yellow-400 to-yellow-600 text-black px-2 md:px-3 py-0.5 rounded-lg border-2 border-yellow-300 shadow-lg">
+                <div className="text-sm md:text-3xl font-bold mx-2 bg-gradient-to-r from-yellow-400 to-yellow-600 text-black px-1 md:px-3 py-0.5 rounded-lg border-2 border-yellow-300 shadow-lg">
                   {getOverallScore(final)[0]} - {getOverallScore(final)[1]}
                 </div>
-                <div className="text-white text-2xl md:text-3xl font-bold text-center flex-1">
+                <div className="text-white text-sm md:text-3xl font-bold text-center flex-1">
                   {final.matches?.[0]?.team2?.name ||
                     getTeamNameById(final.matches?.[0]?.team2?.id || "") ||
                     "TBD"}
@@ -302,28 +302,28 @@ const StreamOverlay: React.FC<StreamOverlayProps> = ({ className = "" }) => {
             </div>
 
             {/* Individual Matches */}
-            <div className="space-y-2 md:space-y-3">
+            <div className="space-y-1 md:space-y-3">
               {getLastTwoActiveMatches(final).map((match, index) => {
                 const matchIndex = final.matches?.indexOf(match) || 0;
                 return (
                   <div
                     key={match.matchId || `final-match-${index}`}
-                    className="bg-gray-700 rounded-lg p-1 md:p-2"
+                    className="bg-gray-700 rounded-lg p-0.5 md:p-2"
                   >
-                    <div className="text-white text-2xl md:text-3xl font-bold mb-2 md:mb-3 text-center">
+                    <div className="text-white text-sm md:text-3xl font-bold mb-1 md:mb-3 text-center">
                       M{matchIndex + 1}: {getMatchType(matchIndex)}
                     </div>
                     <div className="flex items-center justify-between">
-                      <div className="text-white text-2xl md:text-3xl">
+                      <div className="text-white text-sm md:text-3xl">
                         {match.team1?.name ||
                           getTeamNameById(match.team1?.id || "") ||
                           "TBD"}
                       </div>
-                      <div className="text-yellow-300 text-2xl md:text-3xl font-bold">
+                      <div className="text-yellow-300 text-sm md:text-3xl font-bold">
                         {match.team1?.score || match.team1?.score || 0} -{" "}
                         {match.team2?.score || match.team2?.score || 0}
                       </div>
-                      <div className="text-white text-2xl md:text-3xl">
+                      <div className="text-white text-sm md:text-3xl">
                         {match.team2?.name ||
                           getTeamNameById(match.team2?.id || "") ||
                           "TBD"}
@@ -338,22 +338,28 @@ const StreamOverlay: React.FC<StreamOverlayProps> = ({ className = "" }) => {
 
         {/* Final Section - Show placeholder when semifinals are not completed */}
         {final && (!semifinal1?.isCompleted || !semifinal2?.isCompleted) && (
-          <div className="bg-gradient-to-br from-gray-800 to-gray-900 rounded-lg p-2 md:p-3 border border-gray-700 shadow-lg">
-            <div className="flex items-center justify-between mb-2 md:mb-3">
-              <h2 className="text-white text-2xl md:text-3xl font-bold">Final</h2>
+          <div className="bg-gradient-to-br from-gray-800 to-gray-900 rounded-lg p-1 md:p-3 border border-gray-700 shadow-lg">
+            <div className="flex items-center justify-between mb-1 md:mb-3">
+              <h2 className="text-white text-lg md:text-3xl font-bold">
+                Final
+              </h2>
             </div>
 
             {/* Overall Score - Placeholder */}
-            <div className="flex items-center justify-center mb-2 md:mb-3">
-              <div className="text-white text-2xl md:text-3xl font-bold">TBD</div>
-              <div className="text-yellow-300 text-2xl md:text-3xl font-bold mx-2">
+            <div className="flex items-center justify-center mb-1 md:mb-3">
+              <div className="text-white text-sm md:text-3xl font-bold">
+                TBD
+              </div>
+              <div className="text-yellow-300 text-sm md:text-3xl font-bold mx-2">
                 0 - 0
               </div>
-              <div className="text-white text-2xl md:text-3xl font-bold">TBD</div>
+              <div className="text-white text-sm md:text-3xl font-bold">
+                TBD
+              </div>
             </div>
 
             {/* Placeholder message */}
-            <div className="text-center text-gray-400 text-2xl md:text-3xl">
+            <div className="text-center text-gray-400 text-sm md:text-3xl">
               Waiting for semifinals to complete...
             </div>
           </div>
