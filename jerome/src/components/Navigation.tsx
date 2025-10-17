@@ -3,6 +3,7 @@
 import React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import Image from "next/image";
 
 const Navigation: React.FC = () => {
   const pathname = usePathname();
@@ -20,13 +21,15 @@ const Navigation: React.FC = () => {
       <div className="max-w-7xl mx-auto px-4">
         <div className="flex justify-between items-center h-16">
           <div className="flex items-center">
-            <img
+            <Image
               src="/favicon.png"
               alt="Tournament Icon"
+              width={32}
+              height={32}
               className="w-8 h-8 mr-2"
             />
             <span className="text-xl font-bold text-gray-800">
-              Dave&apos;s Tournament Stream
+              Jerome&apos;s Tournament Stream
             </span>
           </div>
 
