@@ -69,7 +69,9 @@ const TeamsDisplay: React.FC<TeamsDisplayProps> = ({
             {/* Teams Content */}
             <div className="bg-gradient-to-br from-emerald-200/60 via-teal-200/50 to-emerald-200/55 backdrop-blur-xl rounded-2xl p-3 md:p-6 border border-emerald-400/70 shadow-2xl h-full mt-4 md:mt-15">
               <div className="text-center mb-3 md:mb-6">
-                <h2 className="text-2xl md:text-5xl font-bold mb-1 md:mb-2 text-white">Teams</h2>
+                <h2 className="text-2xl md:text-5xl font-bold mb-1 md:mb-2 text-gray-900">
+                  Teams
+                </h2>
                 <div className="w-10 md:w-20 h-1 mx-auto bg-emerald-600"></div>
               </div>
 
@@ -135,9 +137,11 @@ const TeamsDisplay: React.FC<TeamsDisplayProps> = ({
             {/* Players Content */}
             <div className="bg-gradient-to-br from-emerald-200/60 via-teal-200/50 to-emerald-200/55 backdrop-blur-xl rounded-2xl p-3 md:p-6 border border-emerald-400/70 shadow-2xl h-auto md:h-[1000px]">
               <div className="text-center mb-3 md:mb-6">
-                <h2 className="text-2xl md:text-5xl font-bold mb-1 md:mb-2 text-white">Players</h2>
+                <h2 className="text-2xl md:text-5xl font-bold mb-1 md:mb-2 text-gray-900">
+                  Players
+                </h2>
                 <div className="w-10 md:w-20 h-1 mx-auto bg-emerald-600"></div>
-                <p className="text-sm md:text-xl text-white mt-1 md:mt-2">
+                <p className="text-sm md:text-xl text-gray-800 mt-1 md:mt-2">
                   All Players (for Ranking)
                 </p>
               </div>
@@ -244,7 +248,7 @@ const TeamsDisplay: React.FC<TeamsDisplayProps> = ({
                     return (
                       <>
                         {/* Column Headers */}
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-lg md:text-3xl font-bold text-white mb-2 pb-2 border-b border-gray-400">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-lg md:text-3xl font-bold text-gray-800 mb-2 pb-2 border-b border-gray-400">
                           <div className="grid grid-cols-4 gap-1">
                             <div className="text-center">Rank</div>
                             <div>Name</div>
