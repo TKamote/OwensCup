@@ -48,7 +48,7 @@ const Navigation: React.FC = () => {
               >
                 <span className="mr-1">{item.icon}</span>
                 <span className="hidden sm:inline">{item.label}</span>
-                <span className="sm:hidden">{item.label.split(' ')[0]}</span>
+                <span className="sm:hidden">{item.label.split(" ")[0]}</span>
               </Link>
             ))}
           </div>
