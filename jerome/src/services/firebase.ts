@@ -27,6 +27,11 @@ import {
   validateFirebaseConfig,
 } from "../config/firebase.config";
 
+// Type for Firebase errors
+interface FirebaseError extends Error {
+  code?: string;
+}
+
 // Validate Firebase configuration on startup
 validateFirebaseConfig();
 
@@ -139,6 +144,13 @@ const toSafeDate = (value: unknown): Date => {
   return isNaN(d.getTime()) ? new Date(0) : d;
 };
 
+// Type for the nested rounds object
+type RoundsData =
+  | {
+      [key: string]: Partial<WebRound>;
+    }
+  | WebRound[];
+
 // Listen to streaming data in real-time
 export const listenToStreamingData = (
   callback: (data: WebTournamentData | null) => void
@@ -157,8 +169,8 @@ export const listenToStreamingData = (
         const raw = doc.data() as FirestoreDocumentData;
 
         // Handle mobile app's data structure
-        const overview = raw.overview || {};
-        const roundsData = raw.rounds || {};
+        const overview = (raw.overview || {}) as DocumentData;
+        const roundsData: RoundsData = (raw.rounds || {}) as RoundsData;
 
         // Debug: Log the raw data structure
         console.log("🔍 Raw Firebase data:", raw);
@@ -184,32 +196,31 @@ export const listenToStreamingData = (
           console.log("🔍 overview.participants:", overview.participants);
 
         // Debug: Log detailed rounds structure
-        Object.entries(roundsData).forEach(
-          ([roundKey, roundData]: [string, unknown]) => {
-            console.log(`🔍 Round ${roundKey}:`, roundData);
-            if (
-              roundData &&
-              typeof roundData === "object" &&
-              roundData !== null &&
-              "matches" in roundData
-            ) {
-              const round = roundData as { matches: unknown[] };
-              round.matches.forEach((match: unknown, matchIndex: number) => {
-                console.log(`🔍 Match ${matchIndex} in ${roundKey}:`, match);
-                if (match && typeof match === "object" && match !== null) {
-                  const matchObj = match as {
-                    team1?: unknown;
-                    team2?: unknown;
-                  };
-                  if (matchObj.team1)
-                    console.log(`🔍 Team1 details:`, matchObj.team1);
-                  if (matchObj.team2)
-                    console.log(`🔍 Team2 details:`, matchObj.team2);
-                }
-              });
-            }
+        Object.entries(roundsData).forEach(([roundKey, roundData]) => {
+          console.log(`🔍 Round ${roundKey}:`, roundData);
+          if (
+            roundData &&
+            typeof roundData === "object" &&
+            roundData !== null &&
+            "matches" in roundData &&
+            Array.isArray(roundData.matches)
+          ) {
+            const round = roundData as { matches: WebMatch[] };
+            round.matches.forEach((match: WebMatch, matchIndex: number) => {
+              console.log(`🔍 Match ${matchIndex} in ${roundKey}:`, match);
+              if (match && typeof match === "object" && match !== null) {
+                const matchObj = match as {
+                  team1?: unknown;
+                  team2?: unknown;
+                };
+                if (matchObj.team1)
+                  console.log(`🔍 Team1 details:`, matchObj.team1);
+                if (matchObj.team2)
+                  console.log(`🔍 Team2 details:`, matchObj.team2);
+              }
+            });
           }
-        );
+        });
 
         // Extract teams from rounds data if teams array is empty
         let teams: WebTeam[] = [];
@@ -233,18 +244,13 @@ export const listenToStreamingData = (
           const teamMap = new Map<string, WebTeam>();
 
           Object.values(roundsData).forEach(
-            (round: unknown, roundIndex: number) => {
+            (round: Partial<WebRound>, roundIndex: number) => {
               console.log(`🔍 Processing round ${roundIndex}:`, round);
-              if (
-                round &&
-                typeof round === "object" &&
-                round !== null &&
-                "matches" in round
-              ) {
+              if (round && round.matches && Array.isArray(round.matches)) {
                 // Check for team1 and team2 in matches
-                const roundData = round as { matches: unknown[] };
+                const roundData = round as { matches: WebMatch[] };
                 if (roundData.matches && Array.isArray(roundData.matches)) {
-                  roundData.matches.forEach((match: unknown) => {
+                  roundData.matches.forEach((match: WebMatch) => {
                     if (
                       match &&
                       typeof match === "object" &&
@@ -472,22 +478,26 @@ export const listenToStreamingData = (
             "setup",
           currentRound: overview.currentRound || raw.currentRound || "",
           teams: teams,
-          rounds: Object.entries(roundsData)
-            .filter(([, round]) => round && typeof round === "object")
-            .sort(([keyA], [keyB]) => {
-              // Sort rounds in a consistent order: semiFinal1, semiFinal2, final
-              const order = { semiFinal1: 1, semiFinal2: 2, final: 3 };
-              return (
-                (order[keyA as keyof typeof order] || 999) -
-                (order[keyB as keyof typeof order] || 999)
-              );
-            })
-            .map(([, round]) => ({
-              ...(round as WebRound),
-              team1Wins: (round as WebRound).team1Wins || 0,
-              team2Wins: (round as WebRound).team2Wins || 0,
-              winsNeeded: (round as WebRound).winsNeeded || 5,
-            })) as WebRound[],
+          rounds: (Array.isArray(roundsData)
+            ? roundsData
+            : Object.entries(roundsData)
+                .filter(([, round]) => round && typeof round === "object")
+                .sort(([keyA], [keyB]) => {
+                  // Sort rounds in a consistent order: semiFinal1, semiFinal2, final
+                  const order: { [key: string]: number } = {
+                    semiFinal1: 1,
+                    semiFinal2: 2,
+                    final: 3,
+                  };
+                  return (order[keyA] || 999) - (order[keyB] || 999);
+                })
+                .map(([, round]) => round)
+          ).map((round) => ({
+            ...(round as WebRound),
+            team1Wins: (round as WebRound).team1Wins || 0,
+            team2Wins: (round as WebRound).team2Wins || 0,
+            winsNeeded: (round as WebRound).winsNeeded || 5,
+          })) as WebRound[],
           streamingMode:
             (raw.streamingMode as "normal" | "streaming" | "manual") ||
             "normal",
@@ -518,8 +528,8 @@ export const getCurrentStreamingData =
         const raw = docSnap.data() as FirestoreDocumentData;
 
         // Handle mobile app's data structure
-        const overview = raw.overview || {};
-        const roundsData = raw.rounds || {};
+        const overview = (raw.overview || {}) as DocumentData;
+        const roundsData: RoundsData = (raw.rounds || {}) as RoundsData;
 
         const data: WebTournamentData = {
           id: raw.id || overview.tournamentId || "current",
@@ -530,22 +540,26 @@ export const getCurrentStreamingData =
             "setup",
           currentRound: overview.currentRound || raw.currentRound || "",
           teams: Array.isArray(raw.teams) ? raw.teams : [],
-          rounds: Object.entries(roundsData)
-            .filter(([, round]) => round && typeof round === "object")
-            .sort(([keyA], [keyB]) => {
-              // Sort rounds in a consistent order: semiFinal1, semiFinal2, final
-              const order = { semiFinal1: 1, semiFinal2: 2, final: 3 };
-              return (
-                (order[keyA as keyof typeof order] || 999) -
-                (order[keyB as keyof typeof order] || 999)
-              );
-            })
-            .map(([, round]) => ({
-              ...(round as WebRound),
-              team1Wins: (round as WebRound).team1Wins || 0,
-              team2Wins: (round as WebRound).team2Wins || 0,
-              winsNeeded: (round as WebRound).winsNeeded || 5,
-            })) as WebRound[],
+          rounds: (Array.isArray(roundsData)
+            ? roundsData
+            : Object.entries(roundsData)
+                .filter(([, round]) => round && typeof round === "object")
+                .sort(([keyA], [keyB]) => {
+                  // Sort rounds in a consistent order: semiFinal1, semiFinal2, final
+                  const order: { [key: string]: number } = {
+                    semiFinal1: 1,
+                    semiFinal2: 2,
+                    final: 3,
+                  };
+                  return (order[keyA] || 999) - (order[keyB] || 999);
+                })
+                .map(([, round]) => round)
+          ).map((round) => ({
+            ...(round as WebRound),
+            team1Wins: (round as WebRound).team1Wins || 0,
+            team2Wins: (round as WebRound).team2Wins || 0,
+            winsNeeded: (round as WebRound).winsNeeded || 5,
+          })) as WebRound[],
           streamingMode:
             (raw.streamingMode as "normal" | "streaming" | "manual") ||
             "normal",
@@ -620,7 +634,7 @@ export const exploreFirebaseData = async () => {
         console.log("📡 No streaming data found (collection exists but empty)");
       }
     } catch (error: unknown) {
-      const firebaseError = error as { code?: string; message?: string };
+      const firebaseError = error as FirebaseError;
       if (firebaseError.code === "permission-denied") {
         console.log(
           "❌ 📡 Streaming collection: Permission denied (needs authentication)"
@@ -639,7 +653,7 @@ export const exploreFirebaseData = async () => {
         console.log(`  - User ${doc.id}:`, doc.data());
       });
     } catch (error: unknown) {
-      const firebaseError = error as { code?: string; message?: string };
+      const firebaseError = error as FirebaseError;
       if (firebaseError.code === "permission-denied") {
         console.log(
           "❌ 👥 Users collection: Permission denied (needs authentication)"
@@ -664,7 +678,7 @@ export const exploreFirebaseData = async () => {
           });
         }
       } catch (error: unknown) {
-        const firebaseError = error as { code?: string; message?: string };
+        const firebaseError = error as FirebaseError;
         if (firebaseError.code === "permission-denied") {
           console.log(`❌ 📁 ${collectionName} collection: Permission denied`);
         } else {
@@ -745,8 +759,10 @@ export const createUserWithEmailVerification = async (
       message:
         "Account created! Please check your email to verify your account.",
     };
-  } catch (error: any) {
-    throw new Error(error.message || "Failed to create account");
+  } catch (error) {
+    const message =
+      error instanceof Error ? error.message : "Failed to create account";
+    throw new Error(message);
   }
 };
 
@@ -768,8 +784,10 @@ export const signInUser = async (email: string, password: string) => {
     }
 
     return userCredential.user;
-  } catch (error: any) {
-    throw new Error(error.message || "Failed to sign in");
+  } catch (error) {
+    const message =
+      error instanceof Error ? error.message : "Failed to sign in";
+    throw new Error(message);
   }
 };
 
@@ -777,8 +795,10 @@ export const signInUser = async (email: string, password: string) => {
 export const signOutUser = async () => {
   try {
     await signOut(auth);
-  } catch (error: any) {
-    throw new Error(error.message || "Failed to sign out");
+  } catch (error) {
+    const message =
+      error instanceof Error ? error.message : "Failed to sign out";
+    throw new Error(message);
   }
 };
 
@@ -792,8 +812,12 @@ export const resendEmailVerification = async () => {
 
     await sendEmailVerification(user);
     return "Verification email sent! Please check your inbox.";
-  } catch (error: any) {
-    throw new Error(error.message || "Failed to send verification email");
+  } catch (error) {
+    const message =
+      error instanceof Error
+        ? error.message
+        : "Failed to send verification email";
+    throw new Error(message);
   }
 };
 
@@ -816,8 +840,10 @@ export const deleteUserAccount = async (password: string) => {
     await deleteUser(user);
 
     return "Account deleted successfully";
-  } catch (error: any) {
-    throw new Error(error.message || "Failed to delete account");
+  } catch (error) {
+    const firebaseError = error as FirebaseError;
+    const message = firebaseError.message || "Failed to delete account";
+    throw new Error(message);
   }
 };
 
@@ -846,18 +872,21 @@ export const sendPasswordReset = async (email: string) => {
 
     await sendPasswordResetEmail(auth, email);
     return "Password reset email sent! Please check your inbox and follow the instructions.";
-  } catch (error: any) {
+  } catch (error) {
+    const firebaseError = error as FirebaseError;
     // Handle specific Firebase errors
-    if (error.code === "auth/user-not-found") {
+    if (firebaseError.code === "auth/user-not-found") {
       throw new Error("No account found with this email address");
-    } else if (error.code === "auth/invalid-email") {
+    } else if (firebaseError.code === "auth/invalid-email") {
       throw new Error("Invalid email address");
-    } else if (error.code === "auth/too-many-requests") {
+    } else if (firebaseError.code === "auth/too-many-requests") {
       throw new Error(
         "Too many password reset attempts. Please try again later."
       );
     }
-    throw new Error(error.message || "Failed to send password reset email");
+    throw new Error(
+      firebaseError.message || "Failed to send password reset email"
+    );
   }
 };
 
@@ -890,13 +919,14 @@ export const updateUserPassword = async (
     await updatePassword(user, newPassword);
 
     return "Password updated successfully";
-  } catch (error: any) {
-    if (error.code === "auth/wrong-password") {
+  } catch (error) {
+    const firebaseError = error as FirebaseError;
+    if (firebaseError.code === "auth/wrong-password") {
       throw new Error("Current password is incorrect");
-    } else if (error.code === "auth/weak-password") {
+    } else if (firebaseError.code === "auth/weak-password") {
       throw new Error("New password is too weak");
     }
-    throw new Error(error.message || "Failed to update password");
+    throw new Error(firebaseError.message || "Failed to update password");
   }
 };
 
