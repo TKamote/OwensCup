@@ -31,7 +31,7 @@ const TVDisplay: React.FC<TVDisplayProps> = ({ className = "" }) => {
   if (!isClient) {
     return (
       <div
-        className={`min-h-screen bg-gradient-to-br from-blue-100 to-purple-100 ${className}`}
+        className={`min-h-screen bg-gradient-to-br from-emerald-100 to-teal-100 ${className}`}
       >
         <div className="flex items-center justify-center h-full">
           <div className="text-gray-800 text-8xl">Loading...</div>
@@ -43,7 +43,7 @@ const TVDisplay: React.FC<TVDisplayProps> = ({ className = "" }) => {
   if (!tournamentData) {
     return (
       <div
-        className={`min-h-screen bg-gradient-to-br from-blue-100 to-purple-100 flex items-center justify-center ${className}`}
+        className={`min-h-screen bg-gradient-to-br from-emerald-100 to-teal-100 flex items-center justify-center ${className}`}
       >
         <div className="bg-white p-8 rounded-lg shadow-lg text-center">
           <h2 className="text-8xl font-bold mb-4 text-gray-800">
@@ -102,8 +102,8 @@ const TVDisplay: React.FC<TVDisplayProps> = ({ className = "" }) => {
 
   return (
     <div
-      className={`min-h-screen bg-gradient-to-br from-blue-100 to-purple-100 ${className}`}
-      style={{ minHeight: "980px", minWidth: "1450px" }}
+      className={`min-h-screen bg-gradient-to-br from-emerald-100 to-teal-100 ${className}`}
+      style={{ minHeight: "980px" }}
     >
       {/* Live Match Banner - Top Right */}
       <div className="absolute top-4 right-4 z-10">
@@ -133,7 +133,7 @@ const TVDisplay: React.FC<TVDisplayProps> = ({ className = "" }) => {
               return (
                 <div
                   key={round.roundName || `round-${index}`}
-                  className="bg-white bg-opacity-90 backdrop-blur-sm rounded-lg p-4 text-gray-800 shadow-lg"
+                  className="bg-white bg-opacity-90 backdrop-blur-sm rounded-lg p-2 md:p-4 text-gray-800 shadow-lg"
                 >
                   {/* Overall Score for this round */}
                   {round.roundName === "final" &&
@@ -145,32 +145,32 @@ const TVDisplay: React.FC<TVDisplayProps> = ({ className = "" }) => {
                     )?.isCompleted !== true ||
                     (!round.matches?.[0]?.team1?.id &&
                       !round.matches?.[0]?.team1?.name)) ? (
-                    <div className="flex items-center justify-center mb-4">
-                      <div className="text-gray-800 font-bold text-2xl">
+                    <div className="flex items-center justify-center mb-2 md:mb-4">
+                      <div className="text-gray-800 font-bold text-lg md:text-2xl">
                         TBD
                       </div>
-                      <div className="text-gray-600 font-bold mx-4 text-4xl">
+                      <div className="text-gray-600 font-bold mx-2 md:mx-4 text-2xl md:text-4xl">
                         0 - 0
                       </div>
-                      <div className="text-gray-800 font-bold text-2xl">
+                      <div className="text-gray-800 font-bold text-lg md:text-2xl">
                         TBD
                       </div>
                     </div>
                   ) : (
-                    <div className="flex items-center justify-center mb-4">
-                      <div className="text-gray-800 font-bold text-2xl">
+                    <div className="flex items-center justify-center mb-2 md:mb-4">
+                      <div className="text-gray-800 font-bold text-lg md:text-2xl">
                         {roundTeam1Name}
                       </div>
-                      <div className="text-gray-600 font-bold mx-6 text-4xl">
+                      <div className="text-gray-600 font-bold mx-3 md:mx-6 text-2xl md:text-4xl">
                         {roundScores[0]} - {roundScores[1]}
                       </div>
-                      <div className="text-gray-800 font-bold text-2xl">
+                      <div className="text-gray-800 font-bold text-lg md:text-2xl">
                         {roundTeam2Name}
                       </div>
                     </div>
                   )}
 
-                  <h4 className="text-white bg-blue-600 p-3 font-bold text-center mb-4 text-2xl">
+                  <h4 className="text-white bg-emerald-600 p-2 md:p-3 font-bold text-center mb-2 md:mb-4 text-lg md:text-2xl">
                     {round.roundName === "semiFinal1"
                       ? "Semi-Final 1"
                       : round.roundName === "semiFinal2"
@@ -196,17 +196,17 @@ const TVDisplay: React.FC<TVDisplayProps> = ({ className = "" }) => {
                             match.matchId ||
                             `${round.roundName || index}-match-${matchIndex}`
                           }
-                          className={`${matchBgColor} rounded p-2 border transition-colors duration-300`}
+                          className={`${matchBgColor} rounded p-1 md:p-2 border transition-colors duration-300`}
                         >
                           {/* Match Type */}
                           <div
-                            className={`text-xl font-bold mb-2 text-center ${
-                              hasStarted ? "text-green-800" : "text-gray-800"
+                            className={`text-base md:text-xl font-bold mb-1 md:mb-2 text-center ${
+                              hasStarted ? "text-emerald-800" : "text-gray-800"
                             }`}
                           >
                             Match {matchIndex + 1}: {getMatchType(matchIndex)}
                             {hasStarted && (
-                              <span className="ml-2 text-base">
+                              <span className="ml-1 md:ml-2 text-sm md:text-base">
                                 ● IN PROGRESS
                               </span>
                             )}
@@ -215,8 +215,8 @@ const TVDisplay: React.FC<TVDisplayProps> = ({ className = "" }) => {
                           {/* Teams in Row */}
                           <div className="flex items-center justify-center">
                             {/* Team 1 */}
-                            <div className="flex items-center justify-end flex-1 pr-4">
-                              <div className="text-gray-800 text-xl font-bold mr-4">
+                            <div className="flex items-center justify-end flex-1 pr-2 md:pr-4">
+                              <div className="text-gray-800 text-base md:text-xl font-bold mr-2 md:mr-4">
                                 {round.roundName === "final" &&
                                 (tournamentData.rounds.find(
                                   (r) => r.roundName === "semiFinal1"
@@ -230,21 +230,21 @@ const TVDisplay: React.FC<TVDisplayProps> = ({ className = "" }) => {
                                     getTeamNameById(match.team1?.id || "") ||
                                     "Team 1"}
                               </div>
-                              <div className="text-gray-600 text-xl font-bold">
+                              <div className="text-gray-600 text-base md:text-xl font-bold">
                                 {match.team1?.score || 0}
                               </div>
                             </div>
 
-                            <div className="text-gray-800 text-xl font-bold mx-4">
+                            <div className="text-gray-800 text-base md:text-xl font-bold mx-2 md:mx-4">
                               vs
                             </div>
 
                             {/* Team 2 */}
-                            <div className="flex items-center justify-start flex-1 pl-4">
-                              <div className="text-gray-600 text-xl font-bold">
+                            <div className="flex items-center justify-start flex-1 pl-2 md:pl-4">
+                              <div className="text-gray-600 text-base md:text-xl font-bold">
                                 {match.team2?.score || 0}
                               </div>
-                              <div className="text-gray-800 text-xl font-bold ml-4">
+                              <div className="text-gray-800 text-base md:text-xl font-bold ml-2 md:ml-4">
                                 {round.roundName === "final" &&
                                 (tournamentData.rounds.find(
                                   (r) => r.roundName === "semiFinal1"

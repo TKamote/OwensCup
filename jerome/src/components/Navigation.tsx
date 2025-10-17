@@ -28,23 +28,23 @@ const Navigation: React.FC = () => {
               height={32}
               className="w-8 h-8 mr-2"
             />
-            <span className="text-xl font-bold text-gray-800">
+            <span className="text-sm md:text-xl font-bold text-gray-800">
               Jerome&apos;s Tournament Stream
             </span>
           </div>
 
-          <div className="flex space-x-4">
+          <div className="flex space-x-1 md:space-x-4">
             {navItems.map((item) => (
               <Link
                 key={item.href}
                 href={item.href}
-                className={`flex items-center px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                className={`flex items-center px-2 md:px-3 py-1 md:py-2 rounded-md text-xs md:text-sm font-medium transition-colors ${
                   pathname === item.href
-                    ? "bg-gray-200 text-gray-800"
-                    : "text-gray-600 hover:bg-gray-100 hover:text-gray-800"
+                    ? "bg-emerald-200 text-emerald-800"
+                    : "text-gray-600 hover:bg-emerald-100 hover:text-emerald-800"
                 }`}
               >
-                <span className="mr-2">{item.icon}</span>
+                <span className="mr-1 md:mr-2">{item.icon}</span>
                 {item.label}
               </Link>
             ))}
