@@ -37,7 +37,7 @@ const TeamsDisplay: React.FC<TeamsDisplayProps> = ({
 
   if (!isClient) {
     return (
-      <div className="bg-gradient-to-br from-emerald-100 to-teal-100 text-gray-800 p-2 md:p-8 h-screen flex items-center justify-center">
+      <div className="min-h-screen text-gray-800 p-2 md:p-8 h-screen flex items-center justify-center">
         <div className="text-2xl md:text-4xl">Loading...</div>
       </div>
     );
@@ -45,7 +45,7 @@ const TeamsDisplay: React.FC<TeamsDisplayProps> = ({
 
   if (!tournamentData) {
     return (
-      <div className="bg-gradient-to-br from-emerald-100 to-teal-100 text-gray-800 p-2 md:p-8 h-screen flex items-center justify-center">
+      <div className="min-h-screen text-gray-800 p-2 md:p-8 h-screen flex items-center justify-center">
         <div className="text-center">
           <div className="text-lg md:text-2xl mb-2 md:mb-4 text-gray-800">
             Waiting for Tournament Data...
@@ -60,14 +60,14 @@ const TeamsDisplay: React.FC<TeamsDisplayProps> = ({
 
   return (
     <div
-      className={`bg-transparent text-gray-800 p-2 md:p-8 h-auto md:h-[1200px] overflow-hidden ${className}`}
+      className={`bg-transparent text-gray-800 p-2 md:p-8 h-auto overflow-hidden ${className}`}
     >
       {/* Tab Content */}
       <div className="h-full">
         {activeTab === "teams" ? (
-          <div className="max-w-6xl mx-auto h-auto md:h-[1000px] bg-transparent">
+          <div className="max-w-6xl mx-auto h-auto bg-transparent">
             {/* Teams Content */}
-            <div className="bg-gradient-to-br from-emerald-200/60 via-teal-200/50 to-emerald-200/55 backdrop-blur-xl rounded-2xl p-3 md:p-6 border border-emerald-400/70 shadow-2xl h-full mt-4 md:mt-15">
+            <div className="bg-gradient-to-br from-emerald-100/90 via-teal-100/60 to-emerald-100/25 backdrop-blur-xl rounded-2xl p-3 md:p-6 border border-emerald-400/70 shadow-2xl h-auto mt-4 md:mt-15">
               <div className="text-center mb-3 md:mb-6">
                 <h2 className="text-2xl md:text-5xl font-bold mb-1 md:mb-2 text-gray-900">
                   Teams
@@ -135,7 +135,7 @@ const TeamsDisplay: React.FC<TeamsDisplayProps> = ({
         ) : (
           <div className="max-w-6xl mx-auto h-full bg-transparent bg-opacity-50 mt-4 md:mt-15">
             {/* Players Content */}
-            <div className="bg-gradient-to-br from-emerald-200/60 via-teal-200/50 to-emerald-200/55 backdrop-blur-xl rounded-2xl p-3 md:p-6 border border-emerald-400/70 shadow-2xl h-auto md:h-[1000px]">
+            <div className="bg-gradient-to-br from-emerald-100/90 via-teal-100/60 to-emerald-100/25 backdrop-blur-xl rounded-2xl p-3 md:p-6 border border-emerald-400/70 shadow-2xl h-auto">
               <div className="text-center mb-3 md:mb-6">
                 <h2 className="text-2xl md:text-5xl font-bold mb-1 md:mb-2 text-gray-900">
                   Players
@@ -249,17 +249,17 @@ const TeamsDisplay: React.FC<TeamsDisplayProps> = ({
                       <>
                         {/* Column Headers */}
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-base md:text-2xl font-bold text-gray-800 mb-2 pb-2 border-b border-gray-400">
-                          <div className="grid grid-cols-4 gap-1">
-                            <div className="text-center">Rank</div>
-                            <div>Name</div>
-                            <div>Team</div>
-                            <div className="text-right">Points</div>
+                          <div className="grid grid-cols-12 gap-1 p-1 md:p-2 rounded-lg bg-gradient-to-r from-emerald-100/30 to-teal-100/20 backdrop-blur-sm border border-emerald-400/40">
+                            <div className="col-span-2 text-center">Rank</div>
+                            <div className="col-span-4">Name</div>
+                            <div className="col-span-4">Team</div>
+                            <div className="col-span-2 text-center">Points</div>
                           </div>
-                          <div className="hidden md:grid grid-cols-4 gap-1">
-                            <div className="text-center">Rank</div>
-                            <div>Name</div>
-                            <div>Team</div>
-                            <div className="text-right">Points</div>
+                          <div className="hidden md:grid grid-cols-12 gap-1 p-1 md:p-2 rounded-lg bg-gradient-to-r from-emerald-100/30 to-teal-100/20 backdrop-blur-sm border border-emerald-400/40">
+                            <div className="col-span-2 text-center">Rank</div>
+                            <div className="col-span-4">Name</div>
+                            <div className="col-span-4">Team</div>
+                            <div className="col-span-2 text-center">Points</div>
                           </div>
                         </div>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
@@ -268,18 +268,18 @@ const TeamsDisplay: React.FC<TeamsDisplayProps> = ({
                             {leftColumnPlayers.map((player) => (
                               <div
                                 key={player.id}
-                                className="grid grid-cols-4 gap-1 items-center p-1 md:p-2 rounded-lg bg-gradient-to-r from-emerald-100/60 to-teal-100/40 backdrop-blur-sm border border-emerald-400/40 shadow-md hover:shadow-lg transition-all duration-200"
+                                className="grid grid-cols-12 gap-1 items-center p-1 md:p-2 rounded-lg bg-white/80 backdrop-blur-sm border border-emerald-400/40 shadow-md hover:shadow-lg transition-all duration-200"
                               >
-                                <div className="text-center text-base md:text-2xl font-bold text-emerald-700">
+                                <div className="col-span-2 text-center text-base md:text-2xl font-bold text-emerald-600">
                                   {uniquePlayers.indexOf(player) + 1}
                                 </div>
-                                <div className="text-base md:text-2xl font-medium text-gray-800 truncate">
+                                <div className="col-span-4 text-base md:text-2xl font-medium text-gray-800 truncate">
                                   {player.name}
                                 </div>
-                                <div className="text-base md:text-2xl text-gray-600 truncate">
+                                <div className="col-span-4 text-base md:text-2xl text-gray-600 truncate">
                                   {player.teamName}
                                 </div>
-                                <div className="text-right text-base md:text-2xl font-bold text-emerald-700">
+                                <div className="col-span-2 text-center text-base md:text-2xl font-bold text-emerald-600">
                                   {player.points}
                                 </div>
                               </div>
@@ -290,18 +290,18 @@ const TeamsDisplay: React.FC<TeamsDisplayProps> = ({
                             {rightColumnPlayers.map((player) => (
                               <div
                                 key={player.id}
-                                className="grid grid-cols-4 gap-1 items-center p-1 md:p-2 rounded-lg bg-gradient-to-r from-emerald-100/60 to-teal-100/40 backdrop-blur-sm border border-emerald-400/40 shadow-md hover:shadow-lg transition-all duration-200"
+                                className="grid grid-cols-12 gap-1 items-center p-1 md:p-2 rounded-lg bg-white/80 backdrop-blur-sm border border-emerald-400/40 shadow-md hover:shadow-lg transition-all duration-200"
                               >
-                                <div className="text-center text-base md:text-2xl font-bold text-emerald-700">
+                                <div className="col-span-2 text-center text-base md:text-2xl font-bold text-emerald-600">
                                   {uniquePlayers.indexOf(player) + 1}
                                 </div>
-                                <div className="text-base md:text-2xl font-medium text-gray-800 truncate">
+                                <div className="col-span-4 text-base md:text-2xl font-medium text-gray-800 truncate">
                                   {player.name}
                                 </div>
-                                <div className="text-base md:text-2xl text-gray-600 truncate">
+                                <div className="col-span-4 text-base md:text-2xl text-gray-600 truncate">
                                   {player.teamName}
                                 </div>
-                                <div className="text-right text-base md:text-2xl font-bold text-emerald-700">
+                                <div className="col-span-2 text-center text-base md:text-2xl font-bold text-emerald-600">
                                   {player.points}
                                 </div>
                               </div>

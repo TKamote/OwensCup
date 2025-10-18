@@ -13,7 +13,7 @@ const Navigation: React.FC = () => {
     { href: "/stream", label: "Streaming", icon: "📡" },
     { href: "/standby", label: "Standby", icon: "⏰" },
     { href: "/teams", label: "Teams", icon: "👥" },
-    { href: "/players", label: "Players", icon: "🏃" },
+    { href: "/players", label: "Players", icon: "👤" },
   ];
 
   return (
@@ -25,12 +25,12 @@ const Navigation: React.FC = () => {
             <Image
               src="/favicon.png"
               alt="Tournament Icon"
-              width={24}
-              height={24}
-              className="w-6 h-6 md:w-8 md:h-8 mr-1 md:mr-2"
+              width={32}
+              height={32}
+              className="w-8 h-8 md:w-10 md:h-10 mr-2 md:mr-3"
             />
-            <span className="text-xs md:text-xl font-bold text-gray-800 text-center md:text-left">
-              Jerome&apos;s Tournament Stream
+            <span className="text-sm md:text-2xl font-bold text-gray-800 text-center md:text-left">
+              Jerome&apos;s Tournament
             </span>
           </div>
 
@@ -40,7 +40,7 @@ const Navigation: React.FC = () => {
               <Link
                 key={item.href}
                 href={item.href}
-                className={`flex items-center px-2 py-1 rounded-md text-xs font-medium transition-colors whitespace-nowrap ${
+                className={`flex items-center px-3 py-2 rounded-md text-sm md:text-base font-bold transition-colors whitespace-nowrap ${
                   pathname === item.href
                     ? "bg-emerald-200 text-emerald-800"
                     : "text-gray-600 hover:bg-emerald-100 hover:text-emerald-800"

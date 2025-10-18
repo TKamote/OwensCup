@@ -77,17 +77,19 @@ export default function StandbyAnnouncement() {
   }, [selectedTime]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-emerald-100 to-teal-100 flex justify-center p-2 md:p-8">
-      <div className="text-center max-w-8xl mx-auto pt-4 md:pt-8">
+    <div className="min-h-screen flex justify-center p-2 md:p-8">
+      <div className="text-center w-11/12 sm:w-10/12 md:w-11/12 max-w-5xl mx-auto pt-4 md:pt-8 bg-gradient-to-br from-emerald-100 to-teal-100 rounded-2xl p-4 md:p-8">
         {/* Tournament Title */}
         <div className="mb-4 md:mb-8">
-          <h1 className="text-2xl md:text-4xl font-bold text-gray-800 mb-2 md:mb-4">
+          <h1 className="text-xl sm:text-2xl md:text-4xl font-bold text-gray-800 mb-2 md:mb-4">
             TOURNAMENT STREAM
           </h1>
-          <h2 className="text-xl md:text-3xl font-semibold text-gray-700 mb-1 md:mb-2">
+          <h2 className="text-lg sm:text-xl md:text-3xl font-semibold text-gray-700 mb-1 md:mb-2">
             Jerome&apos;s Tournament
           </h2>
-          <p className="text-lg md:text-3xl text-gray-600">{tournamentDate}</p>
+          <p className="text-sm sm:text-lg md:text-3xl text-gray-600">
+            {tournamentDate}
+          </p>
         </div>
 
         {/* Time Selector */}

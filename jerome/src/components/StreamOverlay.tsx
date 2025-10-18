@@ -107,13 +107,8 @@ const StreamOverlay: React.FC<StreamOverlayProps> = ({ className = "" }) => {
 
   return (
     <div
-      className={`w-full max-w-full md:w-120 h-auto bg-gradient-to-b from-gray-900 via-black to-gray-900 overflow-hidden border-2 md:border-4 border-yellow-500 ${className} p-1 md:p-4`}
+      className={`w-full max-w-full md:w-120 h-auto bg-gradient-to-b from-gray-900 via-black to-gray-900 overflow-hidden border-2 md:border-4 border-yellow-500 ${className} p-1 md:p-4 mt-3`}
     >
-      {/* LIVE Indicator with Animation */}
-      <div className="absolute top-1 md:top-3 left-1/2 transform -translate-x-1/2 bg-red-600 text-white text-sm md:text-2xl font-bold px-1 md:px-3 py-0.5 md:py-1 rounded-full animate-pulse shadow-lg">
-        🔴 LIVE
-      </div>
-
       <div className="flex flex-col h-full space-y-1 overflow-hidden">
         {/* Semifinal 1 Section */}
         {semifinal1 && !hiddenSections.includes("semifinal1") && (
@@ -122,6 +117,10 @@ const StreamOverlay: React.FC<StreamOverlayProps> = ({ className = "" }) => {
               <h2 className="text-white text-lg md:text-2xl font-bold bg-blue-600 px-1 md:px-3 py-0.5 md:py-2 rounded-lg">
                 🥉 SF1
               </h2>
+              {/* LIVE Indicator */}
+              <div className="bg-red-500 text-white text-sm md:text-base font-bold px-3 md:px-4 py-1 md:py-1.5 rounded-full animate-pulse shadow-lg">
+                🔴 LIVE
+              </div>
               <button
                 onClick={() =>
                   setHiddenSections((prev) => [...prev, "semifinal1"])
@@ -340,8 +339,8 @@ const StreamOverlay: React.FC<StreamOverlayProps> = ({ className = "" }) => {
         {final && (!semifinal1?.isCompleted || !semifinal2?.isCompleted) && (
           <div className="bg-gradient-to-br from-gray-800 to-gray-900 rounded-lg p-1 md:p-3 border border-gray-700 shadow-lg">
             <div className="flex items-center justify-between mb-1 md:mb-3">
-              <h2 className="text-white text-lg md:text-2xl font-bold">
-                Final
+              <h2 className="text-white text-lg md:text-2xl font-bold bg-blue-600 px-1 md:px-3 py-0.5 md:py-2 rounded-lg">
+                🏆 Final
               </h2>
             </div>
 
