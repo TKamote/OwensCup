@@ -156,9 +156,9 @@ export const listenToStreamingData = (
   callback: (data: WebTournamentData | null) => void
 ) => {
   console.log(
-    "🔍 Segundo listening to: streaming/avryzcqeibphtefihmsrjfbugeq1"
+    "🔍 For Managers listening to: streaming/vlquyxzadsmig74bl9j0fuyz2id3"
   );
-  const streamingRef = doc(db, "streaming", "avryzcqeibphtefihmsrjfbugeq1");
+  const streamingRef = doc(db, "streaming", "vlquyxzadsmig74bl9j0fuyz2id3");
 
   return onSnapshot(
     streamingRef,
@@ -523,7 +523,7 @@ export const listenToStreamingData = (
 export const getCurrentStreamingData =
   async (): Promise<WebTournamentData | null> => {
     try {
-      const streamingRef = doc(db, "streaming", "avryzcqeibphtefihmsrjfbugeq1");
+      const streamingRef = doc(db, "streaming", "vlquyxzadsmig74bl9j0fuyz2id3");
       const docSnap = await getDoc(streamingRef);
 
       if (docSnap.exists()) {
@@ -628,7 +628,7 @@ export const exploreFirebaseData = async () => {
 
     // Try to check streaming collection first (most likely to be accessible)
     try {
-      const streamingRef = doc(db, "streaming", "avryzcqeibphtefihmsrjfbugeq1");
+      const streamingRef = doc(db, "streaming", "vlquyxzadsmig74bl9j0fuyz2id3");
       const streamingDoc = await getDoc(streamingRef);
       if (streamingDoc.exists()) {
         console.log("✅ 📡 Streaming data found:", streamingDoc.data());
